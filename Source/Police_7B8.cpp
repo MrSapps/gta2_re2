@@ -361,8 +361,8 @@ void Police_7B8::sub_56FA40()
 {
     if (field_464[0].field_0_criminal_ped)
     {
-        if ((field_464[0].field_0_criminal_ped->field_21C & 1) == 0 
-            || field_464[0].field_0_criminal_ped->field_278_ped_state_1 == ped_state_1::dead_9)
+        if ((field_464[0].field_0_criminal_ped->field_21C & 1) == 0 ||
+            field_464[0].field_0_criminal_ped->field_278_ped_state_1 == ped_state_1::dead_9)
         {
             field_464[0].field_8 = 4;
         }
@@ -705,8 +705,56 @@ char_type Police_7B8::sub_577320()
     return 1;
 }
 
-STUB_FUNC(0x577370)
-void Police_7B8::TryCreateRoadblockAt_577370(u8 a2, s32 a3, s32 a4)
+WIP_FUNC(0x577370)
+void Police_7B8::TryCreateRoadblockAt_577370(u8 xpos, u8 ypos, u8 zpos)
 {
-    NOT_IMPLEMENTED;
+    WIP_IMPLEMENTED;
+
+    bool bUnknown = 0;
+
+    switch (this->field_654_wanted_level)
+    {
+        case 3:
+        case 4:
+            gRoadblockGuardType_6FEDB8 = 1;
+            break;
+        case 5:
+            gRoadblockGuardType_6FEDB8 = 3;
+            break;
+        case 6:
+            gRoadblockGuardType_6FEDB8 = 4;
+            break;
+        default:
+            break;
+    }
+
+    if (zpos > 0 && zpos <= 2)
+    {
+        bUnknown = 1;
+    }
+
+
+    Fix16 zTmp;
+    zTmp = *gMap_0x370_6F6268->FindGroundZForCoord_4E5B60(&zTmp, xpos, ypos);
+    zpos = zTmp.ToInt();
+    if (bUnknown)
+    {
+        if (!this->field_664_obj.field_0 || (!this->field_708_obj.field_0))
+        {
+            field_664_obj.CreateRoadblock_575FF0(xpos, ypos, zpos, 3);
+        }
+    }
+    else
+    {
+        if (!this->field_664_obj.field_0)
+        {
+            field_664_obj.CreateRoadblock_575FF0(xpos, ypos, zpos, 2);
+            return;
+        }
+
+        if (!this->field_708_obj.field_0)
+        {
+            field_664_obj.CreateRoadblock_575FF0(xpos, ypos, zpos, 3);
+        }
+    }
 }

@@ -705,6 +705,7 @@ char_type Police_7B8::sub_577320()
     return 1;
 }
 
+// 9.6f 0x4AEE70
 WIP_FUNC(0x577370)
 void Police_7B8::TryCreateRoadblockAt_577370(u8 xpos, u8 ypos, u8 zpos)
 {

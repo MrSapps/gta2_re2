@@ -8,7 +8,7 @@
 #include <stdlib.h>
 
 DEFINE_GLOBAL(rng*, rng_dword_67AB34, 0x67AB34);
-DEFINE_GLOBAL(rng, stru_6F6784, 0x6F6784);
+DEFINE_GLOBAL(rng, stru_6F6784, 0x6F6784); // TODO: ctor should be calling srand
 
 EXTERN_GLOBAL_ARRAY(wchar_t, tmpBuff_67BD9C, 640);
 

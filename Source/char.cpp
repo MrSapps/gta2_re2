@@ -652,7 +652,6 @@ void Char_B4::UpdateAnimState_546360()
     s32 newId;
     Fix16 v102;
     Fix16 pNewZ;
-    Car_Door_10* pDoor_;
     Car_Door_10* pDoor;
 
     // Note: was if/else
@@ -2123,7 +2122,6 @@ void Char_B4::HandleGenericCollision_54A530(Car_BC* pCar, Object_2C* pObj, Char_
                     }
                 }
 
-            LABEL_136:
                 if (pCar)
                 {
                     field_1C = pCar;
@@ -2437,7 +2435,6 @@ char_type Char_B4::CanMoveOntoSlope_54C1A0(s32 path_direction)
         return 0;
     }
 
-    gmp_block_info* pBlock;
 
     switch (path_direction)
     {
@@ -4259,7 +4256,6 @@ bool Char_B4::CanStepForward_54FEC0(s32 direction)
     WIP_IMPLEMENTED;
 
     bool result;
-    gmp_block_info* block_4DFE10;
 
     Fix16 v16;
     u8 block_type;
@@ -4845,7 +4841,6 @@ LABEL_65:
         {
             Ang16::PolarToCartesian_41FC20(field_1C_zpos, dword_6FD828, pMaybeX_FP16, pMaybeY_FP16);
         }
-    LABEL_87:
         pMaybeX_FP16 += gCharB4_Saved_Xpos_6FD7F8;
         pMaybeY_FP16 += gCharB4_Saved_Ypos_6FD800;
         u8 x_u8 = pMaybeX_FP16.ToUInt8();
@@ -5661,7 +5656,7 @@ void Char_B4::state_7_551CB0()
             field_6C_animation_state = 9;
             break;
         case ped_state_2::ped2_staying_14:
-            if (field_7C_pPed->GetBit11_433CA0() == true) // line 344
+            if (field_7C_pPed->GetBit11_433CA0() == 1) // line 344
             {
                 if (field_7C_pPed->field_21C_bf.b9)
                 {
@@ -5725,7 +5720,6 @@ void Char_B4::state_8_5520A0()
     Fix16 v9;
     Object_2C* field_184_pObj2C;
     Object_2C* v16;
-    Sprite* v29;
     Sprite* v33;
     Fix16 v36;
 
@@ -6365,11 +6359,9 @@ char_type Char_B4::IsThreatToSearchingPed_553330()
 }
 
 // 9.6f 0x497480
-WIP_FUNC(0x553340)
+MATCH_FUNC(0x553340)
 bool Char_B4::ShouldCollideWithSprite_553340(Sprite* pSprite)
 {
-    WIP_IMPLEMENTED;
-
     Ped* pPed; // eax
 
     if (pSprite)
@@ -6439,10 +6431,11 @@ bool Char_B4::ShouldCollideWithSprite_553340(Sprite* pSprite)
             {
                 switch (pSprite->get_type_416B40())
                 {
-                    //case 0:
-                    //case 1:
                     case 2:
-                    case 4: // 0xdb je is wrong its jne
+                        return 0;
+                    case 4:
+                        break;
+                    default:
                         return 0;
                 }
             }
@@ -6465,10 +6458,9 @@ bool Char_B4::PhoneTouched_5535B0(Object_2C* p2c)
     }
 }
 
-WIP_FUNC(0x529050)
+MATCH_FUNC(0x529050)
 EXPORT void __stdcall sub_529050(u8 a1, s8* a2, s8* a3)
 {
-    WIP_IMPLEMENTED;
     *a2 = (a1 >> 4) - 7;
     *a3 = (a1 & 0xF) - 7;
 }

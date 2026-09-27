@@ -1,0 +1,48 @@
+name: Dump target asm
+
+on:
+  push:
+    branches: [claude/target-asm-request]
+
+permissions:
+  contents: write
+
+jobs:
+  dump:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    - name: Restore cached binaries
+      uses: actions/cache@v3
+      with:
+        enableCrossOsArchive: true
+        path: |
+          Scripts/bin_comp/9.6f.exe
+          Scripts/bin_comp/10.5.exe
+        key: originals
+    - name: Build and dump
+      shell: bash
+      env:
+        PYTHONIOENCODING: utf-8
+      run: |
+        pip install -r requirements.txt
+        python vc6_setup.py
+        python build.py --ignore_no_match
+        cd Scripts/bin_comp
+        python dump_target_asm.py
+        cd ..
+        python generate_target_asm_for_objs.py
+    - name: Push to claude/target-asm
+      shell: bash
+      run: |
+        mkdir /tmp/out && cp Scripts/bin_comp/target_asm.json Scripts/bin_comp/target_data.json Scripts/bin_comp/target_extra.json /tmp/out/ && cp -r Scripts/asm /tmp/out/asm
+        cd /tmp/out
+        git init -q -b claude/target-asm
+        git config user.name "github-actions" && git config user.email "github-actions@users.noreply.github.com"
+        git add -A && git commit -qm "Target asm for ${GITHUB_SHA}"
+        git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" claude/target-asm

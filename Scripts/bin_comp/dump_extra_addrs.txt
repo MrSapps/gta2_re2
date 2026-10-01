@@ -1,0 +1,5 @@
+# callees of sub_405E80 / sub_5DE910 that have no marker
+0x405e20
+0x5e40c0
+0x5e40e0
+0x5e4140

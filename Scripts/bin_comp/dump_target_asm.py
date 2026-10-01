@@ -37,6 +37,24 @@ for rec in new_data["functions"]:
         print(f"post processing failed for {name}: {e!r}")
     out[hex(addr)] = {"name": name, "size": size, "status": rec["func_status"], "asm": asm, "pp": pp}
 
+# extra functions the build doesn't mark (callees of WIPs/STUBs), one hex address per line
+import os
+if os.path.exists("dump_extra_addrs.txt"):
+    for line in open("dump_extra_addrs.txt"):
+        line = line.split("#")[0].strip()
+        if not line:
+            continue
+        addr = int(line, 16)
+        if addr not in sizes or hex(addr) in out:
+            continue
+        name, fo, size = sizes[addr]
+        asm = compare_function.dism_func(compare_function.get_bytes_from_file("10.5.exe", fo, size))
+        try:
+            pp = post_process_asm.post_process_asm(asm)
+        except Exception as e:
+            pp = None
+        out[hex(addr)] = {"name": name, "size": size, "status": "unmarked", "asm": asm, "pp": pp}
+
 # bytes of read-only data referenced by absolute address (float constants etc.), so values can be
 # compared without the exe. PE layout: map VA -> file offset via section headers.
 import re, struct

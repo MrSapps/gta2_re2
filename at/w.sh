@@ -1,5 +1,5 @@
 #!/bin/bash
-REPO=${REPO:-/home/user/gta2_re2}; TMPW=${TMPW:-/tmp/claude-0}; TOOLS=${TOOLS:-/tmp/claude-0/at}; mkdir -p $TMPW
+: ${REPO:?set REPO to your worktree}; TMPW=${TMPW:-/tmp/claude-0}; TOOLS=${TOOLS:-/tmp/claude-0/at}; mkdir -p $TMPW
 # w.sh FILE.cpp ADDR[:NEEDLE]... : compile one TU (WIP_IMPLEMENTED/NOT_IMPLEMENTED stripped), print the
 # mnd diff count per function (0 = asm equal ignoring stack offsets)
 cd $REPO && export GTA2_RE=$REPO WINEDEBUG=-all

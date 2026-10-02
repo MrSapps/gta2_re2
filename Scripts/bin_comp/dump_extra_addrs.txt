@@ -29,3 +29,5 @@
 0x539f90
 0x561db0
 0x562430
+# WinMain (commented out in winmain.cpp, so it has no marker)
+0x5e53f0

@@ -123,6 +123,16 @@ for path in glob.glob("../../Source/*.cpp"):
         b = read_va(a, min(starts[i] - a, 0x2000))
         if b is not None:
             extra[hex(a)] = b.hex()
+# x87 constants used by those functions too (they aren't in `out`, so the scan above misses them)
+for blob in extra.values():
+    asm = compare_function.dism_func(bytes.fromhex(blob))
+    fpu_lines = "\n".join(l for l in asm.split("\n") if l.startswith("f"))
+    for m in re.finditer(r"\b0x([0-9A-Fa-f]{6,8})\b", fpu_lines):
+        a = int(m.group(1), 16)
+        if a >= 0x400000 and hex(a) not in data:
+            b = read_va(a, 8)
+            if b is not None:
+                data[hex(a)] = b.hex()
 with open("target_extra.json", "w") as f:
     json.dump(extra, f)
 

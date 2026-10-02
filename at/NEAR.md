@@ -1,0 +1,64 @@
+# Matching near-miss WIP functions (worker instructions)
+
+Project: GTA2 matching decompilation (C++ that MSVC 6 compiles to the same bytes as the original
+10.5.exe). Read `$REPO/CLAUDE.md` first, then skim `$REPO/docs/matching_quirks.md` (the VC6 codegen
+patterns found so far; most near misses are one of them) and grep `$REPO/docs/match_attempts.md`
+for your function's address before starting on it (earlier attempts, what didn't work).
+
+Your worktree and temp dir (set them in every shell command, the shell doesn't keep them):
+
+    export REPO=<worktree> TMPW=<worktree>.tmp TOOLS=/tmp/claude-0/at WINEDEBUG=-all
+
+Never touch /home/user/gta2_re2 (the main checkout) or another worktree.
+
+Your list: `$TMPW/near.txt`, one line per function: `addr name difflines ratio`, closest first.
+Each function is a WIP_FUNC whose build asm is a few lines away from the original.
+
+## Setup (once)
+
+    cd $REPO && . venv/bin/activate
+    python3 build.py --ignore_no_match > $TMPW/b.log 2>&1        # full build, 1 to 3 min
+    cd Scripts/bin_comp && python3 msvc_dump_new_data.py > /dev/null && python3 compare_builds.py --save $TMPW/baseline
+
+## Loop for one function
+
+1. Remove its `WIP_IMPLEMENTED;` line (it adds code), and look at the diff:
+   `cd $REPO/Scripts/bin_comp && python3 compare_target_asm.py ADDR` (unified diff, original `-`, build `+`),
+   `--raw ADDR` for side by side, `--target ADDR` for the original only. Use lowercase hex without 0x.
+   `python3 $TOOLS/src.py ADDR` prints our source, and `python3 $TOOLS/iv.py ADDR -n` the 9.6f version's
+   inlined callees (9.6f is an older build with inlining mostly off, useful for missing inline helpers).
+2. Change the source. Rebuild: `cd $REPO && python3 build.py --ignore_no_match > $TMPW/b.log 2>&1;
+   grep -E ' error ' $TMPW/b.log | head` (incremental, under a minute; give Bash a 600000 ms timeout), then
+   `cd Scripts/bin_comp && python3 msvc_dump_new_data.py > /dev/null && python3 compare_target_asm.py ADDR`.
+3. When it prints `MATCH`: change `WIP_FUNC` to `MATCH_FUNC`, rebuild, and run
+   `python3 compare_builds.py $TMPW/baseline`: it must show `changed: 0` (your function shows as
+   `NEWLY MARKED MATCH`). Then commit (below) and re-save the baseline (`compare_builds.py --save $TMPW/baseline`).
+4. If it doesn't match after a fair try (say 10 to 15 rebuilds, or you're sure what's left is a known
+   unexplained quirk), restore `WIP_IMPLEMENTED;`, keep any source change only if it made the diff
+   smaller and `compare_builds` still shows `changed: 0`, and move on.
+
+Things that often fix near misses (details and examples in matching_quirks.md): wrong field/param
+types (signedness, u8 vs s32, by value vs by reference), a missing inline helper (9.6f), branch order /
+if-else vs early return, a local vs a repeated expression, declaration order of locals, a `switch`
+instead of an `if` chain, struct copies vs field copies. Register swaps are often decided by the
+order in which values are first computed. Don't use `goto` unless the original clearly has a shared
+block several paths jump to (comment why).
+
+Rules:
+- Never break a MATCH_FUNC: `compare_builds.py $TMPW/baseline` must show `changed: 0` before each commit.
+  Shared header changes affect many files, so check this after every header edit.
+- Don't change struct layouts unless the asm proves the layout wrong and the other users still make
+  sense; check compare_builds afterwards.
+- Commits: one per function. `git -C $REPO add <the files you changed>` (never `git add -A` or `.`;
+  the 3rdParty symlinks show up as changes and must never be committed). Subject `Match <Class::Name>`
+  (or `<Name>: <what changed>` for an improvement that doesn't match yet), a short body saying what
+  made it match, and the last line `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
+  Don't push and don't create branches.
+- **Never run a bare `git stash`, `git checkout .`, `git clean` or `git reset --hard`**: they wipe the
+  3rdParty symlinks. Use path-limited commands (`git -C $REPO checkout -- Source/X.cpp`).
+- Append one line per function to `$TMPW/near_status.txt`: `0xADDR | MATCH / closer N->M / no change | short note`.
+  If you found a new codegen pattern, say so in the note (the main session adds it to the docs).
+- Don't touch docs/ or Scripts/.
+- Work through the list in order. If you run low on context, finish the current function (commit or
+  revert it), write its status line, and stop.
+- At the end, reply with a short summary: matches, improvements, new patterns found.

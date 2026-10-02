@@ -207,19 +207,26 @@ Tried:
 
 ## Stubs that aren't normal functions
 
-These have `STUB_FUNC` markers but are compiler-generated in the original, so there is
-no source to write for them:
+These had `STUB_FUNC` markers but are compiler-generated in the original:
 
-- `PedGroup::sub_4C8E60` (0x4C8E60): the static destructor for a global array of 20
-  `PedGroup`s (`eh vector destructor iterator` on 0x67EF20, size 0x44).
-- `NetPlay::static_dtor_5E4DD0`: the `atexit` destructor for `gNetPlay_7071E8`
-  (`mov $gNetPlay,%ecx; jmp ~NetPlay`). VC6 now generates it, since `NetPlay` has a real
-  constructor.
-- `NetPlay::vdtor_51D7B0`: NetPlay's scalar deleting destructor (`??_G`), generated from
-  the virtual destructor.
+- `NetPlay::vdtor_51D7B0` (NetPlay's scalar deleting destructor) and
+  `NetPlay::static_dtor_5E4DD0` (the `atexit` destructor for `gNetPlay_7071E8`) now match,
+  written out by hand: `this->NetPlay::~NetPlay(); if (flags & 1) operator delete(this); return this;`
+  and `gNetPlay_7071E8.NetPlay::~NetPlay();`. The qualified call stops a virtual dispatch,
+  and VC6 turns the second into `mov $gNetPlay,%ecx; jmp ~NetPlay`.
+- `PedGroup::sub_4C8E60` (0x4C8E60): the static destructor for the global array of 20
+  `PedGroup`s (`push ~PedGroup; push 0x14; push 0x44; push pedGroups_67EF20; call ??_M`).
+  Our build generates the same code as `_$E5` for `DEFINE_GLOBAL_ARRAY(PedGroup, ...)`, but there
+  is no way to put a marker on it: a `MATCH_FUNC` before the array definition is followed by
+  `_$E7` (the init wrapper), and the verifier skips `$E` symbols ("not in the build"). Plain
+  C++ can't name `??_M` or take a destructor's address, so it would need a linker
+  `/alternatename` hack. Left as a stub.
+- `cSampleManager`'s marker was on 0x58D400, which is the static init thunk for
+  `gSampManager_6FFF00` (`mov ecx; jmp ctor`; 0x58D410 registers the `atexit` destructor and
+  0x58D420 jumps to `~cSampleManager`). The constructor is at 0x58D430, which had no csv row.
+  With the row and the marker moved, it matched once its three handle arrays were cleared with
+  loops instead of `memset`. The `memset`s picked other zero registers and instruction order.
 - The `crt_stubs.cpp` functions (`malloc`, `free`, `fopen`, ...) are the static CRT.
-
-The markers can't be checked either way: there's no function body to put after them.
 
 ## NetPlay::CalcPacketLen_51F210 (WIP)
 
@@ -1187,3 +1194,107 @@ Still different:
 - The permuter scored nested scopes for the `Fix16_Point` locals (836 -> 542). An inline helper
   owning the arc locals gave 0.056: the original constructs all ten locals at entry
   (`movl $0xA` EH state), so they belong to the function itself.
+
+### MapRenderer::DrawDiagonalWall{UpLeft,UpRight,DownLeft,DownRight} (0x4EE7D0..0x4EEA40): MATCH
+- The bodies were already written, but the addresses weren't in the csv, so the markers were
+  commented out. They match the raw bytes in `target_extra.json` (0x64 bytes each). The calls
+  and globals check out. Each now has a csv row and `MATCH_FUNC`.
+
+### sub_5BEED0 (0x5BEED0): MATCH
+- `return (u32)cycles / dword_705334;`. It needed the normaliser fix for `divl mem`.
+
+### arc_tan_table_init_4052D0 (0x4052D0): MATCH
+- The tangent table initialiser. The dump now reads the x87 constants of the `target_extra.json`
+  functions too: pi and 1/720, then 16384 from `Fix16(f64)`. The two multiplies and the
+  separate down counter needed the spellings in matching_quirks.md. Its csv row is new.
+
+### sound_obj::Release_41A290, Char_B4::IsThreatToSearchingPed_553330: now verified
+- Both were `MATCH_FUNC` without a csv row. They're tail-jump thunks and match.
+
+### sound_obj::ProcessObject_Type12_41E850 (0x41E850): WIP 0.970
+- A map object's sound by kind (`Object_2C::field_26`). 40 case blocks set the sample, release,
+  range, distance and volume. VC6 merges their tails, so each case is written out in full, in
+  the jump table's address order. Then come countdowns for the occasional kinds, the sample
+  counter `byte_6751E4`, and the queue.
+- 0.716 -> 0.907: the countdown `if (!w) {...} else { w--; return; }`. 0.970: the countdown
+  cases in address order and an unsigned sample index. One register difference is left.
+
+### Ambulance_20::HandleObjectiveState_4FAAC0 (0x4FAAC0): WIP 0.961
+- The paramedic crew loop. Each ped of the crew, through `dword_6F6D60`, walks to a patient in
+  `field_10`, revives them (cops come back as cops), then gets back in and leaves.
+- 0.485 -> 0.724: case order 14, 0, 28, 36, 16, 35. 0.835: the `field_225 == 1` branch of
+  case 14 first, with an explicit `else` for the no-car path. 0.892: one `field_8 = pPatient`
+  after the whole `field_23C == 99` branch, which VC6 copies into each path without folding the
+  NULL. 0.961: case 35 as three branches. Left: the load order of the distance check (the
+  original loads `y` first) and the copy of the objective target. A `Fix16_Vec` struct copy made
+  that worse.
+
+### PoliceCrew_38::sub_572920 (0x572920): WIP 0.396
+- The chasing crew, built on the matched `sub_572340`. Members follow the criminal on foot, or
+  get back in the car when the criminal is far away or fast. The crew-state check goes in the
+  sibling's order (`!= 3` first). Left: the original puts the two "timer ran out" blocks at
+  the end of the function, and the case tails merge differently.
+
+### Map_0x370::sub_4E5D10, sub_4E5D70, sub_4E5E00: match
+- Small road helpers of the two road followers below: move x or y along a road direction, and
+  the distance to the block edge across or along an angle's face. Their bytes came from the
+  dump's extra address list. They take `this` but don't use it, so they're members. Their csv
+  rows got the `Map_0x370::` prefix.
+
+### Map_0x370::sub_4E6660 (0x4E6660): WIP, one instruction pair off
+- Moves a point `dist` along the road, following the arrows, and returns the final direction.
+- 0.56 -> 0.99 (registers counted): the "block under or at z" lookup as an inline that writes
+  through a `gmp_block_info*&`. Then the frame: the reversed angle as a temporary through
+  `Ang16::Normalized_406C20()`, the final z in a block scope, and `bTurned` declared before
+  `x`. The early exits jump straight to the shared exit, so they're `goto done` (the
+  original's tail code is shared, not duplicated).
+- Left: in the `side == 0.5` branch, `sub_4E65A0(x, y, &z, 1, 1)` pushes `%ebx`, which still
+  holds the 1 loaded at the top, where the original pushes `$1` twice. Literal type (`true`,
+  `TRUE`, casts), an inline wrapper, a variable for the first 1 and declaration order made no
+  difference. Moving `pPrev = pBlock` before the call fixes the pushes but moves the `mov`.
+  The permuter's best results only shuffled jump offsets.
+
+### Map_0x370::sub_4E7190 (0x4E7190): WIP
+- The reverse road follower. When it runs off the road it looks for a turn in the neighbouring
+  blocks, via `gMap_0x370_6F6268` rather than `this`, and returns the opposite direction.
+- Same helpers as sub_4E6660, plus the null-checking lookup. The function runs out of inline
+  expansions (see matching_quirks.md), so the neighbour z offsets use raw `mValue` arithmetic
+  and the arrow check and `dist` update are written out. Left: `dist` and `pPrev` swap `%ebx`
+  and `%ebp`, the constant cached in `%ebp` before the first switch, and the neighbour arrow
+  check's `xor`/`test`, which needs an inline the budget can't afford.
+
+### PublicTransport_181C::SpawnTrainsFromStations_578860 (0x578860): WIP 0.90
+- For each of the first 10 stations with wagons: takes a train, places the wagons and the engine
+  behind the stop zone along its green arrow, takes the wagons off the car pool's active list,
+  and gives the engine AI, a driver and a light. The spawns are `SpawnCarAtCorrectZ_426E40` with
+  the scale passed in (`Car_6C::SpawnCarAtCorrectZ_Scaled`, with `const&` rotation and scale so
+  the globals are read at the push).
+- Left: the original keeps the byte of the axis that only gets the 0.5 offset in a stack temp
+  across `GetWagonType_577f80` and adds it after the call. That's 4 temps, the 16-byte frame
+  difference.
+
+### PoliceRoadblock_A4::CreateRoadblock_575FF0 (0x575FF0): WIP 0.80
+- Scans for the road's edges along y (orientation 2) or x, checks the rect, then fills the lanes:
+  cars on the odd lanes, barrier pairs and guards on the even ones. Three inline "first free slot"
+  helpers.
+- 0.73 -> 0.80: z passed to the barrier and guard spawns as a plain `u8` (see matching_quirks.md).
+  Left: the scan switches' case layout, the register for `dist`-like temps, and parts of the
+  barrier and guard position arithmetic.
+
+### Sprite_4C::DrawCollisionBox_5A4DA0 (0x5A4DA0): WIP 0.97
+- Projects the bounding box corners and the rendering rect points with a static inline copy of
+  the projection and joins them with `DrawDebugLine_5D7DD0`. Like the original, the function runs
+  out of inline expansions: the projection's `Fix16` operators are calls and the eighth projection
+  is the out-of-line `sub_5A5690`, which matches on its own. Left: the stack slots of the inline's
+  argument copies (4 bytes of frame).
+
+### DrawDebugLine_5D7DD0, sub_5A5690: match
+- See matching_quirks.md for the line plotter's parameter reuse and zero step.
+
+### NoRefs_sub_5B1170 (0x5B1170): match
+- A 5 KB unreferenced test-scene builder. Transcribed with a small interpreter over the listing
+  (track pushes and registers, turn each call into a statement), then one fix: the cab position
+  passed as plain ints.
+
+### Fix16 out-of-line operator copies, Fix16_Rect::MakeRect_4E6280: match
+- See matching_quirks.md. `MakeRect_4E6280` stores left, top, right, bottom in that order.

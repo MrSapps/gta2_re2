@@ -12,3 +12,6 @@
 0x4e5e00
 0x5d7dd0
 0x5a5690
+# out-of-line Fix16 operator- and operator/ called by Sprite_4C::DrawCollisionBox_5A4DA0
+0x436a00
+0x436a20

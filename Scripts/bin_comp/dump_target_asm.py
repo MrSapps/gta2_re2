@@ -142,3 +142,27 @@ with open("target_data.json", "w") as f:
 with open("target_asm.json", "w") as f:
     json.dump(out, f, indent=1)
 print(f"dumped {len(out)} functions")
+
+# 9.6f asm of the functions in dump_96f_addrs.txt (partners of WIP/STUB functions and the 9.6f
+# callees inlined in 10.5, see match_96f.py), with absolute addresses so calls can be followed
+if os.path.exists("dump_96f_addrs.txt") and os.path.exists("9.6f.exe"):
+    from iced_x86 import Decoder, Formatter, FormatterSyntax
+    s96 = {}
+    for line in open("og_function_data_v96f.csv"):
+        rec = line.rstrip().split(",")
+        if len(rec) >= 4:
+            s96[int(rec[1], 16)] = (rec[0], int(rec[2], 16), int(rec[3], 16))
+    exe96 = open("9.6f.exe", "rb").read()
+    fmt = Formatter(FormatterSyntax.GAS)
+    out96 = {}
+    for line in open("dump_96f_addrs.txt"):
+        line = line.split("#")[0].strip()
+        if not line or int(line, 16) not in s96:
+            continue
+        addr = int(line, 16)
+        name, fo, size = s96[addr]
+        asm = [f"{ins.ip:x}: {fmt.format(ins)}" for ins in Decoder(32, exe96[fo:fo + size], ip=addr)]
+        out96[hex(addr)] = {"name": name, "size": size, "asm": "\n".join(asm)}
+    with open("target_96f.json", "w") as f:
+        json.dump(out96, f, indent=1)
+    print(f"dumped {len(out96)} 9.6f functions")

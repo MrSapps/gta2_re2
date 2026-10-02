@@ -59,6 +59,9 @@ Rules:
 - Append one line per function to `$TMPW/near_status.txt`: `0xADDR | MATCH / closer N->M / no change | short note`.
   If you found a new codegen pattern, say so in the note (the main session adds it to the docs).
 - Don't touch docs/ or Scripts/.
+- Keep tool output short, since every call re-reads your whole context: pipe `compare_target_asm` and other
+  long output through `| head -60`, don't `cat` whole files (use `src.py`, `grep -n` or `sed -n` ranges),
+  and don't re-read files you already have.
 - Work through the list in order (lists are 8 functions, so the context stays small). If you run low on context, finish the current function (commit or
   revert it), write its status line, and stop.
 - At the end, reply with a short summary: matches, improvements, new patterns found.

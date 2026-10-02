@@ -101,6 +101,8 @@
 0x59de80
 0x5a21f0
 0x5aa9a0
+0x5aba00
+0x5aba40
 0x5b92e0
 0x5c5cf0
 0x5d1b10
@@ -110,6 +112,7 @@
 0x5d61a0
 0x5d7cb0
 0x5dcf60
+0x5e1dc0
 burgerking_67f8b0::get_input_bits_4ceac0
 char_b4::handlegenericimpact_553e00
 crane_15c::dtor_47e5b0

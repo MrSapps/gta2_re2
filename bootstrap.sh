@@ -21,6 +21,9 @@ python3 vc6_setup.py
 mkdir -p $T && rm -rf $T/tools_x && mkdir $T/tools_x
 git archive origin/$TB | tar -x -C $T/tools_x
 mkdir -p $T/at $T/m && cp -n $T/tools_x/at/* $T/at/ && cp -n $T/tools_x/m/* $T/m/
+git branch -f $TB origin/$TB && { [ -d $T/toolsrepo ] || git clone -q --branch $TB --single-branch $R/.git $T/toolsrepo; }
+# addresses handed out but never finished were lost with the old container: hand them out again
+[ -f $T/m/done.txt ] && [ ! -d $T/wt ] && cp $T/m/done.txt $T/m/assigned.txt
 cd Scripts/bin_comp
 for f in target_asm target_data target_extra fingerprints target_96f; do git show origin/claude/target-asm:$f.json > $f.json; done
 cp $T/m/match_96f.json .

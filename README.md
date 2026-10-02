@@ -5,3 +5,7 @@ container. `bootstrap.sh` rebuilds wine/VC6, the venv, the target-asm data, the 
 worktrees `/tmp/claude-0/wt/g1..g5` (branches `inl/gN`). `at/` holds the worker instructions (`NEAR.md`)
 and helper scripts; `m/avail.txt` is the candidate list (addr name difflines ratio) and `m/assigned.txt`
 the addresses already handed out.
+
+`m/done.txt` lists the addresses a worker has finished (a status line exists). After a container loss, the
+assigned-but-not-done addresses were lost mid-run: rebuild `assigned.txt` from `done.txt` and hand them out
+again. `sync_tools.sh` saves the lists here.

@@ -35,12 +35,13 @@ jobs:
         python build.py --ignore_no_match
         cd Scripts/bin_comp
         python dump_target_asm.py
+        python dump_fingerprints.py
         cd ..
         python generate_target_asm_for_objs.py
     - name: Push to claude/target-asm
       shell: bash
       run: |
-        mkdir /tmp/out && cp Scripts/bin_comp/target_asm.json Scripts/bin_comp/target_data.json Scripts/bin_comp/target_extra.json /tmp/out/ && cp -r Scripts/asm /tmp/out/asm
+        mkdir /tmp/out && cp Scripts/bin_comp/target_asm.json Scripts/bin_comp/target_data.json Scripts/bin_comp/target_extra.json Scripts/bin_comp/fingerprints.json /tmp/out/ && cp -r Scripts/asm /tmp/out/asm
         cd /tmp/out
         git init -q -b claude/target-asm
         git config user.name "github-actions" && git config user.email "github-actions@users.noreply.github.com"

@@ -93,6 +93,20 @@ for v in out.values():
         if m and hex(int(m.group(1), 16)) not in data and int(m.group(1), 16) >= 0x401000:
             b = read_va(int(m.group(1), 16), 256)
             if b is not None: data[hex(int(m.group(1), 16))] = b.hex()
+# strings and other data pushed or loaded by immediate address (format strings, file names, ...):
+# up to 128 bytes, cut after the first NUL when it looks like text
+for v in out.values():
+    for m in re.finditer(r"\$0x([0-9A-Fa-f]{6,8})\b", v["asm"]):
+        a = int(m.group(1), 16)
+        if a < 0x5F0000 or a >= 0x800000 or hex(a) in data:
+            continue
+        b = read_va(a, 128)
+        if b is None:
+            continue
+        z = b.find(b"\0")
+        if z > 0 and all(32 <= c < 127 or c in (9, 10, 13) for c in b[:z]):
+            b = b[:z + 1]
+        data[hex(a)] = b.hex()
 # functions marked in Source/ whose address isn't in the csv: dump the bytes up to the next
 # known function so they can be sized and added to the csv
 import glob, bisect

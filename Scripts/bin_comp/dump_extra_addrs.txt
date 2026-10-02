@@ -3,3 +3,6 @@
 0x5e40c0
 0x5e40e0
 0x5e4140
+# callees of sub_4DB2E0 / CompareRemotePlayers_4DB440
+0x4db120
+0x4db410

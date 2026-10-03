@@ -1186,8 +1186,9 @@ both copies. Only a meaningless cast changed it.
   - No effect or worse: operand order in Top/Bottom, a local `f32` scale, a local camera pointer, pre-converted
     `f32` centre locals, by-value params, swapped (y, x) params, gTileVerts by index or template index, per-file
     flags /G3-/G6 /Oa /Ow /Os /Ot /Op /Oi- /Oy- /Og-. 9.6f has the same helper shapes; no 9.6f pairs for these.
-  - Untested: compiling the Draw* functions with the member `ProjectVertTop_4EAE00`/`Bottom_4EAEA0` inlined instead
-    of separate helpers, and whether something in the TU (an address-taken global, a pragma) lowers alias precision.
+  - Tested since: the Draw* functions with `ProjectVertTop_4EAE00`/`Bottom_4EAEA0` as the inline helpers (one
+    function each, every call through them) leave the cluster unchanged. Whether something in the TU (an
+    address-taken global, a pragma) lowers alias precision is still open.
   - A second focused experiment (17 probes, 303 diff lines in total, draw_left_4F3C00 at 16) found nothing that
     gets closer:
     - Flags: about 40 per-file combinations. /G3 /G4 /G5 /GB give identical code, as do /QIfist /Ob1 /Ob2 /Ox /Ot
@@ -1222,9 +1223,10 @@ both copies. Only a meaningless cast changed it.
     objects are Utc12_CPP build 8799 (102) and 8797 (11), Utc12_C 8797, Linker600 8447, the same builds as
     our build (Utc12_CPP 8799 x110, 8797 x11, Utc12_C 8797, Linker600 8447). So the back end (C2.DLL 8799,
     which stamps @comp.id) and the linker match, and a different c2.dll is ruled out. The Rich header does
-    not record the C1XX front-end build (ours is 12.00.8867), so a different front end, which could hand c2
-    the IL in a different order, is the remaining compiler-side possibility. Otherwise the cause is in the
-    source or TU context (declaration order, what else is in MapRenderer.cpp).
+    not record the C1XX front-end build (ours is 12.00.8867), but C1XX from RTM, SP3, SP5 and SP6 paired with our
+    C2.DLL give byte-identical code too, so the front end is ruled out as well. The cause is in the source
+    or TU context (declaration order, what else is in MapRenderer.cpp). `ProjectVert_4EB940` shows the same
+    y-line store on its own and is the quickest place to test (see `docs/x87_handoff.md`).
 - A compare scheduled before a volatile load instead of after it (`cmp $0xF,%al` in
   `sound_obj::ProcessPoliceRadioWordsPlayback_427220`).
 - A store scheduled before the `lea` of an out pointer rather than after it

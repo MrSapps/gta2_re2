@@ -64,9 +64,26 @@ Rules:
 - Append one line per function to `$TMPW/near_status.txt`: `0xADDR | MATCH / closer N->M / no change | short note`.
   If you found a new codegen pattern, say so in the note (the main session adds it to the docs).
 - Don't touch docs/ or Scripts/.
-- Keep tool output short, since every call re-reads your whole context: pipe `compare_target_asm` and other
-  long output through `| head -60`, don't `cat` whole files (use `src.py`, `grep -n` or `sed -n` ranges),
-  and don't re-read files you already have.
-- Work through the list in order (lists are 8 functions, so the context stays small). If you run low on context, finish the current function (commit or
-  revert it), write its status line, and stop.
+- **Context budget (the 5-hour usage window is shared by 5 workers, and every tool call re-reads your
+  whole context, so a long context is the main cost).**
+  - Pipe long output through `| head -40` / `| tail -20`; `compare_target_asm` diffs: `| head -60` at most,
+    and prefer a one-line ratio (`| tail -2`) while iterating. Never `cat` whole files or whole asm dumps;
+    use `src.py`, `grep -n` or `sed -n` ranges, and don't re-read what you already have.
+  - Keep notes for the current function in `$TMPW/notes_<addr>.txt` instead of restating them in replies.
+  - Cap each function at about 15 build/compare iterations by hand. If it isn't converging, run the
+    permuter (below), take its best result if it helps, write the status line and move on.
+  - Your context compacts automatically when it gets long, but a compaction loses detail: finish and
+    commit (or revert) each function before starting the next, so nothing depends on old context.
+  - If you notice you are well past half your context, finish the current function and stop early;
+    a fresh worker continues the list.
+- **Use the permuter for "right logic, wrong shape"** (see `docs/permuter.md`). It runs for minutes on
+  CPU but costs almost no tokens, so prefer it over long manual permutation loops: once the calls,
+  branches and logic match and only register choice, block order, case order or operand order differ,
+  run it. Remove `WIP_IMPLEMENTED`/`NOT_IMPLEMENTED` first. 5 workers share 4 cores, so use `-j 2`:
+  `cd $REPO && timeout 900 Scripts/permute.sh Source/X.cpp Class::Name_ADDR addr -j 2 -n 600 > $TMPW/perm.log 2>&1; tail -5 $TMPW/perm.log; ls permuter_out | sort -t- -k2 -n | head -3`
+  (run it with run_in_background if your Bash supports it, and work on reading the next function meanwhile).
+  Look at the best `permuter_out/output-<score>-*/diff.txt`, apply it by hand, then verify with the real
+  build + `compare_target_asm` (the permuter score can drop while the real ratio gets worse; reject casts
+  that make a compare always true/false). Delete `permuter_out` afterwards (never commit it).
+- Work through the list in order (lists are 8 functions, so the context stays small).
 - At the end, reply with a short summary: matches, improvements, new patterns found.

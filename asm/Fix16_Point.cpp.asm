@@ -1,0 +1,177 @@
+.att_syntax
+"?Add_40AC50@Fix16_Point@@QAE?AV1@ABUFix16_Point_POD@@@Z":
+.global "?Add_40AC50@Fix16_Point@@QAE?AV1@ABUFix16_Point_POD@@@Z"
+push %ecx
+mov 0xC(%esp),%eax
+push %esi
+mov 4(%ecx),%esi
+movl $0,4(%esp)
+mov 4(%eax),%edx
+add %esi,%edx
+mov (%eax),%esi
+mov (%ecx),%eax
+add %eax,%esi
+mov 0xC(%esp),%eax
+mov %esi,(%eax)
+mov %edx,4(%eax)
+pop %esi
+pop %ecx
+ret $8
+
+.att_syntax
+"?NormalizeSafe_442AD0@Fix16_Point@@QAE?AV1@XZ":
+.global "?NormalizeSafe_442AD0@Fix16_Point@@QAE?AV1@XZ"
+push $0xFFFFFFFF
+push $0x5FB138
+mov %fs:0,%eax
+push %eax
+mov %esp,%fs:0
+sub $0x20,%esp
+push %esi
+mov %ecx,%esi
+mov "?gFix16_6777CC@@3VFix16@@A",%ecx
+push %edi
+mov (%esi),%eax
+xor %edi,%edi
+cmp %ecx,%eax
+mov %edi,0x10(%esp)
+jne .L_0x442ad0_0
+mov 4(%esi),%eax
+lea 4(%esi),%ecx
+cmp %edi,%eax
+jle .L_0x442ad0_1
+mov %eax,8(%esp)
+jmp .L_0x442ad0_2
+.L_0x442ad0_1:
+lea 8(%esp),%eax
+push %eax
+call "?Negate_4086A0@Fix16@@QBE?AV1@XZ"
+jmp .L_0x442ad0_2
+.L_0x442ad0_0:
+mov 4(%esi),%eax
+cmp %ecx,%eax
+jne .L_0x442ad0_3
+lea 8(%esp),%ecx
+push %esi
+push %ecx
+call "?Abs_436A50@Fix16@@SG?AV1@AAV1@@Z"
+jmp .L_0x442ad0_2
+.L_0x442ad0_3:
+cltd
+push %edx
+push %eax
+push %edx
+push %eax
+call "__allmul"
+mov $0xE,%ecx
+call "__allshr"
+mov %eax,0xC(%esp)
+lea 0xC(%esp),%edx
+lea 0x10(%esp),%eax
+push %edx
+push %eax
+lea 0x1C(%esp),%ecx
+push %esi
+push %ecx
+mov %esi,%ecx
+call "?Multiply_408680@Fix16@@QBE?AV1@ABV1@@Z"
+mov %eax,%ecx
+call "??HFix16@@QBE?AV0@ABV0@@Z"
+lea 8(%esp),%edx
+push %eax
+push %edx
+call "?SquareRoot_436A70@Fix16@@SG?AV1@AAV1@@Z"
+.L_0x442ad0_2:
+mov "?gFix16_6777CC@@3VFix16@@A",%eax
+mov 8(%esp),%ecx
+cmp %eax,%ecx
+jne .L_0x442ad0_4
+lea 0x10(%esp),%ecx
+lea 0x20(%esp),%edx
+push %ecx
+push %edx
+mov %esi,%ecx
+movl $0x80,0x18(%esp)
+call "?MultBy_442C80@Fix16_Point@@QAE?AV1@ABH@Z"
+mov 0x20(%esp),%eax
+mov "?gFix16_6777CC@@3VFix16@@A",%ecx
+cmp %ecx,%eax
+mov %edi,0x30(%esp)
+jne .L_0x442ad0_5
+mov 0x24(%esp),%eax
+cmp %edi,%eax
+jle .L_0x442ad0_6
+mov %eax,0xC(%esp)
+jmp .L_0x442ad0_7
+.L_0x442ad0_6:
+lea 0xC(%esp),%eax
+lea 0x24(%esp),%ecx
+push %eax
+call "?Negate_4086A0@Fix16@@QBE?AV1@XZ"
+jmp .L_0x442ad0_7
+.L_0x442ad0_5:
+cmp %ecx,0x24(%esp)
+jne .L_0x442ad0_8
+cmp %edi,%eax
+jle .L_0x442ad0_9
+mov %eax,0xC(%esp)
+jmp .L_0x442ad0_7
+.L_0x442ad0_9:
+lea 0xC(%esp),%ecx
+push %ecx
+lea 0x24(%esp),%ecx
+call "?Negate_4086A0@Fix16@@QBE?AV1@XZ"
+jmp .L_0x442ad0_7
+.L_0x442ad0_8:
+lea 0x24(%esp),%edx
+lea 0x14(%esp),%eax
+push %edx
+push %eax
+lea 0x2C(%esp),%ecx
+call "?Multiply_408680@Fix16@@QBE?AV1@ABV1@@Z"
+lea 0x18(%esp),%ecx
+push %eax
+lea 0x24(%esp),%edx
+push %ecx
+lea 0x24(%esp),%eax
+push %edx
+push %eax
+lea 0x30(%esp),%ecx
+call "?Multiply_408680@Fix16@@QBE?AV1@ABV1@@Z"
+mov %eax,%ecx
+call "??HFix16@@QBE?AV0@ABV0@@Z"
+lea 0xC(%esp),%ecx
+push %eax
+push %ecx
+call "?SquareRoot_436A70@Fix16@@SG?AV1@AAV1@@Z"
+.L_0x442ad0_7:
+mov 0x38(%esp),%esi
+mov 0xC(%esp),%edx
+lea 8(%esp),%eax
+lea 0x20(%esp),%ecx
+push %eax
+push %esi
+mov %edx,0x10(%esp)
+call "?Divide_442CB0@Fix16_Point_POD@@QAE?AVFix16_Point@@AAVFix16@@@Z"
+mov %esi,%eax
+pop %edi
+pop %esi
+mov 0x20(%esp),%ecx
+mov %ecx,%fs:0
+add $0x2C,%esp
+ret $4
+.L_0x442ad0_4:
+mov 0x38(%esp),%edi
+lea 8(%esp),%ecx
+push %ecx
+push %edi
+mov %esi,%ecx
+call "?Divide_442CB0@Fix16_Point_POD@@QAE?AVFix16_Point@@AAVFix16@@@Z"
+mov 0x28(%esp),%ecx
+mov %edi,%eax
+pop %edi
+pop %esi
+mov %ecx,%fs:0
+add $0x2C,%esp
+ret $4
+

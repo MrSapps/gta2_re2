@@ -9,6 +9,12 @@ DEFINE_GLOBAL(char_type, gBinkActiveSlot_6F83FF, 0x6F83FF);
 DEFINE_GLOBAL(s32, gBinkSummary_6F8250, 0x6F8250);
 DEFINE_GLOBAL(s32, gBinkPixelFormat_6F81B0, 0x6F81B0);
 
+// 9.6f 0x481DF0
+static inline bool IsDirectBufferMode_481DF0()
+{
+    return gBufferMode_706B34 == 2;
+}
+
 MATCH_FUNC(0x513210)
 void __stdcall Bink::Reset_513210()
 {
@@ -97,13 +103,22 @@ void Bink::ResetBufferOffset_513720()
     }
 }
 
-WIP_FUNC(0x513240)
+MATCH_FUNC(0x513240)
 char_type Bink::TickFrame_513240()
 {
-    WIP_IMPLEMENTED;
 
-    BINK* hbink = (gBinkActiveSlot_6F83FF == 1) ? gBinkHandleSlot1_6F8168 : gBinkHandleSlot2_6F83B0;
-    BINKBUFFER* hbinkbuffer = (gBinkActiveSlot_6F83FF == 1) ? gBinkBufferSlot1_6F8170 : gBinkBufferSlot2_6F80C4;
+    BINK* hbink;
+    BINKBUFFER* hbinkbuffer;
+    if (gBinkActiveSlot_6F83FF == 1)
+    {
+        hbink = gBinkHandleSlot1_6F8168;
+        hbinkbuffer = gBinkBufferSlot1_6F8170;
+    }
+    else
+    {
+        hbink = gBinkHandleSlot2_6F83B0;
+        hbinkbuffer = gBinkBufferSlot2_6F80C4;
+    }
 
     if (BinkWait(hbink) != 0)
     {
@@ -112,10 +127,10 @@ char_type Bink::TickFrame_513240()
 
     BinkDoFrame(hbink);
 
-    if (gBufferMode_706B34 == 2)
+    if (IsDirectBufferMode_481DF0())
     {
         // Hardware-accelerated path: blit decoded frame into the locked surface directly.
-        sub_5D7D30();
+        MakeScreenTableAndSetWindow_5D7D30();
         BinkCopyToBuffer(hbink,
                          gVidSys_7071D0->field_50_surface_pixels_ptr,
                          gVidSys_7071D0->field_54_surface_pixels_pitch,
@@ -125,7 +140,7 @@ char_type Bink::TickFrame_513240()
                          gBinkPixelFormat_6F81B0 | 0x4000000);
         FreeSurface_5D7DC0();
         pVid_FlipBuffers(gVidSys_7071D0);
-        pVid_ClearScreen(gVidSys_7071D0, 0, 0, 0, 0, 0, gVidSys_7071D0->field_74, gVidSys_7071D0->field_4C_rect_bottom);
+        pVid_ClearScreen(gVidSys_7071D0, 0, 0, 0, 0, 0, gVidSys_7071D0->field_48_rect_right, gVidSys_7071D0->field_4C_rect_bottom);
     }
     else
     {
@@ -169,70 +184,77 @@ WIP_FUNC(0x5133E0)
 void __stdcall Bink::OpenSlot2_5133E0(const char_type* pFileName, HDIGDRIVER a2)
 {
     WIP_IMPLEMENTED;
-
     BinkSetSoundSystem((void*)BinkOpenMiles, (s32)a2);
     BinkSetIOSize(600000);
 
     gBinkHandleSlot2_6F83B0 = BinkOpen(pFileName, 0x4000000);
 
-    if (gBinkHandleSlot2_6F83B0 == 0)
+    if (gBinkHandleSlot2_6F83B0 != 0)
+    {
+        if (IsDirectBufferMode_481DF0())
+        {
+            // Hardware-accelerated path: pick Bink colour format based on surface bit depth.
+            if (gVidSys_7071D0->field_5C == 5)
+            {
+                if (gVidSys_7071D0->field_64_r == 5 && gVidSys_7071D0->field_6C == 5)
+                {
+                    gBinkPixelFormat_6F81B0 = 2;
+                    gBinkActiveSlot_6F83FF = 2;
+                    return;
+                }
+                if (gVidSys_7071D0->field_64_r == 6 && gVidSys_7071D0->field_6C == 5)
+                {
+                    gBinkActiveSlot_6F83FF = 2;
+                    gBinkPixelFormat_6F81B0 = 3;
+                    return;
+                }
+            }
+            else if (gVidSys_7071D0->field_5C == 6)
+            {
+                if (gVidSys_7071D0->field_64_r == 5 && gVidSys_7071D0->field_6C == 5)
+                {
+                    gBinkActiveSlot_6F83FF = 2;
+                    gBinkPixelFormat_6F81B0 = 4;
+                    return;
+                }
+                if (gVidSys_7071D0->field_64_r == 6 && gVidSys_7071D0->field_6C == 4)
+                {
+                    gBinkActiveSlot_6F83FF = 2;
+                    gBinkPixelFormat_6F81B0 = 5;
+                    return;
+                }
+            }
+
+            gBinkActiveSlot_6F83FF = 2;
+            gBinkPixelFormat_6F81B0 = 3;
+            return;
+        }
+
+        // Software / DirectDraw path.
+        if (gBinkDDState_6F83FE == 0)
+        {
+            BinkBufferSetDDPrimary(gVidSys_7071D0->field_134_SurfacePrimary);
+        }
+
+        gBinkDDState_6F83FE = 1;
+        gBinkBufferSlot2_6F80C4 = BinkBufferOpen(gHwnd_707F04, gBinkHandleSlot2_6F83B0->width, gBinkHandleSlot2_6F83B0->height, 0);
+
+        if (gBinkBufferSlot2_6F80C4 == 0)
+        {
+            gBinkDDState_6F83FE = 0;
+            FatalError_4A38C0(Gta2Error::BinkBufferOpenError, "C:\\Splitting\\Gta2\\Source\\movie2.cpp", 360);
+            gBinkActiveSlot_6F83FF = 2;
+            return;
+        }
+
+        gBinkDDState_6F83FE = 2;
+        gBinkActiveSlot_6F83FF = 2;
+    }
+    else
     {
         FatalError_4A38C0(Gta2Error::BinkOpenError, "C:\\Splitting\\Gta2\\Source\\movie2.cpp", 376);
-        return;
-    }
-
-    if (gBufferMode_706B34 == 2)
-    {
-        // Hardware-accelerated path: pick Bink colour format based on surface bit depth.
-        if (gVidSys_7071D0->field_5C == 5)
-        {
-            if (gVidSys_7071D0->field_64_r == 5 && gVidSys_7071D0->field_6C == 5)
-            {
-                gBinkPixelFormat_6F81B0 = 2;
-                gBinkActiveSlot_6F83FF = 2;
-                return;
-            }
-        }
-        else if (gVidSys_7071D0->field_5C == 6)
-        {
-            if (gVidSys_7071D0->field_64_r == 5 && gVidSys_7071D0->field_6C == 5)
-            {
-                gBinkPixelFormat_6F81B0 = 4;
-                gBinkActiveSlot_6F83FF = 2;
-                return;
-            }
-            if (gVidSys_7071D0->field_64_r == 6 && gVidSys_7071D0->field_6C == 4)
-            {
-                gBinkPixelFormat_6F81B0 = 5;
-                gBinkActiveSlot_6F83FF = 2;
-                return;
-            }
-        }
-
-        gBinkPixelFormat_6F81B0 = 3;
         gBinkActiveSlot_6F83FF = 2;
-        return;
     }
-
-    // Software / DirectDraw path.
-    if (gBinkDDState_6F83FE == 0)
-    {
-        BinkBufferSetDDPrimary(gVidSys_7071D0->field_134_SurfacePrimary);
-    }
-
-    gBinkDDState_6F83FE = 1;
-    gBinkBufferSlot2_6F80C4 = BinkBufferOpen(gHwnd_707F04, gBinkHandleSlot2_6F83B0->width, gBinkHandleSlot2_6F83B0->height, 0);
-
-    if (gBinkBufferSlot2_6F80C4 == 0)
-    {
-        gBinkDDState_6F83FE = 0;
-        FatalError_4A38C0(Gta2Error::BinkBufferOpenError, "C:\\Splitting\\Gta2\\Source\\movie2.cpp", 360);
-        gBinkActiveSlot_6F83FF = 2;
-        return;
-    }
-
-    gBinkDDState_6F83FE = 2;
-    gBinkActiveSlot_6F83FF = 2;
 }
 
 MATCH_FUNC(0x5137B0)
@@ -241,67 +263,72 @@ void __stdcall Bink::SetDDState_5137B0(char_type state)
     gBinkDDState_6F83FE = state;
 }
 
-WIP_FUNC(0x513560)
+MATCH_FUNC(0x513560)
 void __stdcall Bink::OpenSlot1_513560(const char_type* pFileName, HDIGDRIVER a2)
 {
-    WIP_IMPLEMENTED;
-
     BinkSetSoundSystem((void*)BinkOpenMiles, (s32)a2);
     BinkSetIOSize(600000);
 
     gBinkHandleSlot1_6F8168 = BinkOpen(pFileName, 0x4000000);
 
-    if (gBinkHandleSlot1_6F8168 == 0)
+    if (gBinkHandleSlot1_6F8168)
+    {
+        if (IsDirectBufferMode_481DF0())
+        {
+            if (gVidSys_7071D0->field_5C == 5)
+            {
+                if (gVidSys_7071D0->field_64_r == 5 && gVidSys_7071D0->field_6C == 5)
+                {
+                    gBinkPixelFormat_6F81B0 = 2;
+                    gBinkActiveSlot_6F83FF = 1;
+                    return;
+                }
+                if (gVidSys_7071D0->field_64_r == 6 && gVidSys_7071D0->field_6C == 5)
+                {
+                    gBinkPixelFormat_6F81B0 = 3;
+                    gBinkActiveSlot_6F83FF = 1;
+                    return;
+                }
+            }
+            else if (gVidSys_7071D0->field_5C == 6)
+            {
+                if (gVidSys_7071D0->field_64_r == 5 && gVidSys_7071D0->field_6C == 5)
+                {
+                    gBinkPixelFormat_6F81B0 = 4;
+                    gBinkActiveSlot_6F83FF = 1;
+                    return;
+                }
+                if (gVidSys_7071D0->field_64_r == 6 && gVidSys_7071D0->field_6C == 4)
+                {
+                    gBinkPixelFormat_6F81B0 = 5;
+                    gBinkActiveSlot_6F83FF = 1;
+                    return;
+                }
+            }
+
+            gBinkPixelFormat_6F81B0 = 3;
+            gBinkActiveSlot_6F83FF = 1;
+            return;
+        }
+
+        BinkBufferSetDDPrimary(gVidSys_7071D0->field_134_SurfacePrimary);
+
+        gBinkDDState_6F83FE = 1;
+        gBinkBufferSlot1_6F8170 = BinkBufferOpen(gHwnd_707F04, gBinkHandleSlot1_6F8168->width, gBinkHandleSlot1_6F8168->height, 0);
+
+        if (gBinkBufferSlot1_6F8170 == 0)
+        {
+            gBinkDDState_6F83FE = 0;
+            FatalError_4A38C0(Gta2Error::BinkBufferOpenError, "C:\\Splitting\\Gta2\\Source\\movie2.cpp", 450);
+            gBinkActiveSlot_6F83FF = 1;
+            return;
+        }
+
+        gBinkDDState_6F83FE = 2;
+        gBinkActiveSlot_6F83FF = 1;
+    }
+    else
     {
         FatalError_4A38C0(Gta2Error::BinkOpenError, "C:\\Splitting\\Gta2\\Source\\movie2.cpp", 460);
-        return;
     }
-
-    if (gBufferMode_706B34 == 2)
-    {
-        if (gVidSys_7071D0->field_5C == 5)
-        {
-            if (gVidSys_7071D0->field_64_r == 5 && gVidSys_7071D0->field_6C == 5)
-            {
-                gBinkPixelFormat_6F81B0 = 2;
-                gBinkActiveSlot_6F83FF = 1;
-                return;
-            }
-        }
-        else if (gVidSys_7071D0->field_5C == 6)
-        {
-            if (gVidSys_7071D0->field_64_r == 5 && gVidSys_7071D0->field_6C == 5)
-            {
-                gBinkPixelFormat_6F81B0 = 4;
-                gBinkActiveSlot_6F83FF = 1;
-                return;
-            }
-            if (gVidSys_7071D0->field_64_r == 6 && gVidSys_7071D0->field_6C == 4)
-            {
-                gBinkPixelFormat_6F81B0 = 5;
-                gBinkActiveSlot_6F83FF = 1;
-                return;
-            }
-        }
-
-        gBinkPixelFormat_6F81B0 = 3;
-        gBinkActiveSlot_6F83FF = 1;
-        return;
-    }
-
-    BinkBufferSetDDPrimary(gVidSys_7071D0->field_134_SurfacePrimary);
-
-    gBinkDDState_6F83FE = 1;
-    gBinkBufferSlot1_6F8170 = BinkBufferOpen(gHwnd_707F04, gBinkHandleSlot1_6F8168->width, gBinkHandleSlot1_6F8168->height, 0);
-
-    if (gBinkBufferSlot1_6F8170 == 0)
-    {
-        gBinkDDState_6F83FE = 0;
-        FatalError_4A38C0(Gta2Error::BinkBufferOpenError, "C:\\Splitting\\Gta2\\Source\\movie2.cpp", 450);
-        gBinkActiveSlot_6F83FF = 1;
-        return;
-    }
-
-    gBinkDDState_6F83FE = 2;
-    gBinkActiveSlot_6F83FF = 1;
 }

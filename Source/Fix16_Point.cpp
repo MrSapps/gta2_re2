@@ -2,10 +2,10 @@
 #include "Function.hpp"
 
 // https://decomp.me/scratch/qQwG3
-STUB_FUNC(0x438FE0)
-Fix16_Point_POD Fix16_Point_POD::Multiply_438FE0(Fix16& in)
+MATCH_FUNC(0x438FE0)
+Fix16_Point Fix16_Point_POD::Multiply_438FE0(Fix16& in)
 {
-    return Fix16_Point_POD(x * in, y * in);
+    return Fix16_Point(x * in, y * in);
 }
 
 MATCH_FUNC(0x442C80)
@@ -15,15 +15,29 @@ Fix16_Point Fix16_Point::MultBy_442C80(const s32& factor)
 }
 
 // https://decomp.me/scratch/nFSYS
-STUB_FUNC(0x442CB0)
-Fix16_Point_POD Fix16_Point_POD::Divide_442CB0(Fix16& in)
+MATCH_FUNC(0x442CB0)
+Fix16_Point Fix16_Point_POD::Divide_442CB0(Fix16& in)
 {
-    return Fix16_Point_POD(x / in, y / in);
+    return Fix16_Point(x / in, y / in);
 }
 
+// The out-of-line copy of the inline operator+
+WIP_FUNC(0x40AC50)
+Fix16_Point Fix16_Point::Add_40AC50(const Fix16_Point_POD& in)
+{
+    return Fix16_Point(x + in.x, y + in.y);
+}
+
+MATCH_FUNC(0x40AC80)
 Fix16_Point Fix16_Point::operator-(const Fix16_Point& rhs)
 {
     return Fix16_Point(x - rhs.x, y - rhs.y);
+}
+
+MATCH_FUNC(0x40ACB0)
+Fix16_Point Fix16_Point::Negate_40ACB0() const
+{
+    return Fix16_Point(-x, -y);
 }
 
 Fix16_Point Fix16_Point::operator/(Fix16& in)
@@ -35,15 +49,16 @@ WIP_FUNC(0x442AD0)
 Fix16_Point Fix16_Point::NormalizeSafe_442AD0()
 {
     WIP_IMPLEMENTED;
-    Fix16 length = GetLength_41E260();
+    Fix16 length = GetLength_inline_442AD0();
     if (length == gFix16_6777CC)
     {
         Fix16_Point scaled = MultBy_442C80(128);
-        return scaled / scaled.GetLength_41E260();
+        length = scaled.GetLength_scaled_inline_442AD0();
+        return scaled / length;
     }
     else
     {
-        return Fix16_Point(x, y) / length; // TODO: *this / length;
+        return *this / length;
     }
 }
 
@@ -53,10 +68,9 @@ Ang16 Fix16_Point::atan2_40ACD0()
     return Fix16::atan2_fixed_405320(y, x);
 }
 
-WIP_FUNC(0x5605E0)
+MATCH_FUNC(0x5605E0)
 Fix16_Point Fix16_Point::Rotate90CCW_5605E0()
 {
-    WIP_IMPLEMENTED;
     // TODO: Mov instruction is encoded wrongly ??
     return Fix16_Point(-y, x);
 }
@@ -82,4 +96,33 @@ Fix16 Fix16_Point_POD::GetLength_453590()
     {
         return Fix16::SquareRoot(x * x + y * y);
     }
+}
+
+MATCH_FUNC(0x5E40C0)
+Fix16_Point_POD& Fix16_Point_POD::AddAssign_5E40C0(const Fix16_Point_POD& other)
+{
+    x += other.x;
+    y += other.y;
+    return *this;
+}
+
+MATCH_FUNC(0x5E40E0)
+Fix16_Point_POD& Fix16_Point_POD::DivAssign_5E40E0(const Fix16& v)
+{
+    x /= v;
+    y /= v;
+    return *this;
+}
+
+// The larger of |x| and |y|, a cheap stand-in for the length.
+MATCH_FUNC(0x5E4140)
+Fix16 Fix16_Point_POD::MaxAbs_5E4140()
+{
+    Fix16 ax = Fix16::Abs(x);
+    Fix16 ay = Fix16::Abs(y);
+    if (ax > ay)
+    {
+        return ax;
+    }
+    return ay;
 }

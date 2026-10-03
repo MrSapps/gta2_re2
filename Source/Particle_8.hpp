@@ -31,8 +31,8 @@ class Particle_8
     EXPORT void EmitImpactParticles_53FE40(Fix16 x, Fix16 y, Fix16 z, Fix16 sinv, Fix16 cosv);
     EXPORT void EmitFlameStreamSegment_53F4C0(Sprite* pSprite);
 
-    Object_2C* field_0;
-    s32 field_4;
+    Object_2C* field_0_fire_hit_obj;
+    Object_2C* field_4;
 };
 
 EXTERN_GLOBAL(Particle_8*, gParticle_8_6FD5E8);

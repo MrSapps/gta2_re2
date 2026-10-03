@@ -1,6 +1,7 @@
 #include "map_0x370.hpp"
 #include "Fix16_Rect.hpp"
 #include "Function.hpp"
+#include "Car_BC.hpp"
 #include "Game_0x40.hpp"
 #include "Gang.hpp"
 #include "Globals.hpp"
@@ -23,36 +24,36 @@ DEFINE_GLOBAL(Map_0x370*, gMap_0x370_6F6268, 0x6F6268);
 DEFINE_GLOBAL(gmp_block_info*, gBlockInfo0_6F5EB0, 0x6F5EB0);
 DEFINE_GLOBAL(gmp_block_info, gBlockInfo1_6F5F40, 0x6F5F40);
 DEFINE_GLOBAL(gmp_block_info, gBlockInfo2_6F6028, 0x6F6028);
-DEFINE_GLOBAL_ARRAY(gmp_map_slope, byte_6F5BA8, 64, 0x6F5BA8);
+DEFINE_GLOBAL_ARRAY(gmp_map_slope, gGmpSlopes_6F5BA8, 64, 0x6F5BA8);
 DEFINE_GLOBAL(gmp_map_slope*, dword_6F5EC8, 0x6F5EC8);
-DEFINE_GLOBAL(s16, word_6F6002, 0x6F6002);
+DEFINE_GLOBAL(s16, gFaceCollisionMask_6F6002, 0x6F6002);
 DEFINE_GLOBAL(s32, gPurple_right_6F5B80, 0x6F5B80);
 DEFINE_GLOBAL(s32, gPurple_left_6F5FD4, 0x6F5FD4);
 DEFINE_GLOBAL(s32, dword_6F620C, 0x6F620C);
 DEFINE_GLOBAL(s32, dword_6F5BA0, 0x6F5BA0);
 DEFINE_GLOBAL(s32, dword_6F6248, 0x6F6248);
 DEFINE_GLOBAL(s32, dword_6F5FAC, 0x6F5FAC);
-DEFINE_GLOBAL_INIT(Fix16, dword_6F610C, Fix16(0), 0x6F610C);
-DEFINE_GLOBAL_INIT(Fix16, dword_6F6130, Fix16(0x20000, 0), 0x6F6130);
-DEFINE_GLOBAL_INIT(Fix16, dword_6F601C, Fix16(0x200, 0), 0x6F601C);
-DEFINE_GLOBAL_INIT(Fix16, dword_6F60C0, Fix16(0x100, 0), 0x6F60C0);
-DEFINE_GLOBAL_INIT(Fix16, dword_6F5ED8, Fix16(0x4000, 0), 0x6F5ED8);
-DEFINE_GLOBAL_INIT(Fix16, dword_6F5FA8, Fix16(0x1FE8, 0), 0x6F5FA8);
-DEFINE_GLOBAL_INIT(Fix16, dword_6F6214, Fix16(0x824, 0), 0x6F6214);
+DEFINE_GLOBAL_INIT(Fix16, kFpZero_6F610C, Fix16(0), 0x6F610C);
+DEFINE_GLOBAL_INIT(Fix16, kFpEight_6F6130, Fix16(0x20000, 0), 0x6F6130);
+DEFINE_GLOBAL_INIT(Fix16, kFpOneThirtySecond_6F601C, Fix16(0x200, 0), 0x6F601C);
+DEFINE_GLOBAL_INIT(Fix16, kFpOneSixtyFourth_6F60C0, Fix16(0x100, 0), 0x6F60C0);
+DEFINE_GLOBAL_INIT(Fix16, kGradientScaleSize1_6F5ED8, Fix16(0x4000, 0), 0x6F5ED8);
+DEFINE_GLOBAL_INIT(Fix16, kGradientScaleSize2_6F5FA8, Fix16(0x1FE8, 0), 0x6F5FA8);
+DEFINE_GLOBAL_INIT(Fix16, kGradientScaleSize8_6F6214, Fix16(0x824, 0), 0x6F6214);
 DEFINE_GLOBAL(s32, dword_6F6164, 0x6F6164);
 DEFINE_GLOBAL(s32, dword_6F6148, 0x6F6148);
 DEFINE_GLOBAL(s32, dword_6F613C, 0x6F613C);
-DEFINE_GLOBAL_INIT(Fix16, dword_6F6050, Fix16(0x800, 0), 0x6F6050);
-DEFINE_GLOBAL_INIT(Fix16, dword_6F6180, Fix16(0x1000, 0), 0x6F6180);
-DEFINE_GLOBAL_INIT(Fix16, dword_6F60A0, Fix16(0x1800, 0), 0x6F60A0);
-DEFINE_GLOBAL_INIT(Fix16, dword_6F5F18, Fix16(0x2000, 0), 0x6F5F18);
-DEFINE_GLOBAL_INIT(Fix16, dword_6F60B8, Fix16(0x2800, 0), 0x6F60B8);
-DEFINE_GLOBAL_INIT(Fix16, dword_6F61D8, Fix16(0x3000, 0), 0x6F61D8);
-DEFINE_GLOBAL_INIT(Fix16, dword_6F6218, Fix16(0x3800, 0), 0x6F6218);
-DEFINE_GLOBAL_INIT(Fix16, dword_6F5B8C, Fix16(255), 0x6F5B8C);
-DEFINE_GLOBAL_INIT(Fix16, dword_6F6184, Fix16(10), 0x6F6184);
-DEFINE_GLOBAL_INIT(Fix16, dword_6F6128, Fix16(7), 0x6F6128);
-DEFINE_GLOBAL_INIT(Fix16, dword_6F5FE0, Fix16(0.5f), 0x6F5FE0);
+DEFINE_GLOBAL_INIT(Fix16, kFpOneEighth_6F6050, Fix16(0x800, 0), 0x6F6050);
+DEFINE_GLOBAL_INIT(Fix16, kFpQuarter_6F6180, Fix16(0x1000, 0), 0x6F6180);
+DEFINE_GLOBAL_INIT(Fix16, kFpThreeEighths_6F60A0, Fix16(0x1800, 0), 0x6F60A0);
+DEFINE_GLOBAL_INIT(Fix16, kFpHalf_6F5F18, Fix16(0x2000, 0), 0x6F5F18);
+DEFINE_GLOBAL_INIT(Fix16, kFpFiveEighths_6F60B8, Fix16(0x2800, 0), 0x6F60B8);
+DEFINE_GLOBAL_INIT(Fix16, kFpThreeQuarters_6F61D8, Fix16(0x3000, 0), 0x6F61D8);
+DEFINE_GLOBAL_INIT(Fix16, kFpSevenEighths_6F6218, Fix16(0x3800, 0), 0x6F6218);
+DEFINE_GLOBAL_INIT(Fix16, kFp255_6F5B8C, Fix16(255), 0x6F5B8C);
+DEFINE_GLOBAL_INIT(Fix16, kFpTen_6F6184, Fix16(10), 0x6F6184);
+DEFINE_GLOBAL_INIT(Fix16, kFpSeven_6F6128, Fix16(7), 0x6F6128);
+DEFINE_GLOBAL_INIT(Fix16, kFpHalf_6F5FE0, Fix16(0.5f), 0x6F5FE0);
 
 DEFINE_GLOBAL(gmp_block_info*, dword_6F5F98, 0x6F5F98);
 DEFINE_GLOBAL(gmp_map_slope*, dword_6F6080, 0x6F6080);
@@ -67,15 +68,10 @@ DEFINE_GLOBAL(gmp_block_info*, dword_6F5F90, 0x6F5F90);
 DEFINE_GLOBAL(gmp_block_info*, dword_6F6060, 0x6F6060);
 DEFINE_GLOBAL(gmp_block_info*, dword_6F5FB0, 0x6F5FB0);
 DEFINE_GLOBAL(gmp_block_info*, dword_6F5F54, 0x6F5F54);
+DEFINE_GLOBAL_INIT(Ang16, word_6F603E, Ang16(720), 0x6F603E);
 
 
-Fix16 dword_6F6110 = Fix16(1); // = 0x4000; // todo
-
-static inline bool Overlaps(gmp_map_zone* pZone, u8 x, u8 y)
-{
-    return x >= pZone->field_1_x && y >= pZone->field_2_y && x < pZone->field_1_x + pZone->field_3_w &&
-        y < pZone->field_2_y + pZone->field_4_h;
-}
+Fix16 kFpOne_6F6110 = Fix16(1); // = 0x4000; // todo
 
 static inline s32 clamp_z_from_column(s32 height, s32 offset, s32 z_pos)
 {
@@ -131,70 +127,70 @@ static inline bool has_top(gmp_block_info* pBlock)
 
 void Init_gmp_slopes_array()
 {
-    byte_6F5BA8[0] = gmp_map_slope(0, 0, 0, dword_6F610C, dword_6F610C);
-    byte_6F5BA8[1] = gmp_map_slope(1, 2, 1, dword_6F610C, dword_6F5F18);
-    byte_6F5BA8[2] = gmp_map_slope(1, 2, 0, dword_6F5F18, dword_6F6110);
-    byte_6F5BA8[3] = gmp_map_slope(2, 2, 1, dword_6F610C, dword_6F5F18);
-    byte_6F5BA8[4] = gmp_map_slope(2, 2, 0, dword_6F5F18, dword_6F6110);
-    byte_6F5BA8[5] = gmp_map_slope(3, 2, 1, dword_6F610C, dword_6F5F18);
-    byte_6F5BA8[6] = gmp_map_slope(3, 2, 0, dword_6F5F18, dword_6F6110);
-    byte_6F5BA8[7] = gmp_map_slope(4, 2, 1, dword_6F610C, dword_6F5F18);
-    byte_6F5BA8[8] = gmp_map_slope(4, 2, 0, dword_6F5F18, dword_6F6110);
-    byte_6F5BA8[9] = gmp_map_slope(1, 8, 7, dword_6F610C, dword_6F6050);
-    byte_6F5BA8[10] = gmp_map_slope(1, 8, 6, dword_6F6050, dword_6F6180);
-    byte_6F5BA8[11] = gmp_map_slope(1, 8, 5, dword_6F6180, dword_6F60A0);
-    byte_6F5BA8[12] = gmp_map_slope(1, 8, 4, dword_6F60A0, dword_6F5F18);
-    byte_6F5BA8[13] = gmp_map_slope(1, 8, 3, dword_6F5F18, dword_6F60B8);
-    byte_6F5BA8[14] = gmp_map_slope(1, 8, 2, dword_6F60B8, dword_6F61D8);
-    byte_6F5BA8[15] = gmp_map_slope(1, 8, 1, dword_6F61D8, dword_6F6218);
-    byte_6F5BA8[16] = gmp_map_slope(1, 8, 0, dword_6F6218, dword_6F6110);
-    byte_6F5BA8[17] = gmp_map_slope(2, 8, 7, dword_6F610C, dword_6F6050);
-    byte_6F5BA8[18] = gmp_map_slope(2, 8, 6, dword_6F6050, dword_6F6180);
-    byte_6F5BA8[19] = gmp_map_slope(2, 8, 5, dword_6F6180, dword_6F60A0);
-    byte_6F5BA8[20] = gmp_map_slope(2, 8, 4, dword_6F60A0, dword_6F5F18);
-    byte_6F5BA8[21] = gmp_map_slope(2, 8, 3, dword_6F5F18, dword_6F60B8);
-    byte_6F5BA8[22] = gmp_map_slope(2, 8, 2, dword_6F60B8, dword_6F61D8);
-    byte_6F5BA8[23] = gmp_map_slope(2, 8, 1, dword_6F61D8, dword_6F6218);
-    byte_6F5BA8[24] = gmp_map_slope(2, 8, 0, dword_6F6218, dword_6F6110);
-    byte_6F5BA8[25] = gmp_map_slope(3, 8, 7, dword_6F610C, dword_6F6050);
-    byte_6F5BA8[26] = gmp_map_slope(3, 8, 6, dword_6F6050, dword_6F6180);
-    byte_6F5BA8[27] = gmp_map_slope(3, 8, 5, dword_6F6180, dword_6F60A0);
-    byte_6F5BA8[28] = gmp_map_slope(3, 8, 4, dword_6F60A0, dword_6F5F18);
-    byte_6F5BA8[29] = gmp_map_slope(3, 8, 3, dword_6F5F18, dword_6F60B8);
-    byte_6F5BA8[30] = gmp_map_slope(3, 8, 2, dword_6F60B8, dword_6F61D8);
-    byte_6F5BA8[31] = gmp_map_slope(3, 8, 1, dword_6F61D8, dword_6F6218);
-    byte_6F5BA8[32] = gmp_map_slope(3, 8, 0, dword_6F6218, dword_6F6110);
-    byte_6F5BA8[33] = gmp_map_slope(4, 8, 7, dword_6F610C, dword_6F6050);
-    byte_6F5BA8[34] = gmp_map_slope(4, 8, 6, dword_6F6050, dword_6F6180);
-    byte_6F5BA8[35] = gmp_map_slope(4, 8, 5, dword_6F6180, dword_6F60A0);
-    byte_6F5BA8[36] = gmp_map_slope(4, 8, 4, dword_6F60A0, dword_6F5F18);
-    byte_6F5BA8[37] = gmp_map_slope(4, 8, 3, dword_6F5F18, dword_6F60B8);
-    byte_6F5BA8[38] = gmp_map_slope(4, 8, 2, dword_6F60B8, dword_6F61D8);
-    byte_6F5BA8[39] = gmp_map_slope(4, 8, 1, dword_6F61D8, dword_6F6218);
-    byte_6F5BA8[40] = gmp_map_slope(4, 8, 0, dword_6F6218, dword_6F6110);
-    byte_6F5BA8[41] = gmp_map_slope(1, 1, 0, dword_6F610C, dword_6F6110);
-    byte_6F5BA8[42] = gmp_map_slope(2, 1, 0, dword_6F610C, dword_6F6110);
-    byte_6F5BA8[43] = gmp_map_slope(3, 1, 0, dword_6F610C, dword_6F6110);
-    byte_6F5BA8[44] = gmp_map_slope(4, 1, 0, dword_6F610C, dword_6F6110);
-    byte_6F5BA8[45] = gmp_map_slope(0, 0, 0, dword_6F610C, dword_6F610C);
-    byte_6F5BA8[46] = gmp_map_slope(0, 0, 0, dword_6F610C, dword_6F610C);
-    byte_6F5BA8[47] = gmp_map_slope(0, 0, 0, dword_6F610C, dword_6F610C);
-    byte_6F5BA8[48] = gmp_map_slope(0, 0, 0, dword_6F610C, dword_6F610C);
-    byte_6F5BA8[49] = gmp_map_slope(0, 0, 0, dword_6F610C, dword_6F610C);
-    byte_6F5BA8[50] = gmp_map_slope(0, 0, 0, dword_6F610C, dword_6F610C);
-    byte_6F5BA8[51] = gmp_map_slope(0, 0, 0, dword_6F610C, dword_6F610C);
-    byte_6F5BA8[52] = gmp_map_slope(0, 0, 0, dword_6F610C, dword_6F610C);
-    byte_6F5BA8[53] = gmp_map_slope(0, 0, 0, dword_6F610C, dword_6F610C);
-    byte_6F5BA8[54] = gmp_map_slope(0, 0, 0, dword_6F610C, dword_6F610C);
-    byte_6F5BA8[55] = gmp_map_slope(0, 0, 0, dword_6F610C, dword_6F610C);
-    byte_6F5BA8[56] = gmp_map_slope(0, 0, 0, dword_6F610C, dword_6F610C);
-    byte_6F5BA8[57] = gmp_map_slope(0, 0, 0, dword_6F610C, dword_6F610C);
-    byte_6F5BA8[58] = gmp_map_slope(0, 0, 0, dword_6F610C, dword_6F610C);
-    byte_6F5BA8[59] = gmp_map_slope(0, 0, 0, dword_6F610C, dword_6F610C);
-    byte_6F5BA8[60] = gmp_map_slope(0, 0, 0, dword_6F610C, dword_6F610C);
-    byte_6F5BA8[61] = gmp_map_slope(0, 0, 0, dword_6F610C, dword_6F610C);
-    byte_6F5BA8[62] = gmp_map_slope(0, 0, 0, dword_6F610C, dword_6F610C);
-    byte_6F5BA8[63] = gmp_map_slope(0, 0, 0, dword_6F610C, dword_6F610C);
+    gGmpSlopes_6F5BA8[0] = gmp_map_slope(0, 0, 0, kFpZero_6F610C, kFpZero_6F610C);
+    gGmpSlopes_6F5BA8[1] = gmp_map_slope(1, 2, 1, kFpZero_6F610C, kFpHalf_6F5F18);
+    gGmpSlopes_6F5BA8[2] = gmp_map_slope(1, 2, 0, kFpHalf_6F5F18, kFpOne_6F6110);
+    gGmpSlopes_6F5BA8[3] = gmp_map_slope(2, 2, 1, kFpZero_6F610C, kFpHalf_6F5F18);
+    gGmpSlopes_6F5BA8[4] = gmp_map_slope(2, 2, 0, kFpHalf_6F5F18, kFpOne_6F6110);
+    gGmpSlopes_6F5BA8[5] = gmp_map_slope(3, 2, 1, kFpZero_6F610C, kFpHalf_6F5F18);
+    gGmpSlopes_6F5BA8[6] = gmp_map_slope(3, 2, 0, kFpHalf_6F5F18, kFpOne_6F6110);
+    gGmpSlopes_6F5BA8[7] = gmp_map_slope(4, 2, 1, kFpZero_6F610C, kFpHalf_6F5F18);
+    gGmpSlopes_6F5BA8[8] = gmp_map_slope(4, 2, 0, kFpHalf_6F5F18, kFpOne_6F6110);
+    gGmpSlopes_6F5BA8[9] = gmp_map_slope(1, 8, 7, kFpZero_6F610C, kFpOneEighth_6F6050);
+    gGmpSlopes_6F5BA8[10] = gmp_map_slope(1, 8, 6, kFpOneEighth_6F6050, kFpQuarter_6F6180);
+    gGmpSlopes_6F5BA8[11] = gmp_map_slope(1, 8, 5, kFpQuarter_6F6180, kFpThreeEighths_6F60A0);
+    gGmpSlopes_6F5BA8[12] = gmp_map_slope(1, 8, 4, kFpThreeEighths_6F60A0, kFpHalf_6F5F18);
+    gGmpSlopes_6F5BA8[13] = gmp_map_slope(1, 8, 3, kFpHalf_6F5F18, kFpFiveEighths_6F60B8);
+    gGmpSlopes_6F5BA8[14] = gmp_map_slope(1, 8, 2, kFpFiveEighths_6F60B8, kFpThreeQuarters_6F61D8);
+    gGmpSlopes_6F5BA8[15] = gmp_map_slope(1, 8, 1, kFpThreeQuarters_6F61D8, kFpSevenEighths_6F6218);
+    gGmpSlopes_6F5BA8[16] = gmp_map_slope(1, 8, 0, kFpSevenEighths_6F6218, kFpOne_6F6110);
+    gGmpSlopes_6F5BA8[17] = gmp_map_slope(2, 8, 7, kFpZero_6F610C, kFpOneEighth_6F6050);
+    gGmpSlopes_6F5BA8[18] = gmp_map_slope(2, 8, 6, kFpOneEighth_6F6050, kFpQuarter_6F6180);
+    gGmpSlopes_6F5BA8[19] = gmp_map_slope(2, 8, 5, kFpQuarter_6F6180, kFpThreeEighths_6F60A0);
+    gGmpSlopes_6F5BA8[20] = gmp_map_slope(2, 8, 4, kFpThreeEighths_6F60A0, kFpHalf_6F5F18);
+    gGmpSlopes_6F5BA8[21] = gmp_map_slope(2, 8, 3, kFpHalf_6F5F18, kFpFiveEighths_6F60B8);
+    gGmpSlopes_6F5BA8[22] = gmp_map_slope(2, 8, 2, kFpFiveEighths_6F60B8, kFpThreeQuarters_6F61D8);
+    gGmpSlopes_6F5BA8[23] = gmp_map_slope(2, 8, 1, kFpThreeQuarters_6F61D8, kFpSevenEighths_6F6218);
+    gGmpSlopes_6F5BA8[24] = gmp_map_slope(2, 8, 0, kFpSevenEighths_6F6218, kFpOne_6F6110);
+    gGmpSlopes_6F5BA8[25] = gmp_map_slope(3, 8, 7, kFpZero_6F610C, kFpOneEighth_6F6050);
+    gGmpSlopes_6F5BA8[26] = gmp_map_slope(3, 8, 6, kFpOneEighth_6F6050, kFpQuarter_6F6180);
+    gGmpSlopes_6F5BA8[27] = gmp_map_slope(3, 8, 5, kFpQuarter_6F6180, kFpThreeEighths_6F60A0);
+    gGmpSlopes_6F5BA8[28] = gmp_map_slope(3, 8, 4, kFpThreeEighths_6F60A0, kFpHalf_6F5F18);
+    gGmpSlopes_6F5BA8[29] = gmp_map_slope(3, 8, 3, kFpHalf_6F5F18, kFpFiveEighths_6F60B8);
+    gGmpSlopes_6F5BA8[30] = gmp_map_slope(3, 8, 2, kFpFiveEighths_6F60B8, kFpThreeQuarters_6F61D8);
+    gGmpSlopes_6F5BA8[31] = gmp_map_slope(3, 8, 1, kFpThreeQuarters_6F61D8, kFpSevenEighths_6F6218);
+    gGmpSlopes_6F5BA8[32] = gmp_map_slope(3, 8, 0, kFpSevenEighths_6F6218, kFpOne_6F6110);
+    gGmpSlopes_6F5BA8[33] = gmp_map_slope(4, 8, 7, kFpZero_6F610C, kFpOneEighth_6F6050);
+    gGmpSlopes_6F5BA8[34] = gmp_map_slope(4, 8, 6, kFpOneEighth_6F6050, kFpQuarter_6F6180);
+    gGmpSlopes_6F5BA8[35] = gmp_map_slope(4, 8, 5, kFpQuarter_6F6180, kFpThreeEighths_6F60A0);
+    gGmpSlopes_6F5BA8[36] = gmp_map_slope(4, 8, 4, kFpThreeEighths_6F60A0, kFpHalf_6F5F18);
+    gGmpSlopes_6F5BA8[37] = gmp_map_slope(4, 8, 3, kFpHalf_6F5F18, kFpFiveEighths_6F60B8);
+    gGmpSlopes_6F5BA8[38] = gmp_map_slope(4, 8, 2, kFpFiveEighths_6F60B8, kFpThreeQuarters_6F61D8);
+    gGmpSlopes_6F5BA8[39] = gmp_map_slope(4, 8, 1, kFpThreeQuarters_6F61D8, kFpSevenEighths_6F6218);
+    gGmpSlopes_6F5BA8[40] = gmp_map_slope(4, 8, 0, kFpSevenEighths_6F6218, kFpOne_6F6110);
+    gGmpSlopes_6F5BA8[41] = gmp_map_slope(1, 1, 0, kFpZero_6F610C, kFpOne_6F6110);
+    gGmpSlopes_6F5BA8[42] = gmp_map_slope(2, 1, 0, kFpZero_6F610C, kFpOne_6F6110);
+    gGmpSlopes_6F5BA8[43] = gmp_map_slope(3, 1, 0, kFpZero_6F610C, kFpOne_6F6110);
+    gGmpSlopes_6F5BA8[44] = gmp_map_slope(4, 1, 0, kFpZero_6F610C, kFpOne_6F6110);
+    gGmpSlopes_6F5BA8[45] = gmp_map_slope(0, 0, 0, kFpZero_6F610C, kFpZero_6F610C);
+    gGmpSlopes_6F5BA8[46] = gmp_map_slope(0, 0, 0, kFpZero_6F610C, kFpZero_6F610C);
+    gGmpSlopes_6F5BA8[47] = gmp_map_slope(0, 0, 0, kFpZero_6F610C, kFpZero_6F610C);
+    gGmpSlopes_6F5BA8[48] = gmp_map_slope(0, 0, 0, kFpZero_6F610C, kFpZero_6F610C);
+    gGmpSlopes_6F5BA8[49] = gmp_map_slope(0, 0, 0, kFpZero_6F610C, kFpZero_6F610C);
+    gGmpSlopes_6F5BA8[50] = gmp_map_slope(0, 0, 0, kFpZero_6F610C, kFpZero_6F610C);
+    gGmpSlopes_6F5BA8[51] = gmp_map_slope(0, 0, 0, kFpZero_6F610C, kFpZero_6F610C);
+    gGmpSlopes_6F5BA8[52] = gmp_map_slope(0, 0, 0, kFpZero_6F610C, kFpZero_6F610C);
+    gGmpSlopes_6F5BA8[53] = gmp_map_slope(0, 0, 0, kFpZero_6F610C, kFpZero_6F610C);
+    gGmpSlopes_6F5BA8[54] = gmp_map_slope(0, 0, 0, kFpZero_6F610C, kFpZero_6F610C);
+    gGmpSlopes_6F5BA8[55] = gmp_map_slope(0, 0, 0, kFpZero_6F610C, kFpZero_6F610C);
+    gGmpSlopes_6F5BA8[56] = gmp_map_slope(0, 0, 0, kFpZero_6F610C, kFpZero_6F610C);
+    gGmpSlopes_6F5BA8[57] = gmp_map_slope(0, 0, 0, kFpZero_6F610C, kFpZero_6F610C);
+    gGmpSlopes_6F5BA8[58] = gmp_map_slope(0, 0, 0, kFpZero_6F610C, kFpZero_6F610C);
+    gGmpSlopes_6F5BA8[59] = gmp_map_slope(0, 0, 0, kFpZero_6F610C, kFpZero_6F610C);
+    gGmpSlopes_6F5BA8[60] = gmp_map_slope(0, 0, 0, kFpZero_6F610C, kFpZero_6F610C);
+    gGmpSlopes_6F5BA8[61] = gmp_map_slope(0, 0, 0, kFpZero_6F610C, kFpZero_6F610C);
+    gGmpSlopes_6F5BA8[62] = gmp_map_slope(0, 0, 0, kFpZero_6F610C, kFpZero_6F610C);
+    gGmpSlopes_6F5BA8[63] = gmp_map_slope(0, 0, 0, kFpZero_6F610C, kFpZero_6F610C);
     printf("Map slopes info array initialized!\n");
 }
 
@@ -202,7 +198,7 @@ MATCH_FUNC(0x452980)
 gmp_block_info* Map_0x370::get_block_452980(u8 x_coord, u8 y_coord, u8 z_coord)
 {
     gmp_col_info* pColData =
-        reinterpret_cast<gmp_col_info*>(&field_0_pDmap->field_40008_pColumn[field_0_pDmap->field_0_base[y_coord][x_coord]]);
+        reinterpret_cast<gmp_col_info*>(&field_0_pDmap->field_40008_pColumn[*field_0_pDmap->get_base_42A830(y_coord, x_coord)]);
     if (z_coord >= pColData->field_0_height || z_coord < pColData->field_1_offset)
     {
         return 0;
@@ -216,7 +212,8 @@ gmp_block_info* Map_0x370::get_block_452980(u8 x_coord, u8 y_coord, u8 z_coord)
 MATCH_FUNC(0x4DEF40)
 s8 gmp_map_zone::IsZoneVisibleToAnyPlayer_4DEF40()
 {
-    Fix16_Rect zoneBounds(field_1_x, field_2_y, field_3_w, field_4_h);
+    Fix16_Rect zoneBounds;
+    zoneBounds.SetFromPosSize_463710(field_1_x, field_2_y, field_3_w, field_4_h);
     return gGame_0x40_67E008->IsRectVisibleToAnyPlayer_4B9B10(&zoneBounds);
 }
 
@@ -268,7 +265,7 @@ gmp_map_zone* Map_0x370::zone_by_type_bounded_4DF0F0(u8 zone_type)
     if (field_328_pZoneData)
     {
         u16 idx = 0;
-        field_36C_bUnknown = 0;
+        field_36C_bMatchPos = 0;
         field_368_zone_type = zone_type;
         field_364_cur_zone_idx = 0;
 
@@ -303,7 +300,7 @@ gmp_map_zone* Map_0x370::first_zone_by_type_4DF1D0(u8 zone_type)
 {
     if (field_328_pZoneData)
     {
-        field_36C_bUnknown = 0;
+        field_36C_bMatchPos = 0;
         field_368_zone_type = zone_type;
         field_364_cur_zone_idx = 0;
 
@@ -324,8 +321,8 @@ WIP_FUNC(0x4DF240)
 gmp_map_zone* Map_0x370::GetNearestZoneOfType_4DF240(u8 xpos, u8 ypos, u8 zone_type)
 {
     WIP_IMPLEMENTED;
-    Fix16 v21 = dword_6F5B8C;
-    Fix16 v5 = dword_6F5B8C;
+    Fix16 v21 = kFp255_6F5B8C;
+    Fix16 v5 = kFp255_6F5B8C;
 
     gmp_map_zone* pChosenZone = 0;
     gmp_map_zone* pOtherZone = 0;
@@ -344,11 +341,15 @@ gmp_map_zone* Map_0x370::GetNearestZoneOfType_4DF240(u8 xpos, u8 ypos, u8 zone_t
         if (pZone->field_0_zone_type == zone_type
             && !pZone->IsZoneVisibleToAnyPlayer_4DEF40())
         {
-            Fix16 v13 = Fix16::MaxAbsDistance_42A6B0(pZone->field_1_x, pZone->field_2_y, xpos, ypos);
+            // 9.6f inlined: MaxAbsDistance_42A6B0, here with Abs inline but Negate/Max out of line
+            Fix16 diff_x = Fix16(xpos) - Fix16(pZone->field_1_x);
+            Fix16 diff_y = Fix16(ypos) - Fix16(pZone->field_2_y);
+            Fix16 v13;
+            v13 = Fix16::Max_44E540(Fix16::Abs_negate_out_of_line(diff_x), Fix16::Abs_negate_out_of_line(diff_y));
 
             if (v13 < v21)
             {
-                if (v13 > dword_6F6184) // v13 < 10.0
+                if (v13 > kFpTen_6F6184) // v13 < 10.0
                 {
                     pChosenZone = pOtherZone;
                     if (pOtherZone) //  line 101
@@ -390,11 +391,45 @@ gmp_map_zone* Map_0x370::GetNearestZoneOfType_4DF240(u8 xpos, u8 ypos, u8 zone_t
     return pOtherZone;
 }
 
-STUB_FUNC(0x4DF3E0)
-u8* Map_0x370::sub_4DF3E0(u8 a2, u8 a3, char_type a4)
+WIP_FUNC(0x4DF3E0)
+gmp_map_zone* Map_0x370::sub_4DF3E0(u8 xpos, u8 ypos, u8 zone_type)
 {
-    NOT_IMPLEMENTED;
-    return 0;
+    Fix16 best_dist = kFp255_6F5B8C;
+    gmp_map_zone* pBestZone = 0;
+
+    if (field_328_pZoneData == 0)
+    {
+        return 0;
+    }
+
+    for (s32 zone_idx = 0; zone_idx < field_32C_pZones->field_0_num_zones; zone_idx++)
+    {
+        gmp_map_zone* pZone = Map_0x370::get_zone_4DFB30(zone_idx);
+        if (pZone->field_0_zone_type == zone_type)
+        {
+            s32 diff_x = (xpos << 14) - ((pZone->field_1_x << 14) + ((pZone->field_3_w >> 1) << 14));
+            s32 diff_y = (ypos << 14) - ((pZone->field_2_y << 14) + ((pZone->field_4_h >> 1) << 14));
+            if (diff_y <= 0)
+            {
+                diff_y = -diff_y;
+            }
+            Fix16 dist(diff_y, 0);
+            if (diff_x <= 0)
+            {
+                diff_x = -diff_x;
+            }
+            if (diff_x > dist.mValue)
+            {
+                dist.mValue = diff_x;
+            }
+            if (dist < best_dist)
+            {
+                best_dist = dist;
+                pBestZone = pZone;
+            }
+        }
+    }
+    return pBestZone;
 }
 
 MATCH_FUNC(0x4DF4D0)
@@ -405,12 +440,12 @@ gmp_map_zone* Map_0x370::zone_by_pos_and_type_4DF4D0(u8 zone_x, u8 zone_y, u8 zo
         field_368_zone_type = zone_type;
         field_36A_zone_x = zone_x;
         field_36B_zone_y = zone_y;
-        field_36C_bUnknown = 1;
+        field_36C_bMatchPos = 1;
 
         for (field_364_cur_zone_idx = 0; field_364_cur_zone_idx < field_32C_pZones->field_0_num_zones; field_364_cur_zone_idx++)
         {
             gmp_map_zone* pZone = get_zone_4DFB30(field_364_cur_zone_idx);
-            if (pZone->field_0_zone_type == field_368_zone_type && Overlaps(pZone, field_36A_zone_x, field_36B_zone_y))
+            if (pZone->field_0_zone_type == field_368_zone_type && pZone->ContainsPoint_463020(field_36A_zone_x, field_36B_zone_y))
             {
                 return pZone;
             }
@@ -433,7 +468,7 @@ gmp_map_zone* Map_0x370::nav_zone_by_pos_4DF5C0(u8 zone_x, u8 zone_y)
             if ((pZone->field_0_zone_type == Information_10 
                 || pZone->field_0_zone_type == Navigation_1 
                 || pZone->field_0_zone_type == Local_Navigation_15) &&
-                Overlaps(pZone, field_36A_zone_x, field_36B_zone_y))
+                pZone->ContainsPoint_463020(field_36A_zone_x, field_36B_zone_y))
             {
                 return pZone;
             }
@@ -443,7 +478,7 @@ gmp_map_zone* Map_0x370::nav_zone_by_pos_4DF5C0(u8 zone_x, u8 zone_y)
 }
 
 MATCH_FUNC(0x4DF6A0)
-gmp_map_zone* Map_0x370::sub_4DF6A0(u8 zone_x, u8 zone_y)
+gmp_map_zone* Map_0x370::first_zone_by_pos_4DF6A0(u8 zone_x, u8 zone_y)
 {
     gmp_map_zone* pZone;
 
@@ -451,12 +486,12 @@ gmp_map_zone* Map_0x370::sub_4DF6A0(u8 zone_x, u8 zone_y)
     {
         this->field_36A_zone_x = zone_x;
         this->field_36B_zone_y = zone_y;
-        this->field_36C_bUnknown = 1;
+        this->field_36C_bMatchPos = 1;
 
         for (field_364_cur_zone_idx = 0; field_364_cur_zone_idx < field_32C_pZones->field_0_num_zones; field_364_cur_zone_idx++)
         {
             pZone = Map_0x370::get_zone_4DFB30(this->field_364_cur_zone_idx);
-            if (Overlaps(pZone, this->field_36A_zone_x, this->field_36B_zone_y))
+            if (pZone->ContainsPoint_463020(this->field_36A_zone_x, this->field_36B_zone_y))
             {
                 return pZone;
             }
@@ -480,7 +515,7 @@ gmp_map_zone* Map_0x370::next_zone_4DF770()
             }
             pZoneIter = Map_0x370::get_zone_4DFB30(field_364_cur_zone_idx);
             if (pZoneIter->field_0_zone_type == this->field_368_zone_type &&
-                (!this->field_36C_bUnknown || Overlaps(pZoneIter, field_36A_zone_x, field_36B_zone_y)))
+                (!this->field_36C_bMatchPos || pZoneIter->ContainsPoint_463020(field_36A_zone_x, field_36B_zone_y)))
             {
                 return pZoneIter;
             }
@@ -728,9 +763,9 @@ void Map_0x370::update_lights_4DFCD0()
         Fix16 zpos = Fix16::ctor_462ED0(pMapLight->field_8_z);
         Fix16 radius = Fix16::ctor_462ED0(pMapLight->field_A_radius);
 
-        if (radius == dword_6F6130)
+        if (radius == kFpEight_6F6130)
         {
-            radius -= dword_6F601C;
+            radius -= kFpOneThirtySecond_6F601C;
         }
 
         nostalgic_ellis_0x28* pLight =
@@ -738,7 +773,7 @@ void Map_0x370::update_lights_4DFCD0()
 
         if (pMapLight->field_E_on_time)
         {
-            gLight_1D4CC_6F5520->sub_469070(pLight, pMapLight->field_E_on_time, pMapLight->field_F_off_time, pMapLight->field_D_shape);
+            gLight_1D4CC_6F5520->SetFlashing_469070(pLight, pMapLight->field_E_on_time, pMapLight->field_F_off_time, pMapLight->field_D_shape);
         }
     }
 }
@@ -747,7 +782,7 @@ MATCH_FUNC(0x4DFE10)
 gmp_block_info* Map_0x370::get_block_4DFE10(s32 x_coord, s32 y_coord, s32 z_coord)
 {
     gmp_col_info* pCol =
-        reinterpret_cast<gmp_col_info*>(&field_0_pDmap->field_40008_pColumn[field_0_pDmap->field_0_base[y_coord][x_coord]]);
+        reinterpret_cast<gmp_col_info*>(&field_0_pDmap->field_40008_pColumn[*field_0_pDmap->get_base_42A830(y_coord, x_coord)]);
     if (z_coord < pCol->field_0_height)
     {
         s32 offset = pCol->field_1_offset;
@@ -765,7 +800,7 @@ gmp_block_info* Map_0x370::GetEffectiveBlock_4DFE60(s32 x, s32 y, s32 z)
     // If it's a partial block, get a null/empty block. 
     // If it's a tridiagonal block (four-sided or tri-sided), replace it by a flat solid block
     // Otherwise, return the original block. It's ideal for checking collisions
-    gmp_col_info* v5 = (gmp_col_info*)&field_0_pDmap->field_40008_pColumn[field_0_pDmap->field_0_base[y][x]];
+    gmp_col_info* v5 = (gmp_col_info*)&field_0_pDmap->field_40008_pColumn[*field_0_pDmap->get_base_42A830(y, x)];
     if (z < v5->field_0_height)
     {
         if (z >= v5->field_1_offset)
@@ -787,7 +822,7 @@ gmp_block_info* Map_0x370::GetEffectiveBlock_4DFE60(s32 x, s32 y, s32 z)
 }
 
 MATCH_FUNC(0x4DFEE0)
-gmp_block_info* Map_0x370::sub_4DFEE0(s32 x_coord, s32 y_coord, s32 z_coord)
+gmp_block_info* Map_0x370::GetBlockClamped_4DFEE0(s32 x_coord, s32 y_coord, s32 z_coord)
 {
     gmp_compressed_map_32* field_0_pDmap;
     gmp_col_info* pColInfo;
@@ -818,7 +853,7 @@ gmp_block_info* Map_0x370::sub_4DFEE0(s32 x_coord, s32 y_coord, s32 z_coord)
     }
 
     field_0_pDmap = this->field_0_pDmap;
-    pColInfo = (gmp_col_info*)&field_0_pDmap->field_40008_pColumn[field_0_pDmap->field_0_base[y_coord][x_coord]];
+    pColInfo = (gmp_col_info*)&field_0_pDmap->field_40008_pColumn[*field_0_pDmap->get_base_42A830(y_coord, x_coord)];
 
     if (z_coord < (u8)pColInfo->field_0_height)
     {
@@ -832,71 +867,51 @@ gmp_block_info* Map_0x370::sub_4DFEE0(s32 x_coord, s32 y_coord, s32 z_coord)
 }
 
 MATCH_FUNC(0x4DFF60)
-DWORD Map_0x370::sub_4DFF60(Fix16 x_coord, Fix16 y_coord, Fix16 z_coord)
+DWORD Map_0x370::GetLeftEdgeSpec_4DFF60(Fix16 x_coord, Fix16 y_coord, Fix16 z_coord)
 {
-    gmp_block_info* pBlock1 = get_block_4DFE10((x_coord - dword_6F6110).ToInt(), y_coord.ToInt(), z_coord.ToInt());
+    gmp_block_info* pBlock1 = get_block_4DFE10((x_coord - kFpOne_6F6110).ToInt(), y_coord.ToInt(), z_coord.ToInt());
     if (pBlock1 && pBlock1->field_2_right != 0)
     {
-        u32 spec = gGtx_0x106C_703DD4->field_6C_spec[get_tile_idx(pBlock1->field_2_right)];
-        if (spec == tile_spec::road_junction_special)
-        {
-            return 1;
-        }
-        return spec;
+        return gGtx_0x106C_703DD4->sub_462FD0(get_tile_idx(pBlock1->field_2_right));
     }
 
     gmp_block_info* pBlock2 = get_block_4DFE10(x_coord.ToInt(), y_coord.ToInt(), z_coord.ToInt());
     if (pBlock2 && pBlock2->field_0_left != 0)
     {
-        u32 spec = gGtx_0x106C_703DD4->field_6C_spec[get_tile_idx(pBlock2->field_0_left)];
-        if (spec == tile_spec::road_junction_special)
-        {
-            return 1;
-        }
-        return spec;
+        return gGtx_0x106C_703DD4->sub_462FD0(get_tile_idx(pBlock2->field_0_left));
     }
 
     return 0;
 }
 
 MATCH_FUNC(0x4E0000)
-s32 Map_0x370::sub_4E0000(Fix16 x_pos, Fix16 y_pos, Fix16 z_pos)
+s32 Map_0x370::GetTopEdgeSpec_4E0000(Fix16 x_pos, Fix16 y_pos, Fix16 z_pos)
 {
-    s32 spec;
-    gmp_block_info* block_4DFE10 = Map_0x370::get_block_4DFE10(x_pos.ToInt(), (y_pos - dword_6F6110).ToInt(), z_pos.ToInt());
+    gmp_block_info* block_4DFE10 = Map_0x370::get_block_4DFE10(x_pos.ToInt(), (y_pos - kFpOne_6F6110).ToInt(), z_pos.ToInt());
     if (block_4DFE10 && has_bottom(block_4DFE10))
     {
-        spec = gGtx_0x106C_703DD4->field_6C_spec[get_tile_idx(block_4DFE10->field_6_bottom)];
-        if (spec == tile_spec::road_junction_special)
-        {
-            return 1;
-        }
+        return gGtx_0x106C_703DD4->sub_462FD0(get_tile_idx(block_4DFE10->field_6_bottom));
     }
     else
     {
         gmp_block_info* pBlock = Map_0x370::get_block_4DFE10(x_pos.ToInt(), y_pos.ToInt(), z_pos.ToInt());
         if (pBlock && has_top(pBlock))
         {
-            spec = gGtx_0x106C_703DD4->field_6C_spec[get_tile_idx(pBlock->field_4_top)];
-            if (spec == tile_spec::road_junction_special)
-            {
-                return 1;
-            }
+            return gGtx_0x106C_703DD4->sub_462FD0(get_tile_idx(pBlock->field_4_top));
         }
         else
         {
             return 0;
         }
     }
-    return spec;
 }
 
 MATCH_FUNC(0x4E00A0)
 s32 Map_0x370::GetBlockSpec_4E00A0(Fix16 x, Fix16 y, Fix16 z)
 {
-    if (z >= dword_6F610C)
+    if (z >= kFpZero_6F610C)
     {
-        if (z < dword_6F6130)
+        if (z < kFpEight_6F6130)
         {
             gmp_block_info* pBlock = gMap_0x370_6F6268->get_block_4DFE10(x.ToInt(), y.ToInt(), z.ToInt());
             if (pBlock)
@@ -904,12 +919,7 @@ s32 Map_0x370::GetBlockSpec_4E00A0(Fix16 x, Fix16 y, Fix16 z)
                 u16 lid = pBlock->field_8_lid;
                 if (lid)
                 {
-                    s32 spec = gGtx_0x106C_703DD4->field_6C_spec[get_tile_idx(lid)];
-                    if (spec == tile_spec::road_junction_special)
-                    {
-                        return 1;
-                    }
-                    return spec;
+                    return gGtx_0x106C_703DD4->sub_462FD0(get_tile_idx(lid));
                 }
             }
         }
@@ -936,7 +946,7 @@ char_type Map_0x370::sub_4E0120()
 }
 
 // https://decomp.me/scratch/RMgzo
-STUB_FUNC(0x4E0130)
+WIP_FUNC(0x4E0130)
 bool Map_0x370::CanMoveOntoSlopeTile_4E0130(s32 x, s32 y, s32 z, s32 path_direction, u8* bByRefUnk, char_type bNotifyByRefRet)
 {
     WIP_IMPLEMENTED;
@@ -1193,8 +1203,17 @@ bool Map_0x370::CanMoveOntoSlopeTile_4E0130(s32 x, s32 y, s32 z, s32 path_direct
     }
 }
 
+// 9.6f 0x463690: does the segment p1-p2 cross any edge of the rect
+inline bool Fix16_Rect::EdgesCrossSegment_463690(Fix16_Point& p1, Fix16_Point& p2)
+{
+    return ComputeScanlineIntersectionY_4F76A0(field_0_left, field_4_right, field_8_top, p1, p2) ||
+        ComputeScanlineIntersectionY_4F76A0(field_0_left, field_4_right, field_C_bottom, p1, p2) ||
+        ComputeScanlineIntersectionX_4F77D0(field_8_top, field_C_bottom, field_0_left, p1, p2) ||
+        ComputeScanlineIntersectionX_4F77D0(field_8_top, field_C_bottom, field_4_right, p1, p2);
+}
+
 WIP_FUNC(0x4E11E0)
-char_type Map_0x370::sub_4E11E0(Fix16_Rect* pRect)
+char_type Map_0x370::RectHitsDiagonalWall_4E11E0(Fix16_Rect* pRect)
 {
     WIP_IMPLEMENTED;
 
@@ -1204,98 +1223,94 @@ char_type Map_0x370::sub_4E11E0(Fix16_Rect* pRect)
 
     pRect->DoSetCurrentRect_59DD60();
 
-    Fix16 z_sum = (pRect->field_10_low_z + pRect->field_14_high_z);
+    s32 z_calc = pRect->GetMidZ_463760();
 
-    s32 z_calc = z_sum.ToInt();
-
-    s32 y_count = gPurple_top_6F6108;
-    s32 x_count = gPurple_left_6F5FD4;
-    while (y_count <= gPurple_bottom_6F5F38)
+    for (s32 y_count = gPurple_top_6F6108; y_count <= gPurple_bottom_6F5F38; y_count++)
     {
-        Fix16 left = (gPurple_left_6F5FD4 + 1); // Fix16()
-        while (x_count <= gPurple_right_6F5B80)
+        for (s32 x_count = gPurple_left_6F5FD4; x_count <= gPurple_right_6F5B80; x_count++)
         {
             gmp_block_info* pBlock = get_block_4DFE10(x_count, y_count, z_calc);
             if (pBlock)
             {
-                u8 slope_mask = pBlock->field_B_slope_type & 0xFC;
+                s32 slope_mask = pBlock->field_B_slope_type & 0xFC;
                 if (slope_mask >= 0xB4 && slope_mask <= 0xD0)
                 {
-
+                    // 9.6f: Fix16_Point::SetXY_432860 for p1/p2 (inlined, using it changes the code)
                     if (slope_mask == 0xB4 || slope_mask == 0xC0 || slope_mask == 0xC4 || slope_mask == 0xD0)
                     {
-                        p1.x = x_count; // Fix16()
-                        p1.y = (y_count + 1); // Fix16()
-                        p2.x = left;
-                        p2.y = y_count; // Fix16()
+                        p1.x = Fix16(x_count);
+                        p1.y = Fix16(y_count + 1);
+                        p2.x = Fix16(x_count + 1);
+                        p2.y = Fix16(y_count);
                     }
                     else
                     {
-                        p1.x = x_count; // Fix16()
-                        p1.y = y_count; // Fix16()
-                        p2.x = left;
-                        p2.y = y_count + 1; // Fix16()
+                        p1.x = Fix16(x_count);
+                        p1.y = Fix16(y_count);
+                        p2.x = Fix16(x_count + 1);
+                        p2.y = Fix16(y_count + 1);
                     }
-                   
 
-                    if (ComputeScanlineIntersectionY_4F76A0(pRect->field_0_left, pRect->field_4_right, pRect->field_8_top, p1, p2)
-                             || ComputeScanlineIntersectionY_4F76A0(pRect->field_0_left,
-                                                            pRect->field_4_right,
-                                                            pRect->field_C_bottom,
-                                                            p1,
-                                                            p2) ||
-                        ComputeScanlineIntersectionX_4F77D0(pRect->field_8_top, pRect->field_C_bottom, pRect->field_0_left, p1, p2) ||
-                        ComputeScanlineIntersectionX_4F77D0(pRect->field_8_top, pRect->field_C_bottom, pRect->field_4_right, p1, p2))
+                    if (pRect->EdgesCrossSegment_463690(p1, p2))
                     {
                         return 1;
                     }
                 }
             }
-            ++x_count;
-            left += Fix16(0x4000, 0);
         }
-        ++y_count;
     }
     return 0;
 }
 
 // https://decomp.me/scratch/jaBFe
+// The original calls the out-of-line Fix16(int) and const operator+ (Add_408660) for the
+// x/y block centre, so the sum goes through a const Fix16
+static inline Fix16 BlockCentre_4E1520(s32 v)
+{
+    const Fix16 f = v;
+    return f + kFpHalf_6F5FE0;
+}
+
 WIP_FUNC(0x4E1520)
-bool Map_0x370::sub_4E1520(s32 z_pos)
+bool Map_0x370::SpriteHitsDiagonalWall_4E1520(s32 z_pos)
 {
     WIP_IMPLEMENTED;
+    Fix16_Point point;
+    Fix16_Point unk_point;
     for (s32 y_pos = gPurple_top_6F6108; y_pos <= gPurple_bottom_6F5F38; y_pos++)
     {
-        Fix16 left = Fix16(gPurple_left_6F5FD4 + 1);
-        for (s32 x_pos = gPurple_left_6F5FD4; x_pos <= gPurple_right_6F5B80; x_pos++, left += Fix16(1))
+        for (s32 x_pos = gPurple_left_6F5FD4; x_pos <= gPurple_right_6F5B80; x_pos++)
         {
-            Fix16_Point point;
-            Fix16_Point unk_point;
             gmp_block_info* pBlock = Map_0x370::get_block_4DFE10(x_pos, y_pos, z_pos);
 
             if (pBlock != NULL)
             {
-                u8 slope_type = pBlock->field_B_slope_type & 0xFC;
+                u32 slope_type = pBlock->field_B_slope_type & 0xFC;
                 if (slope_type >= 0xB4 && slope_type <= 0xD0)
                 {
+                    // 9.6f: Fix16_Point::SetXY_432860 for both points (inlined, using it changes the code)
                     if (slope_type == DIAGONAL_WALL_UP_LEFT || slope_type == DIAGONAL_WALL_DOWN_RIGHT ||
                         slope_type == TRIANGULAR_SIDES_DIAGONAL_UP_LEFT || slope_type == TRIANGULAR_SIDES_DIAGONAL_DOWN_RIGHT)
                     {
-                        point = Fix16_Point(Fix16(x_pos), Fix16(y_pos + 1));
-                        unk_point = Fix16_Point(Fix16(left), Fix16(y_pos));
+                        point.x = Fix16(x_pos);
+                        point.y = Fix16(y_pos + 1);
+                        unk_point.x = Fix16(x_pos + 1);
+                        unk_point.y = Fix16(y_pos);
                     }
                     else
                     {
-                        point = Fix16_Point(Fix16(x_pos), Fix16(y_pos));
-                        unk_point = Fix16_Point(Fix16(left), Fix16(y_pos + 1));
+                        point.x = Fix16(x_pos);
+                        point.y = Fix16(y_pos);
+                        unk_point.x = Fix16(x_pos + 1);
+                        unk_point.y = Fix16(y_pos + 1);
                     }
 
                     if (gSprite_6F61E8->PointInsideRotatedBounds_5A1490(point, unk_point))
                     {
                         Sprite* pSprt = gObject_5C_6F8F84->GetDirectionalObject_5298E0(slope_type)->field_4;
-                        pSprt->set_xyz_lazy_451950(Fix16(x_pos) + dword_6F5FE0, Fix16(y_pos) + dword_6F5FE0, Fix16(z_pos));
+                        pSprt->set_xyz_lazy_451950(BlockCentre_4E1520(x_pos), BlockCentre_4E1520(y_pos), Fix16(z_pos));
                         pSprt->UpdateCollisionBoundsIfNeeded_59E9C0();
-                        gRozza_679188.sub_40FEE0(pSprt);
+                        gRozza_679188.SetSprite_40FEE0(pSprt);
                         return true;
                     }
                 }
@@ -1306,7 +1321,7 @@ bool Map_0x370::sub_4E1520(s32 z_pos)
 }
 
 MATCH_FUNC(0x4E18A0)
-bool Map_0x370::sub_4E18A0(s32 x_min, s32 x_max, s32 y_min, s32 y_max, s32 z)
+bool Map_0x370::HasWallInArea_4E18A0(s32 x_min, s32 x_max, s32 y_min, s32 y_max, s32 z)
 {
     gmp_block_info* pBlock;
 
@@ -1365,6 +1380,12 @@ bool Map_0x370::sub_4E1A30(s32 tileX_min, s32 tileX_max, s32 tileY_min, s32 tile
 {
     WIP_IMPLEMENTED;
 
+    // Left: the original loads the mask with a 16-bit `mov %cx` and does `test %cx, face`; VC6 here
+    // loads the face into cx and the mask with a 32-bit mov (same with u16/s16, either operand order,
+    // a u16 local, a u16 result cast, other names or defining the global in another TU).
+    // The hit tests take (u32)y -> Fix16(u32) 0x4926F0, y + 1 -> Fix16(s32) 0x4369F0 and the
+    // face coordinate x + 1 / y + 1 (inlined, strength reduced for x).
+
     for (s32 y = tileY_min; y <= tileY_max; y++)
     {
         for (s32 x = tileX_min; x <= tileX_max; x++)
@@ -1374,11 +1395,11 @@ bool Map_0x370::sub_4E1A30(s32 tileX_min, s32 tileX_max, s32 tileY_min, s32 tile
                 gmp_block_info* pBlock1 = Map_0x370::GetEffectiveBlock_4DFE60(x, y, zLevel);
                 if (pBlock1)
                 {
-                    if (((u16)word_6F6002 & pBlock1->field_2_right) != 0)
+                    if (((u16)gFaceCollisionMask_6F6002 & pBlock1->field_2_right) != 0)
                     {
                         if (!IsNorthOrSouthGradSlope_4634B0(pBlock1))
                         {
-                            if (gSprite_6F61E8->HitTestVerticalLine_5A0EF0(y, y + 1, zLevel + 1))
+                            if (gSprite_6F61E8->HitTestVerticalLine_5A0EF0((u32)y, y + 1, x + 1))
                             {
                                 return true;
                             }
@@ -1388,11 +1409,11 @@ bool Map_0x370::sub_4E1A30(s32 tileX_min, s32 tileX_max, s32 tileY_min, s32 tile
                 gmp_block_info* pBlock2 = Map_0x370::GetEffectiveBlock_4DFE60(x + 1, y, zLevel);
                 if (pBlock2)
                 {
-                    if (((u16)word_6F6002 & pBlock2->field_0_left) != 0)
+                    if (((u16)gFaceCollisionMask_6F6002 & pBlock2->field_0_left) != 0)
                     {
                         if (!IsNorthOrSouthGradSlope_4634B0(pBlock2))
                         {
-                            if (gSprite_6F61E8->HitTestVerticalLine_5A0EF0(y, y + 1, zLevel))
+                            if (gSprite_6F61E8->HitTestVerticalLine_5A0EF0((u32)y, y + 1, x + 1))
                             {
                                 return true;
                             }
@@ -1406,11 +1427,11 @@ bool Map_0x370::sub_4E1A30(s32 tileX_min, s32 tileX_max, s32 tileY_min, s32 tile
                 gmp_block_info* pBlock3 = Map_0x370::GetEffectiveBlock_4DFE60(x, y, zLevel);
                 if (pBlock3)
                 {
-                    if (((u16)word_6F6002 & pBlock3->field_6_bottom) != 0)
+                    if (((u16)gFaceCollisionMask_6F6002 & pBlock3->field_6_bottom) != 0)
                     {
                         if (!IsWestOrEastGradSlope_4634B0(pBlock3))
                         {
-                            if (gSprite_6F61E8->CheckBBoxScanlineIntersection_5A0970(x, x + 1, zLevel + 1))
+                            if (gSprite_6F61E8->CheckBBoxScanlineIntersection_5A0970((u32)x, x + 1, y + 1))
                             {
                                 return true;
                             }
@@ -1421,11 +1442,11 @@ bool Map_0x370::sub_4E1A30(s32 tileX_min, s32 tileX_max, s32 tileY_min, s32 tile
                 gmp_block_info* pBlock4 = Map_0x370::GetEffectiveBlock_4DFE60(x, y + 1, zLevel);
                 if (pBlock4)
                 {
-                    if (((u16)word_6F6002 & pBlock4->field_4_top) != 0)
+                    if (((u16)gFaceCollisionMask_6F6002 & pBlock4->field_4_top) != 0)
                     {
                         if (!IsWestOrEastGradSlope_4634B0(pBlock4))
                         {
-                            if (gSprite_6F61E8->CheckBBoxScanlineIntersection_5A0970(x, x + 1, zLevel))
+                            if (gSprite_6F61E8->CheckBBoxScanlineIntersection_5A0970((u32)x, x + 1, y + 1))
                             {
                                 return true;
                             }
@@ -1449,7 +1470,6 @@ char Map_0x370::CanSpriteEnterTile_4E1E00(s32 regionLeft,
 {
     WIP_IMPLEMENTED;
 
-    gmp_block_info* pBlock1;
     gmp_block_info* pBlock2;
     gmp_block_info* pBlock3;
     gmp_block_info* pBlock4;
@@ -1475,18 +1495,11 @@ char Map_0x370::CanSpriteEnterTile_4E1E00(s32 regionLeft,
 
     if (gSprite_6F61E8)
     {
-        if (!sub_4E5170(gSprite_6F61E8->field_14_xy.x, gSprite_6F61E8->field_14_xy.y, gSprite_6F61E8->field_1C_zpos))
+        if (!IsZOnGround_4E5170(gSprite_6F61E8->field_14_xy.x, gSprite_6F61E8->field_14_xy.y, gSprite_6F61E8->field_1C_zpos))
         {
-            pBlock1 = get_block_4DFE10(gSprite_6F61E8->field_14_xy.x.ToInt(),
-                                                       gSprite_6F61E8->field_14_xy.y.ToInt(),
-                                                       gSprite_6F61E8->field_1C_zpos.ToInt());
-            if (!pBlock1)
-            {
-                return sub_4E1A30(regionLeft, regionRight, regionTop, regionBottom, zLevel);
-            }
-
-            if ((pBlock1->field_B_slope_type & 0xFC) == 0 || (pBlock1->field_B_slope_type & 0xFCu) >= 0xB4 ||
-                (pBlock1->field_B_slope_type & 3) == 0)
+            if (!IsGradientSlopeAt_466CF0(gSprite_6F61E8->field_14_xy.x.ToInt(),
+                                          gSprite_6F61E8->field_14_xy.y.ToInt(),
+                                          gSprite_6F61E8->field_1C_zpos.ToInt()))
             {
                 return sub_4E1A30(regionLeft, regionRight, regionTop, regionBottom, zLevel);
             }
@@ -1501,8 +1514,8 @@ char Map_0x370::CanSpriteEnterTile_4E1E00(s32 regionLeft,
         gBlockInfo0_6F5EB0 = &gBlockInfo1_6F5F40;
     }
 
-    s32 gradient_direction_;
-    gmp_map_slope* pSlopeType = &byte_6F5BA8[pBlock2->field_B_slope_type >> 2];
+    u8 gradient_direction_;
+    gmp_map_slope* pSlopeType = &gGmpSlopes_6F5BA8[pBlock2->field_B_slope_type >> 2];
     dword_6F5EC8 = pSlopeType;
     if (!pSlopeType->field_0_gradient_direction || pSlopeType->field_2_gradient_level)
     {
@@ -1511,7 +1524,7 @@ char Map_0x370::CanSpriteEnterTile_4E1E00(s32 regionLeft,
     else
     {
         gradient_direction_ = pSlopeType->field_0_gradient_direction;
-        switch (pSlopeType->field_0_gradient_direction)
+        switch (gradient_direction_)
         {
             case 1u:
                 ++dword_6F5FAC;
@@ -1536,41 +1549,23 @@ char Map_0x370::CanSpriteEnterTile_4E1E00(s32 regionLeft,
         goto LABEL_39;
     }
 
-    if (gradient_direction_ != 1)
+    if (gradient_direction_ == 1)
     {
-        if (((u16)word_6F6002 & gBlockInfo0_6F5EB0->field_4_top) == 0)
+        if (dword_6F6054 && (dword_6F6054->field_4_top & gFaceCollisionMask_6F6002))
         {
-            goto LABEL_32;
-        }
-        if (dword_6F5EC8->field_0_gradient_direction == 3)
-        {
-            goto LABEL_32;
-        }
-        if (dword_6F5EC8->field_0_gradient_direction == 4)
-        {
-            goto LABEL_32;
-        }
-        if (gSprite_6F61E8)
-        {
-            if (!gSprite_6F61E8->CheckBBoxScanlineIntersection_5A0970(tileX, tileX + 1, tileY))
+            if (!gSprite_6F61E8 || gSprite_6F61E8->CheckBBoxScanlineIntersection_5A0970(tileX, tileX + 1, tileY))
             {
-                goto LABEL_32;
+                return 1;
             }
         }
-        return 1;
     }
-    if (!dword_6F6054 || ((u16)word_6F6002 & dword_6F6054->field_4_top) == 0)
+    else if ((gBlockInfo0_6F5EB0->field_4_top & gFaceCollisionMask_6F6002) && dword_6F5EC8->field_0_gradient_direction != 3 &&
+             dword_6F5EC8->field_0_gradient_direction != 4)
     {
-        goto LABEL_32;
-    }
-    if (!gSprite_6F61E8)
-    {
-        return 1;
-    }
-
-    if (gSprite_6F61E8->CheckBBoxScanlineIntersection_5A0970(tileX, tileX + 1, tileY))
-    {
-        return 1;
+        if (!gSprite_6F61E8 || gSprite_6F61E8->CheckBBoxScanlineIntersection_5A0970(tileX, tileX + 1, tileY))
+        {
+            return 1;
+        }
     }
 
 LABEL_32:
@@ -1578,7 +1573,7 @@ LABEL_32:
     dword_6F606C = pBlock3;
     if (pBlock3)
     {
-        if (((u16)word_6F6002 & pBlock3->field_6_bottom) != 0)
+        if (((u16)gFaceCollisionMask_6F6002 & pBlock3->field_6_bottom) != 0)
         {
             if (!gSprite_6F61E8)
             {
@@ -1591,7 +1586,7 @@ LABEL_32:
             }
             pBlock3 = dword_6F606C;
         }
-        dword_6F6084 = &byte_6F5BA8[pBlock3->field_B_slope_type >> 2];
+        dword_6F6084 = &gGmpSlopes_6F5BA8[pBlock3->field_B_slope_type >> 2];
     }
 
 LABEL_39:
@@ -1601,7 +1596,7 @@ LABEL_39:
     }
     if (gradient_direction_ != 2)
     {
-        if (((u16)word_6F6002 & gBlockInfo0_6F5EB0->field_6_bottom) == 0)
+        if (((u16)gFaceCollisionMask_6F6002 & gBlockInfo0_6F5EB0->field_6_bottom) == 0)
         {
             goto LABEL_52;
         }
@@ -1627,7 +1622,7 @@ LABEL_39:
         goto LABEL_52;
     }
 
-    if (((u16)word_6F6002 & dword_6F6054->field_6_bottom) == 0)
+    if (((u16)gFaceCollisionMask_6F6002 & dword_6F6054->field_6_bottom) == 0)
     {
         goto LABEL_52;
     }
@@ -1646,7 +1641,7 @@ LABEL_52:
     dword_6F6070 = pBlock4;
     if (pBlock4)
     {
-        if (((u16)word_6F6002 & pBlock4->field_4_top) != 0)
+        if (((u16)gFaceCollisionMask_6F6002 & pBlock4->field_4_top) != 0)
         {
             if (!gSprite_6F61E8)
             {
@@ -1658,7 +1653,7 @@ LABEL_52:
             }
             pBlock4 = dword_6F6070;
         }
-        dword_6F6088 = &byte_6F5BA8[(u32)pBlock4->field_B_slope_type >> 2];
+        dword_6F6088 = &gGmpSlopes_6F5BA8[(u32)pBlock4->field_B_slope_type >> 2];
     }
 
 LABEL_59:
@@ -1668,7 +1663,7 @@ LABEL_59:
     }
     if (gradient_direction_ != 3)
     {
-        if (((u16)word_6F6002 & gBlockInfo0_6F5EB0->field_0_left) == 0)
+        if (((u16)gFaceCollisionMask_6F6002 & gBlockInfo0_6F5EB0->field_0_left) == 0)
         {
             goto LABEL_72;
         }
@@ -1694,7 +1689,7 @@ LABEL_59:
         goto LABEL_72;
     }
 
-    if (((u16)word_6F6002 & dword_6F6054->field_0_left) == 0)
+    if (((u16)gFaceCollisionMask_6F6002 & dword_6F6054->field_0_left) == 0)
     {
         goto LABEL_72;
     }
@@ -1713,7 +1708,7 @@ LABEL_72:
     dword_6F6078 = pBlock5;
     if (pBlock5)
     {
-        if (((u16)word_6F6002 & pBlock5->field_2_right) != 0)
+        if (((u16)gFaceCollisionMask_6F6002 & pBlock5->field_2_right) != 0)
         {
             if (!gSprite_6F61E8)
             {
@@ -1725,7 +1720,7 @@ LABEL_72:
             }
             pBlock5 = dword_6F6078;
         }
-        dword_6F608C = &byte_6F5BA8[pBlock5->field_B_slope_type >> 2];
+        dword_6F608C = &gGmpSlopes_6F5BA8[pBlock5->field_B_slope_type >> 2];
     }
     if (regionTop >= tileY)
     {
@@ -1733,7 +1728,7 @@ LABEL_72:
     }
     if (dword_6F606C)
     {
-        if (dword_6F5BA0 <= dword_6F5FAC && ((u16)word_6F6002 & dword_6F606C->field_0_left) != 0)
+        if (dword_6F5BA0 <= dword_6F5FAC && ((u16)gFaceCollisionMask_6F6002 & dword_6F606C->field_0_left) != 0)
         {
             if (dword_6F6084->field_0_gradient_direction != 1 && (u8)dword_6F6084->field_0_gradient_direction != 2)
             {
@@ -1766,7 +1761,7 @@ LABEL_72:
 
     if (dword_6F5FAC <= dword_6F5BA0)
     {
-        if (((u16)word_6F6002 & pBlock5->field_4_top) != 0 && dword_6F608C->field_0_gradient_direction != 3 &&
+        if (((u16)gFaceCollisionMask_6F6002 & pBlock5->field_4_top) != 0 && dword_6F608C->field_0_gradient_direction != 3 &&
             dword_6F608C->field_0_gradient_direction != 4)
         {
             if (!gSprite_6F61E8)
@@ -1790,7 +1785,7 @@ LABEL_99:
     dword_6F5F90 = pBlock6;
     if (pBlock6)
     {
-        if (((u16)word_6F6002 & pBlock6->field_2_right) != 0)
+        if (((u16)gFaceCollisionMask_6F6002 & pBlock6->field_2_right) != 0)
         {
             if (!gSprite_6F61E8)
             {
@@ -1806,7 +1801,7 @@ LABEL_99:
 
         if (pBlock6)
         {
-            if (((u16)word_6F6002 & pBlock6->field_6_bottom) != 0)
+            if (((u16)gFaceCollisionMask_6F6002 & pBlock6->field_6_bottom) != 0)
             {
                 if (!gSprite_6F61E8)
                 {
@@ -1830,7 +1825,7 @@ LABEL_111:
 
     if (dword_6F6070)
     {
-        if (dword_6F5BA0 <= dword_6F6248 && ((u16)word_6F6002 & dword_6F6070->field_0_left) != 0)
+        if (dword_6F5BA0 <= dword_6F6248 && ((u16)gFaceCollisionMask_6F6002 & dword_6F6070->field_0_left) != 0)
         {
             if (dword_6F6088->field_0_gradient_direction != 1 && (u8)dword_6F6088->field_0_gradient_direction != 2)
             {
@@ -1858,7 +1853,7 @@ LABEL_111:
             goto LABEL_131;
         }
 
-        if (((u16)word_6F6002 & pBlock5->field_6_bottom) != 0 && dword_6F608C->field_0_gradient_direction != 3 &&
+        if (((u16)gFaceCollisionMask_6F6002 & pBlock5->field_6_bottom) != 0 && dword_6F608C->field_0_gradient_direction != 3 &&
             dword_6F608C->field_0_gradient_direction != 4)
         {
             if (!gSprite_6F61E8)
@@ -1885,7 +1880,7 @@ LABEL_131:
     dword_6F5FB0 = pBlock7;
     if (pBlock7)
     {
-        if (((u16)word_6F6002 & pBlock7->field_2_right) != 0)
+        if (((u16)gFaceCollisionMask_6F6002 & pBlock7->field_2_right) != 0)
         {
             if (!gSprite_6F61E8)
             {
@@ -1900,7 +1895,7 @@ LABEL_131:
 
         if (pBlock7)
         {
-            if (((u16)word_6F6002 & pBlock7->field_4_top) != 0)
+            if (((u16)gFaceCollisionMask_6F6002 & pBlock7->field_4_top) != 0)
             {
                 if (!gSprite_6F61E8)
                 {
@@ -1920,7 +1915,7 @@ LABEL_142:
     }
     if (gradient_direction_ != 4)
     {
-        if (((u16)word_6F6002 & gBlockInfo0_6F5EB0->field_2_right) == 0)
+        if (((u16)gFaceCollisionMask_6F6002 & gBlockInfo0_6F5EB0->field_2_right) == 0)
         {
             goto LABEL_155;
         }
@@ -1943,7 +1938,7 @@ LABEL_142:
         return 1;
     }
 
-    if (!dword_6F6054 || ((u16)word_6F6002 & dword_6F6054->field_2_right) == 0)
+    if (!dword_6F6054 || ((u16)gFaceCollisionMask_6F6002 & dword_6F6054->field_2_right) == 0)
     {
         goto LABEL_155;
     }
@@ -1964,7 +1959,7 @@ LABEL_155:
     dword_6F6060 = pBlock8;
     if (pBlock8)
     {
-        if (((u16)word_6F6002 & pBlock8->field_0_left) != 0)
+        if (((u16)gFaceCollisionMask_6F6002 & pBlock8->field_0_left) != 0)
         {
             if (!gSprite_6F61E8)
             {
@@ -1977,7 +1972,7 @@ LABEL_155:
             }
             pBlock8 = dword_6F6060;
         }
-        dword_6F6080 = &byte_6F5BA8[pBlock8->field_B_slope_type >> 2];
+        dword_6F6080 = &gGmpSlopes_6F5BA8[pBlock8->field_B_slope_type >> 2];
     }
 
     if (regionTop >= tileY)
@@ -1987,7 +1982,7 @@ LABEL_155:
     
     if (dword_6F606C)
     {
-        if (dword_6F620C <= dword_6F5FAC && ((u16)word_6F6002 & dword_6F606C->field_2_right) != 0)
+        if (dword_6F620C <= dword_6F5FAC && ((u16)gFaceCollisionMask_6F6002 & dword_6F606C->field_2_right) != 0)
         {
             if (dword_6F6084->field_0_gradient_direction != 1 && (u8)dword_6F6084->field_0_gradient_direction != 2)
             {
@@ -2021,7 +2016,7 @@ LABEL_155:
 
     if (dword_6F5FAC <= dword_6F620C)
     {
-        if (((u16)word_6F6002 & pBlock8->field_4_top) != 0 && dword_6F6080->field_0_gradient_direction != 3 &&
+        if (((u16)gFaceCollisionMask_6F6002 & pBlock8->field_4_top) != 0 && dword_6F6080->field_0_gradient_direction != 3 &&
             dword_6F6080->field_0_gradient_direction != 4)
         {
             if (!gSprite_6F61E8)
@@ -2046,7 +2041,7 @@ LABEL_182:
 
     if (pBlock9)
     {
-        if (((u16)word_6F6002 & pBlock9->field_0_left) != 0)
+        if (((u16)gFaceCollisionMask_6F6002 & pBlock9->field_0_left) != 0)
         {
             if (!gSprite_6F61E8)
             {
@@ -2062,7 +2057,7 @@ LABEL_182:
 
         if (pBlock9)
         {
-            if (((u16)word_6F6002 & pBlock9->field_6_bottom) != 0)
+            if (((u16)gFaceCollisionMask_6F6002 & pBlock9->field_6_bottom) != 0)
             {
                 if (!gSprite_6F61E8)
                 {
@@ -2085,7 +2080,7 @@ LABEL_194:
     }
     if (dword_6F6070)
     {
-        if (dword_6F620C <= dword_6F6248 && ((u16)word_6F6002 & dword_6F6070->field_2_right) != 0)
+        if (dword_6F620C <= dword_6F6248 && ((u16)gFaceCollisionMask_6F6002 & dword_6F6070->field_2_right) != 0)
         {
             if (dword_6F6088->field_0_gradient_direction != 1 && (u8)dword_6F6088->field_0_gradient_direction != 2)
             {
@@ -2113,7 +2108,7 @@ LABEL_194:
             goto LABEL_214;
         }
 
-        if (((u16)word_6F6002 & pBlock8->field_6_bottom) != 0 && dword_6F6080->field_0_gradient_direction != 3 &&
+        if (((u16)gFaceCollisionMask_6F6002 & pBlock8->field_6_bottom) != 0 && dword_6F6080->field_0_gradient_direction != 3 &&
             dword_6F6080->field_0_gradient_direction != 4)
         {
             if (!gSprite_6F61E8)
@@ -2140,7 +2135,7 @@ LABEL_214:
     if (pBlock10)
     {
 
-        if ((((u16)word_6F6002) & pBlock10->field_0_left) != 0)
+        if ((((u16)gFaceCollisionMask_6F6002) & pBlock10->field_0_left) != 0)
         {
             if (!gSprite_6F61E8)
             {
@@ -2156,7 +2151,7 @@ LABEL_214:
 
         if (pBlock10)
         {
-            if (((u16)word_6F6002 & pBlock10->field_4_top) != 0)
+            if (((u16)gFaceCollisionMask_6F6002 & pBlock10->field_4_top) != 0)
             {
                 if (!gSprite_6F61E8)
                 {
@@ -2177,7 +2172,7 @@ MATCH_FUNC(0x4E4460)
 char_type Map_0x370::CanSpriteEnterMovementRegion_4E4460(s32 a2, s32 a3, s32 a4, Sprite* a5, s16 a6)
 {
     gSprite_6F61E8 = a5;
-    word_6F6002 = a6;
+    gFaceCollisionMask_6F6002 = a6;
     if (gPurple_right_6F5B80 - gPurple_left_6F5FD4 >= 3 || a2 > gPurple_left_6F5FD4 + 1 || a2 < gPurple_right_6F5B80 - 1)
     {
         if (CanSpriteEnterTile_4E1E00(a2 - 1, a2 + 1, gPurple_top_6F6108, gPurple_bottom_6F5F38, a2, a3, a4))
@@ -2242,7 +2237,7 @@ MATCH_FUNC(0x4E4630)
 char_type Map_0x370::sub_4E4630(Fix16 zpos_f16)
 {
     s32 zpos = zpos_f16.ToInt();
-    bool bUnk = zpos_f16.GetFracValue() != dword_6F610C;
+    bool bUnk = !!(zpos_f16.GetFracValue() != kFpZero_6F610C);
     char_type v12 = 0;
 
     for (s32 ypos = gPurple_top_6F6108; ypos <= gPurple_bottom_6F5F38; ypos++)
@@ -2262,7 +2257,7 @@ char_type Map_0x370::sub_4E4630(Fix16 zpos_f16)
                     }
                     else
                     {
-                        dword_6F5EC8 = &byte_6F5BA8[get_slope_idx(gBlockInfo0_6F5EB0->field_B_slope_type)];
+                        dword_6F5EC8 = &gGmpSlopes_6F5BA8[get_slope_idx(gBlockInfo0_6F5EB0->field_B_slope_type)];
                         if (dword_6F5EC8->field_2_gradient_level == dword_6F5EC8->field_1_gradient_size - 1)
                         {
                             v12 = 1;
@@ -2318,22 +2313,131 @@ bool Map_0x370::sub_4E4770(Fix16 z_pos)
     return false;
 }
 
-STUB_FUNC(0x4E4820)
-char_type Map_0x370::sub_4E4820(u32* a2, char_type a3)
+MATCH_FUNC(0x4E4820)
+char_type Map_0x370::sub_4E4820(Fix16_Rect* pRect, u8 slope_type)
 {
-    NOT_IMPLEMENTED;
-    return 0;
+    s32 left = Fix16::Round_To_Int_410BF0(pRect->get_left_45ADB0());
+    s32 right = Fix16::Round_To_Int_410BF0(pRect->get_right_45ADA0());
+    s32 top = Fix16::Round_To_Int_410BF0(pRect->get_top_45ADD0());
+    s32 bottom = Fix16::Round_To_Int_410BF0(pRect->get_bottom_45ADC0());
+
+    for (s32 y = top; y <= bottom; y++)
+    {
+        for (s32 x = left; x <= right; x++)
+        {
+            gBlockInfo0_6F5EB0 = get_block_4DFE10(x, y, pRect->get_low_z_4637A0().ToInt());
+            switch (slope_type)
+            {
+                case 0:
+                    if (gBlockInfo0_6F5EB0 && (gBlockInfo0_6F5EB0->field_B_slope_type & 3) != 0)
+                    {
+                        return false;
+                    }
+                    break;
+                case 1:
+                    if (gBlockInfo0_6F5EB0 && (gBlockInfo0_6F5EB0->field_B_slope_type & 3) != 1)
+                    {
+                        return false;
+                    }
+                    break;
+                case 2:
+                    if (gBlockInfo0_6F5EB0 && (gBlockInfo0_6F5EB0->field_B_slope_type & 3) != 2)
+                    {
+                        return false;
+                    }
+                    break;
+                case 3:
+                    if (gBlockInfo0_6F5EB0 && (gBlockInfo0_6F5EB0->field_B_slope_type & 3) != 3)
+                    {
+                        return false;
+                    }
+                    break;
+            }
+        }
+    }
+    return true;
 }
 
-STUB_FUNC(0x4E4930)
-char_type Map_0x370::sub_4E4930(u8* a1, u8* a2, u8* a3, char_type a4)
+// Spirals out from (x, y) until it finds a block of the given type and writes its position back
+MATCH_FUNC(0x4E4930)
+void __stdcall Map_0x370::FindNearbyBlockOfType_4E4930(u8* pX, u8* pY, u8* pZ, char_type block_type)
 {
-    NOT_IMPLEMENTED;
-    return 0;
+    u16 step = 1;
+    s32 direction = 3;
+    dword_6F6164 = *pX;
+    dword_6F6148 = *pY;
+    dword_6F613C = *pZ;
+    u16 i;
+    while (1)
+    {
+        switch (direction)
+        {
+            case 3:
+                for (i = 0; i < step; i++)
+                {
+                    dword_6F6164++;
+                    if (IsSearchBlockOfType_4E4AC0(block_type))
+                    {
+                        *pX = dword_6F6164;
+                        *pY = dword_6F6148;
+                        *pZ = dword_6F613C;
+                        return;
+                    }
+                }
+                direction = 2;
+
+                break;
+            case 2:
+                for (i = 0; i < step; i++)
+                {
+                    dword_6F6148++;
+                    if (IsSearchBlockOfType_4E4AC0(block_type))
+                    {
+                        *pX = dword_6F6164;
+                        *pY = dword_6F6148;
+                        *pZ = dword_6F613C;
+                        return;
+                    }
+                }
+                direction = 4;
+                step++;
+                break;
+            case 4:
+                for (i = 0; i < step; i++)
+                {
+                    dword_6F6164--;
+                    if (IsSearchBlockOfType_4E4AC0(block_type))
+                    {
+                        *pX = dword_6F6164;
+                        *pY = dword_6F6148;
+                        *pZ = dword_6F613C;
+                        return;
+                    }
+                }
+                direction = 1;
+
+                break;
+            case 1:
+                for (i = 0; i < step; i++)
+                {
+                    dword_6F6148--;
+                    if (IsSearchBlockOfType_4E4AC0(block_type))
+                    {
+                        *pX = dword_6F6164;
+                        *pY = dword_6F6148;
+                        *pZ = dword_6F613C;
+                        return;
+                    }
+                }
+                direction = 3;
+                step++;
+                break;
+        }
+    }
 }
 
 MATCH_FUNC(0x4E4AC0)
-bool Map_0x370::sub_4E4AC0(char_type block_type) // __stdcall ?
+bool __stdcall Map_0x370::IsSearchBlockOfType_4E4AC0(char_type block_type)
 {
     if (dword_6F6164 >= 0 && dword_6F6148 >= 0 && dword_6F6164 <= 255 && dword_6F6148 <= 255)
     {
@@ -2378,7 +2482,7 @@ bool Map_0x370::CheckGreenArrowDirection_4E4B40(s32 direction, gmp_block_info* p
 MATCH_FUNC(0x4E4BB0)
 gmp_block_info* Map_0x370::FindPavementBlockForCoord_4E4BB0(s32 x, s32 y, s32& z)
 {
-    gmp_col_info* pColumn = (gmp_col_info*)&field_0_pDmap->field_40008_pColumn[field_0_pDmap->field_0_base[y][x]];
+    gmp_col_info* pColumn = (gmp_col_info*)&field_0_pDmap->field_40008_pColumn[*field_0_pDmap->get_base_42A830(y, x)];
     for (s32 curr_z_pos = pColumn->field_0_height - pColumn->field_1_offset - 1; curr_z_pos >= 0; curr_z_pos--)
     {
         //  Begin with the highest non-empty block in the column
@@ -2400,7 +2504,7 @@ gmp_block_info* Map_0x370::FindPavementBlockForCoord_4E4BB0(s32 x, s32 y, s32& z
 MATCH_FUNC(0x4E4C30)
 gmp_block_info* Map_0x370::FindHighestBlockForCoord_4E4C30(s32 x, s32 y, s32* found_z)
 {
-    gmp_col_info* v4 = (gmp_col_info*)&this->field_0_pDmap->field_40008_pColumn[field_0_pDmap->field_0_base[y][x]];
+    gmp_col_info* v4 = (gmp_col_info*)&this->field_0_pDmap->field_40008_pColumn[*field_0_pDmap->get_base_42A830(y, x)];
 
     for (s32 curr_z_pos = v4->field_0_height - v4->field_1_offset - 1; curr_z_pos >= 0; curr_z_pos--)
     {
@@ -2416,9 +2520,9 @@ gmp_block_info* Map_0x370::FindHighestBlockForCoord_4E4C30(s32 x, s32 y, s32* fo
 }
 
 MATCH_FUNC(0x4E4CB0)
-gmp_block_info* Map_0x370::sub_4E4CB0(s32 x, s32 y, s32& z)
+gmp_block_info* Map_0x370::FindNonAirBlockAtOrBelowZ_4E4CB0(s32 x, s32 y, s32& z)
 {
-    gmp_col_info* pColumn = (gmp_col_info*)&this->field_0_pDmap->field_40008_pColumn[this->field_0_pDmap->field_0_base[y][x]];
+    gmp_col_info* pColumn = (gmp_col_info*)&this->field_0_pDmap->field_40008_pColumn[*this->field_0_pDmap->get_base_42A830(y, x)];
 
     if (z < pColumn->field_1_offset)
     {
@@ -2440,23 +2544,20 @@ gmp_block_info* Map_0x370::sub_4E4CB0(s32 x, s32 y, s32& z)
 }
 
 MATCH_FUNC(0x4E4D40)
-Fix16 Map_0x370::sub_4E4D40(Fix16 x_pos, Fix16 y_pos, Fix16 z_pos)
+Fix16 Map_0x370::FindGroundZBelowCoord_4E4D40(Fix16 x_pos, Fix16 y_pos, Fix16 z_pos)
 {
-    gmp_block_info* block_4DFE10;
     u8 slope_byte;
     Fix16 new_z;
 
-    if (z_pos.GetFracValue() == dword_6F610C ||
-        (block_4DFE10 = Map_0x370::get_block_4DFE10(x_pos.ToInt(), y_pos.ToInt(), z_pos.ToInt())) == NULL ||
-        (slope_byte = block_4DFE10->field_B_slope_type, !is_gradient_slope(slope_byte)) || is_air_type(slope_byte) ||
+    if (z_pos.GetFracValue() == kFpZero_6F610C || !IsGradientSlopeAt_466CF0(x_pos.ToInt(), y_pos.ToInt(), z_pos.ToInt()) ||
         (new_z = z_pos.GetRoundValue(), Map_0x370::UpdateZFromSlopeAtCoord_4E5BF0(x_pos, y_pos, new_z), new_z > z_pos))
     {
         s32 v14 = z_pos.ToInt() - 1;
-        gmp_block_info* v11 = Map_0x370::sub_4E4CB0(x_pos.ToInt(), y_pos.ToInt(), v14);
+        gmp_block_info* v11 = Map_0x370::FindNonAirBlockAtOrBelowZ_4E4CB0(x_pos.ToInt(), y_pos.ToInt(), v14);
         gBlockInfo0_6F5EB0 = v11;
         if (v11 == NULL)
         {
-            return dword_6F6110;
+            return kFpOne_6F6110;
         }
         slope_byte = v11->field_B_slope_type;
 
@@ -2476,14 +2577,14 @@ Fix16 Map_0x370::sub_4E4D40(Fix16 x_pos, Fix16 y_pos, Fix16 z_pos)
 MATCH_FUNC(0x4E4E50)
 Fix16* Map_0x370::sub_4E4E50(Fix16* found_z, Fix16 x_pos, Fix16 y_pos, Fix16 z_pos)
 {
-    for (Fix16 curr_z = z_pos; curr_z < z_pos + dword_6F6110; curr_z = dword_6F6110 + curr_z.GetRoundValue())
+    for (Fix16 curr_z = z_pos; curr_z < z_pos + kFpOne_6F6110; curr_z = kFpOne_6F6110 + curr_z.GetRoundValue())
     {
         gmp_block_info* block_4DFE10 = get_block_4DFE10(x_pos.ToInt(), y_pos.ToInt(), curr_z.ToInt());
         gBlockInfo0_6F5EB0 = block_4DFE10;
         u8 slope_byte;
         if (block_4DFE10 == NULL || (slope_byte = block_4DFE10->field_B_slope_type, is_air_type(slope_byte)))
         {
-            gmp_block_info* v12 = get_block_4DFE10(x_pos.ToInt(), y_pos.ToInt(), (curr_z - dword_6F6110).ToInt());
+            gmp_block_info* v12 = get_block_4DFE10(x_pos.ToInt(), y_pos.ToInt(), (curr_z - kFpOne_6F6110).ToInt());
             gBlockInfo0_6F5EB0 = v12;
             if (v12)
             {
@@ -2519,21 +2620,19 @@ Fix16* Map_0x370::sub_4E4E50(Fix16* found_z, Fix16 x_pos, Fix16 y_pos, Fix16 z_p
 }
 
 MATCH_FUNC(0x4E4F40)
-Fix16* Map_0x370::sub_4E4F40(Fix16* found_z, Fix16 x, Fix16 y, Fix16 z)
+Fix16* Map_0x370::GetGroundZBelowCoord_4E4F40(Fix16* found_z, Fix16 x, Fix16 y, Fix16 z)
 {
-    gmp_block_info* block_4DFE10;
     Fix16 new_z;
 
-    if (z.GetFracValue() == dword_6F610C || (block_4DFE10 = Map_0x370::get_block_4DFE10(x.ToInt(), y.ToInt(), z.ToInt())) == NULL ||
-        !is_gradient_slope(block_4DFE10->field_B_slope_type) || is_air_type(block_4DFE10->field_B_slope_type) ||
+    if (z.GetFracValue() == kFpZero_6F610C || !IsGradientSlopeAt_466CF0(x.ToInt(), y.ToInt(), z.ToInt()) ||
         (new_z = z.GetRoundValue(), Map_0x370::UpdateZFromSlopeAtCoord_4E5BF0(x, y, new_z), new_z > z))
     {
         s32 int_z = z.ToInt() - 1;
-        gBlockInfo0_6F5EB0 = Map_0x370::sub_4E4CB0(x.ToInt(), y.ToInt(), int_z);
+        gBlockInfo0_6F5EB0 = Map_0x370::FindNonAirBlockAtOrBelowZ_4E4CB0(x.ToInt(), y.ToInt(), int_z);
 
         if (!gBlockInfo0_6F5EB0)
         {
-            *found_z = dword_6F610C;
+            *found_z = kFpZero_6F610C;
             return found_z;
         }
         if (is_gradient_slope(gBlockInfo0_6F5EB0->field_B_slope_type) && !is_air_type(gBlockInfo0_6F5EB0->field_B_slope_type))
@@ -2555,7 +2654,7 @@ Fix16 Map_0x370::sub_4E5050(Fix16 x, Fix16 y, Fix16 z, bool& bFound)
 {
     Fix16 new_z;
     bFound = false;
-    if (z.GetFracValue() != dword_6F610C)
+    if (z.GetFracValue() != kFpZero_6F610C)
     {
         gmp_block_info* block_4DFE10 = Map_0x370::get_block_4DFE10(x.ToInt(), y.ToInt(), z.ToInt());
         if (block_4DFE10)
@@ -2573,10 +2672,10 @@ Fix16 Map_0x370::sub_4E5050(Fix16 x, Fix16 y, Fix16 z, bool& bFound)
         }
     }
     s32 v14 = z.ToInt() - 1;
-    gBlockInfo0_6F5EB0 = Map_0x370::sub_4E4CB0(x.ToInt(), y.ToInt(), v14);
+    gBlockInfo0_6F5EB0 = Map_0x370::FindNonAirBlockAtOrBelowZ_4E4CB0(x.ToInt(), y.ToInt(), v14);
     if (!gBlockInfo0_6F5EB0)
     {
-        return dword_6F6110;
+        return kFpOne_6F6110;
     }
     if (is_gradient_slope(gBlockInfo0_6F5EB0->field_B_slope_type) && !is_air_type(gBlockInfo0_6F5EB0->field_B_slope_type))
     {
@@ -2591,9 +2690,9 @@ Fix16 Map_0x370::sub_4E5050(Fix16 x, Fix16 y, Fix16 z, bool& bFound)
 }
 
 MATCH_FUNC(0x4E5170)
-bool Map_0x370::sub_4E5170(Fix16 x, Fix16 y, Fix16 z)
+bool Map_0x370::IsZOnGround_4E5170(Fix16 x, Fix16 y, Fix16 z)
 {
-    if (z.GetFracValue() != dword_6F610C)
+    if (z.GetFracValue() != kFpZero_6F610C)
     {
         gBlockInfo0_6F5EB0 = Map_0x370::get_block_4DFE10(x.ToInt(), y.ToInt(), z.ToInt());
         if (gBlockInfo0_6F5EB0)
@@ -2611,11 +2710,11 @@ bool Map_0x370::sub_4E5170(Fix16 x, Fix16 y, Fix16 z)
     }
     else
     {
-        if (z == dword_6F6110)
+        if (z == kFpOne_6F6110)
         {
             return true;
         }
-        gBlockInfo0_6F5EB0 = Map_0x370::get_block_4DFE10(x.ToInt(), y.ToInt(), (z - dword_6F6110).ToInt());
+        gBlockInfo0_6F5EB0 = Map_0x370::get_block_4DFE10(x.ToInt(), y.ToInt(), (z - kFpOne_6F6110).ToInt());
         if (gBlockInfo0_6F5EB0 && !is_air_type(gBlockInfo0_6F5EB0->field_B_slope_type))
         {
             return true;
@@ -2627,11 +2726,11 @@ bool Map_0x370::sub_4E5170(Fix16 x, Fix16 y, Fix16 z)
 MATCH_FUNC(0x4E52A0)
 char_type Map_0x370::sub_4E52A0(Fix16 x, Fix16 y, Fix16 z)
 {
-    gBlockInfo0_6F5EB0 = Map_0x370::get_block_4DFE10(x.ToInt(), y.ToInt(), (z - dword_6F6110).ToInt());
+    gBlockInfo0_6F5EB0 = Map_0x370::get_block_4DFE10(x.ToInt(), y.ToInt(), (z - kFpOne_6F6110).ToInt());
 
     if (gBlockInfo0_6F5EB0)
     {
-        if (gGtx_0x106C_703DD4->field_6C_spec[get_tile_idx(gBlockInfo0_6F5EB0->field_8_lid)] == tile_spec::water)
+        if (gGtx_0x106C_703DD4->IsWaterTile_462FB0(get_tile_idx(gBlockInfo0_6F5EB0->field_8_lid)))
         {
             return 7;
         }
@@ -2760,7 +2859,7 @@ bool Map_0x370::CanPlaceOilOrMine_4E5480(Fix16 x, Fix16 y, Fix16 z, Fix16 unk_z_
                 }
                 else
                 {
-                    *found_z = z_floor + dword_6F6110;
+                    *found_z = z_floor + kFpOne_6F6110;
                     return true;
                 }
             }
@@ -2780,20 +2879,44 @@ gmp_map_slope::gmp_map_slope(u8 gradient_direction, u8 gradient_size, u8 gradien
 }
 
 // https://decomp.me/scratch/zXDWw
+// GetLength_453590 as inlined into sub_4E5640 (out of line helpers)
+static inline Fix16 GetLength_inline_4E5640(Fix16_Point& p)
+{
+    if (p.x == kFpZero_6F610C)
+    {
+        return Fix16::Abs_436A50(p.y);
+    }
+    else if (p.y == kFpZero_6F610C)
+    {
+        return Fix16::Abs_436A50(p.x);
+    }
+    else
+    {
+        return Fix16::SquareRoot_436A70((const Fix16&)p.x.Multiply_408680(p.x) + p.y.Multiply_408680(p.y));
+    }
+}
+
+// Ang16::PolarToCartesian_41FC20 as inlined into sub_4E5640 (out of line multiplies)
+static inline void PolarToCartesian_inline_4E5640(Ang16& angle, Fix16& radius, Fix16& ret1, Fix16& ret2)
+{
+    ret1 = Ang16::sine_40F500(angle).Multiply_408680(radius);
+    ret2 = Ang16::cosine_40F520(angle).Multiply_408680(radius);
+}
+
 WIP_FUNC(0x4E5640)
 char_type Map_0x370::sub_4E5640(Fix16 width, Fix16 height, Fix16 depth, Fix16 x_1, Fix16 y_1, Fix16 z_1, Fix16 x_2, Fix16 y_2, Fix16 z_2)
 {
     WIP_IMPLEMENTED;
-    Sprite* pObjSprt = gObject_5C_6F8F84->field_58;
+    Sprite* pObjSprt = gObject_5C_6F8F84->field_58_collision_probe_sprite;
     Fix16 z_diff = z_2 - z_1;
     Ang16 angle;
     Fix16_Point pos_diff(x_2 - x_1, y_2 - y_1);
 
-    gRozza_679188.sub_4637B0();
+    gRozza_679188.Reset_4637B0();
 
     angle = Fix16::atan2_fixed_405320(y_2 - y_1, x_2 - x_1);
 
-    Fix16 distance = pos_diff.GetLength_2(); // GetLength_453590
+    Fix16 distance = GetLength_inline_4E5640(pos_diff);
     pObjSprt->set_xyz_lazy_420600(x_1, y_1, z_1);
     pObjSprt->set_ang_lazy_420690(angle);
     pObjSprt->AllocInternal_59F950(width, height, depth);
@@ -2802,7 +2925,7 @@ char_type Map_0x370::sub_4E5640(Fix16 width, Fix16 height, Fix16 depth, Fix16 x_
     Fix16 value_2;
     Fix16 value_3;
 
-    if (distance != dword_6F610C)
+    if (distance != kFpZero_6F610C)
     {
         value_1 = distance / height;
         value_2 = distance / value_1;
@@ -2810,13 +2933,13 @@ char_type Map_0x370::sub_4E5640(Fix16 width, Fix16 height, Fix16 depth, Fix16 x_
     }
     else
     {
-        value_2 = dword_6F610C;
-        value_1 = dword_6F610C;
+        value_2 = kFpZero_6F610C;
+        value_1 = kFpZero_6F610C;
     }
 
-    if (value_1 < dword_6F6110)
+    if (value_1 < kFpOne_6F6110)
     {
-        value_1 = dword_6F6110;
+        value_1 = kFpOne_6F6110;
         value_2 = distance;
         value_3 = z_diff;
     }
@@ -2824,12 +2947,12 @@ char_type Map_0x370::sub_4E5640(Fix16 width, Fix16 height, Fix16 depth, Fix16 x_
     Fix16 vec_x;
     Fix16 vec_y;
 
-    Ang16::PolarToCartesian_41FC20(angle, value_2, vec_x, vec_y);
+    PolarToCartesian_inline_4E5640(angle, value_2, vec_x, vec_y);
 
     for (u8 i = 1; i <= value_1.ToInt(); i++)
     {
-        Fix16 unk_f16 = gMap_0x370_6F6268->sub_4E4D40(pObjSprt->field_14_xy.x, pObjSprt->field_14_xy.y, pObjSprt->field_1C_zpos);
-        if (value_3 == dword_6F610C)
+        Fix16 unk_f16 = gMap_0x370_6F6268->FindGroundZBelowCoord_4E4D40(pObjSprt->field_14_xy.x, pObjSprt->field_14_xy.y, pObjSprt->field_1C_zpos);
+        if (value_3 == kFpZero_6F610C)
         {
             pObjSprt->set_xyz_lazy_420600(pObjSprt->field_14_xy.x + vec_x,
                                           pObjSprt->field_14_xy.y + vec_y,
@@ -2842,23 +2965,23 @@ char_type Map_0x370::sub_4E5640(Fix16 width, Fix16 height, Fix16 depth, Fix16 x_
         }
         else
         {
-            if (value_3 > dword_6F610C)
+            if (value_3 > kFpZero_6F610C)
             {
                 // line 110 of 9.6f idb
                 pObjSprt->set_xyz_lazy_420600(pObjSprt->field_14_xy.x + vec_x,
                                               pObjSprt->field_14_xy.y + vec_y,
                                               pObjSprt->field_1C_zpos + value_3);
-                if (pObjSprt->field_1C_zpos > dword_6F6128)
+                if (pObjSprt->field_1C_zpos > kFpSeven_6F6128)
                 {
                     return 0;
                 }
 
-                if (pObjSprt->field_1C_zpos < dword_6F6128 &&
+                if (pObjSprt->field_1C_zpos < kFpSeven_6F6128 &&
                     gMap_0x370_6F6268->GetBlockTypeAtCoord_420420(pObjSprt->field_14_xy.x.ToInt(),
                                                                   pObjSprt->field_14_xy.y.ToInt(),
-                                                                  (pObjSprt->field_1C_zpos + dword_6F5FE0).ToInt()) != AIR)
+                                                                  (pObjSprt->field_1C_zpos + kFpHalf_6F5FE0).ToInt()) != AIR)
                 {
-                    if (!IsGradientSlopeAt_466CF0(pObjSprt->field_14_xy.x.ToInt(),
+                    if (!gMap_0x370_6F6268->IsGradientSlopeAt_466CF0(pObjSprt->field_14_xy.x.ToInt(),
                                                   pObjSprt->field_14_xy.y.ToInt(),
                                                   pObjSprt->field_1C_zpos.ToInt()))
                     {
@@ -2880,7 +3003,7 @@ char_type Map_0x370::sub_4E5640(Fix16 width, Fix16 height, Fix16 depth, Fix16 x_
                                               pObjSprt->field_14_xy.y + vec_y,
                                               pObjSprt->field_1C_zpos + value_3);
 
-                if (IsGradientSlopeAt_466CF0(pObjSprt->field_14_xy.x.ToInt(),
+                if (gMap_0x370_6F6268->IsGradientSlopeAt_466CF0(pObjSprt->field_14_xy.x.ToInt(),
                                              pObjSprt->field_14_xy.y.ToInt(),
                                              pObjSprt->field_1C_zpos.ToInt()))
                 {
@@ -2889,7 +3012,7 @@ char_type Map_0x370::sub_4E5640(Fix16 width, Fix16 height, Fix16 depth, Fix16 x_
                                                                       pObjSprt->field_1C_zpos.ToInt()) != AIR)
                     {
                         Fix16 unk2_f16 =
-                            gMap_0x370_6F6268->sub_4E4D40(pObjSprt->field_14_xy.x, pObjSprt->field_14_xy.y, pObjSprt->field_1C_zpos);
+                            gMap_0x370_6F6268->FindGroundZBelowCoord_4E4D40(pObjSprt->field_14_xy.x, pObjSprt->field_14_xy.y, pObjSprt->field_1C_zpos);
                         if (unk2_f16 > pObjSprt->field_1C_zpos)
                         {
                             return 0;
@@ -2955,20 +3078,20 @@ u8 Map_0x370::UpdateZFromSlopeAtCoord_4E5BF0(Fix16 x_pos, Fix16 y_pos, Fix16& z_
 
         if (!is_air_type(gBlockInfo0_6F5EB0->field_B_slope_type))
         {
-            dword_6F5EC8 = &byte_6F5BA8[get_slope_idx(gBlockInfo0_6F5EB0->field_B_slope_type)];
+            dword_6F5EC8 = &gGmpSlopes_6F5BA8[get_slope_idx(gBlockInfo0_6F5EB0->field_B_slope_type)];
 
             switch (dword_6F5EC8->field_0_gradient_direction)
             {
                 case 0:
                     return 0;
                 case NORTH_1:
-                    grad_pos = dword_6F6110 - y_pos.GetFracValue();
+                    grad_pos = kFpOne_6F6110 - y_pos.GetFracValue();
                     break;
                 case SOUTH_2:
                     grad_pos = y_pos.GetFracValue();
                     break;
                 case WEST_3:
-                    grad_pos = dword_6F6110 - x_pos.GetFracValue();
+                    grad_pos = kFpOne_6F6110 - x_pos.GetFracValue();
                     break;
                 case EAST_4:
                     grad_pos = x_pos.GetFracValue();
@@ -2981,9 +3104,9 @@ u8 Map_0x370::UpdateZFromSlopeAtCoord_4E5BF0(Fix16 x_pos, Fix16 y_pos, Fix16& z_
 
             Fix16 relative_z_pos = dword_6F5EC8->field_4_zpos_lower + (grad_pos * grad_scale);
 
-            if (relative_z_pos == dword_6F610C)
+            if (relative_z_pos == kFpZero_6F610C)
             {
-                relative_z_pos = dword_6F60C0;
+                relative_z_pos = kFpOneSixtyFourth_6F60C0;
             }
             z_pos = relative_z_pos + z_pos.GetRoundValue();
             return dword_6F5EC8->field_0_gradient_direction;
@@ -2992,9 +3115,75 @@ u8 Map_0x370::UpdateZFromSlopeAtCoord_4E5BF0(Fix16 x_pos, Fix16 y_pos, Fix16& z_
     return 0;
 }
 
+MATCH_FUNC(0x4E5D10)
+void Map_0x370::sub_4E5D10(Fix16* pX, Fix16* pY, Fix16 dist, s32 direction)
+{
+    switch (direction)
+    {
+        case road_direction::up_1:
+            *pY -= dist;
+            break;
+        case road_direction::down_2:
+            *pY += dist;
+            break;
+        case road_direction::left_4:
+            *pX -= dist;
+            break;
+        case road_direction::right_3:
+            *pX += dist;
+            break;
+    }
+}
+
+MATCH_FUNC(0x4E5D70)
+Fix16* Map_0x370::sub_4E5D70(Fix16* pOut, Fix16 x, Fix16 y, Ang16 angle)
+{
+    Fix16 result = kFpZero_6F610C;
+    switch (Ang16::GetAngleFace_4F78F0(angle))
+    {
+        case 1:
+            result = x.GetFracValue();
+            break;
+        case 2:
+            result = kFpOne_6F6110 - x.GetFracValue();
+            break;
+        case 3:
+            result = y.GetFracValue();
+            break;
+        case 4:
+            result = kFpOne_6F6110 - y.GetFracValue();
+            break;
+    }
+    *pOut = result;
+    return pOut;
+}
+
+MATCH_FUNC(0x4E5E00)
+Fix16* Map_0x370::sub_4E5E00(Fix16* pOut, Fix16 x, Fix16 y, Ang16 angle)
+{
+    Fix16 result = kFpZero_6F610C;
+    switch (Ang16::GetAngleFace_4F78F0(angle))
+    {
+        case 1:
+            result = y.GetFracValue();
+            break;
+        case 2:
+            result = kFpOne_6F6110 - y.GetFracValue();
+            break;
+        case 3:
+            result = kFpOne_6F6110 - x.GetFracValue();
+            break;
+        case 4:
+            result = x.GetFracValue();
+            break;
+    }
+    *pOut = result;
+    return pOut;
+}
+
 // https://decomp.me/scratch/9rRLR
 WIP_FUNC(0x4E5E90)
-char_type Map_0x370::sub_4E5E90(gmp_block_info* pBlock, s32 direction, char_type a3)
+char_type Map_0x370::HasGreenArrowForPathDirection_4E5E90(gmp_block_info* pBlock, s32 direction, char_type a3)
 {
     WIP_IMPLEMENTED;
     switch (direction)
@@ -3002,38 +3191,38 @@ char_type Map_0x370::sub_4E5E90(gmp_block_info* pBlock, s32 direction, char_type
         case 1:
             if (a3)
             {
-                return gRouteFinder_6FFDC8->HasBlockDesiredArrow_588CA0(pBlock, GREEN_ONLY_1, UP_1);
+                return gRouteFinder_6FFDC8->HasBlockDesiredArrow_588CA0(pBlock, green_1, UP_1);
             }
             else
             {
-                return gRouteFinder_6FFDC8->HasBlockDesiredArrow_588CA0(pBlock, GREEN_ONLY_1, DOWN_2);
+                return gRouteFinder_6FFDC8->HasBlockDesiredArrow_588CA0(pBlock, green_1, DOWN_2);
             }
         case 2:
             if (a3)
             {
-                return gRouteFinder_6FFDC8->HasBlockDesiredArrow_588CA0(pBlock, GREEN_ONLY_1, DOWN_2);
+                return gRouteFinder_6FFDC8->HasBlockDesiredArrow_588CA0(pBlock, green_1, DOWN_2);
             }
             else
             {
-                return gRouteFinder_6FFDC8->HasBlockDesiredArrow_588CA0(pBlock, GREEN_ONLY_1, UP_1);
+                return gRouteFinder_6FFDC8->HasBlockDesiredArrow_588CA0(pBlock, green_1, UP_1);
             }
         case 3:
             if (a3)
             {
-                return gRouteFinder_6FFDC8->HasBlockDesiredArrow_588CA0(pBlock, GREEN_ONLY_1, RIGHT_4);
+                return gRouteFinder_6FFDC8->HasBlockDesiredArrow_588CA0(pBlock, green_1, RIGHT_4);
             }
             else
             {
-                return gRouteFinder_6FFDC8->HasBlockDesiredArrow_588CA0(pBlock, GREEN_ONLY_1, LEFT_3);
+                return gRouteFinder_6FFDC8->HasBlockDesiredArrow_588CA0(pBlock, green_1, LEFT_3);
             }
         case 4:
             if (a3)
             {
-                return gRouteFinder_6FFDC8->HasBlockDesiredArrow_588CA0(pBlock, GREEN_ONLY_1, LEFT_3);
+                return gRouteFinder_6FFDC8->HasBlockDesiredArrow_588CA0(pBlock, green_1, LEFT_3);
             }
             else
             {
-                return gRouteFinder_6FFDC8->HasBlockDesiredArrow_588CA0(pBlock, GREEN_ONLY_1, RIGHT_4);
+                return gRouteFinder_6FFDC8->HasBlockDesiredArrow_588CA0(pBlock, green_1, RIGHT_4);
             }
             break;
         default:
@@ -3045,7 +3234,7 @@ MATCH_FUNC(0x4E5FC0)
 s32 Map_0x370::GetArrowDirectionFromBlock_4E5FC0(gmp_block_info* pBlock, char_type bDontFlip)
 {
     s32 result = 0;
-    if (gRouteFinder_6FFDC8->HasBlockDesiredArrow_588CA0(pBlock, GREEN_OR_RED_3, RIGHT_4))
+    if (gRouteFinder_6FFDC8->HasBlockDesiredArrow_588CA0(pBlock, green_or_red_3, RIGHT_4))
     {
         if (bDontFlip)
         {
@@ -3056,7 +3245,7 @@ s32 Map_0x370::GetArrowDirectionFromBlock_4E5FC0(gmp_block_info* pBlock, char_ty
             result = road_direction::left_4;
         }
     }
-    else if (gRouteFinder_6FFDC8->HasBlockDesiredArrow_588CA0(pBlock, GREEN_OR_RED_3, DOWN_2))
+    else if (gRouteFinder_6FFDC8->HasBlockDesiredArrow_588CA0(pBlock, green_or_red_3, DOWN_2))
     {
         if (bDontFlip)
         {
@@ -3067,7 +3256,7 @@ s32 Map_0x370::GetArrowDirectionFromBlock_4E5FC0(gmp_block_info* pBlock, char_ty
             result = road_direction::up_1;
         }
     }
-    else if (gRouteFinder_6FFDC8->HasBlockDesiredArrow_588CA0(pBlock, GREEN_OR_RED_3, LEFT_3))
+    else if (gRouteFinder_6FFDC8->HasBlockDesiredArrow_588CA0(pBlock, green_or_red_3, LEFT_3))
     {
         if (bDontFlip)
         {
@@ -3078,7 +3267,7 @@ s32 Map_0x370::GetArrowDirectionFromBlock_4E5FC0(gmp_block_info* pBlock, char_ty
             result = road_direction::right_3;
         }
     }
-    else if (gRouteFinder_6FFDC8->HasBlockDesiredArrow_588CA0(pBlock, GREEN_OR_RED_3, UP_1))
+    else if (gRouteFinder_6FFDC8->HasBlockDesiredArrow_588CA0(pBlock, green_or_red_3, UP_1))
     {
         if (bDontFlip)
         {
@@ -3105,7 +3294,7 @@ s16 Map_0x370::sub_4E6190(Fix16 x, Fix16 y, Fix16 z, s32 a5, char_type a6)
 
     gBlockInfo0_6F5EB0 = Map_0x370::get_block_4DFE10(x.ToInt(), y.ToInt(), z.ToInt());
 
-    dword_6F5EC8 = &byte_6F5BA8[gBlockInfo0_6F5EB0->field_B_slope_type >> 2];
+    dword_6F5EC8 = &gGmpSlopes_6F5BA8[gBlockInfo0_6F5EB0->field_B_slope_type >> 2];
     switch (dword_6F5EC8->field_0_gradient_direction)
     {
         case 1:
@@ -3151,16 +3340,16 @@ s16 Map_0x370::sub_4E6190(Fix16 x, Fix16 y, Fix16 z, s32 a5, char_type a6)
 }
 
 MATCH_FUNC(0x4E62B0)
-Fix16* Map_0x370::sub_4E62B0(Fix16* a1, Fix16 a2)
+Fix16* Map_0x370::FloorPlusOne_4E62B0(Fix16* a1, Fix16 a2)
 {
-    *a1 = dword_6F6110 + a2.GetRoundValue();
+    *a1 = kFpOne_6F6110 + a2.GetRoundValue();
     return a1;
 }
 
 MATCH_FUNC(0x4E62D0)
 gmp_block_info* Map_0x370::FindRailwayAtCoord_4E62D0(s32 x, s32 y, s32& found_z)
 {
-    gmp_col_info* pColumn = (gmp_col_info*)&field_0_pDmap->field_40008_pColumn[field_0_pDmap->field_0_base[y][x]];
+    gmp_col_info* pColumn = (gmp_col_info*)&field_0_pDmap->field_40008_pColumn[*field_0_pDmap->get_base_42A830(y, x)];
 
     for (s32 curr_z = pColumn->field_0_height - pColumn->field_1_offset - 1; curr_z >= 0; curr_z--)
     {
@@ -3177,7 +3366,7 @@ gmp_block_info* Map_0x370::FindRailwayAtCoord_4E62D0(s32 x, s32 y, s32& found_z)
 MATCH_FUNC(0x4E6360)
 gmp_block_info* Map_0x370::FindRailwayBelowZAtCoord_4E6360(s32 x, s32 y, s32& z)
 {
-    gmp_col_info* pColumn = (gmp_col_info*)&field_0_pDmap->field_40008_pColumn[field_0_pDmap->field_0_base[y][x]];
+    gmp_col_info* pColumn = (gmp_col_info*)&field_0_pDmap->field_40008_pColumn[*field_0_pDmap->get_base_42A830(y, x)];
 
     if (z >= pColumn->field_1_offset)
     {
@@ -3199,14 +3388,12 @@ gmp_block_info* Map_0x370::FindRailwayBelowZAtCoord_4E6360(s32 x, s32 y, s32& z)
 }
 
 MATCH_FUNC(0x4E6400)
-Fix16* Map_0x370::sub_4E6400(Fix16* found_z, Fix16 x_pos, Fix16 y_pos, Fix16 z_pos)
+Fix16* Map_0x370::GetRailwayZBelowCoord_4E6400(Fix16* found_z, Fix16 x_pos, Fix16 y_pos, Fix16 z_pos)
 {
-    gmp_block_info* block_4DFE10;
     u8 slope_byte;
     Fix16 new_z;
 
-    if (z_pos.GetFracValue() == dword_6F610C || (block_4DFE10 = get_block_4DFE10(x_pos.ToInt(), y_pos.ToInt(), z_pos.ToInt())) == NULL ||
-        (slope_byte = block_4DFE10->field_B_slope_type, !is_gradient_slope(slope_byte)) || is_air_type(slope_byte) ||
+    if (z_pos.GetFracValue() == kFpZero_6F610C || !IsGradientSlopeAt_466CF0(x_pos.ToInt(), y_pos.ToInt(), z_pos.ToInt()) ||
         (new_z = z_pos.GetRoundValue(), Map_0x370::UpdateZFromSlopeAtCoord_4E5BF0(x_pos, y_pos, new_z), new_z > z_pos))
     {
         s32 v14 = z_pos.ToInt() - 1;
@@ -3263,38 +3450,490 @@ Fix16* Map_0x370::GetRailwayZCoordAtXY_4E6510(Fix16* found_z, Fix16 x, Fix16 y)
 MATCH_FUNC(0x4E65A0)
 void Map_0x370::sub_4E65A0(Fix16 x, Fix16 y, Fix16* z_pos, char_type a5, char_type a6)
 {
-    gmp_block_info* block_4DFE10 = Map_0x370::get_block_4DFE10(x.ToInt(), y.ToInt(), (*z_pos - dword_6F6110).ToInt());
+    gmp_block_info* block_4DFE10 = Map_0x370::get_block_4DFE10(x.ToInt(), y.ToInt(), (*z_pos - kFpOne_6F6110).ToInt());
     if (get_slope_bits(block_4DFE10->field_B_slope_type) == 0xFC)
     {
         Fix16 temp;
-        *z_pos = *sub_4E62B0(&temp, *z_pos);
-        block_4DFE10 = Map_0x370::get_block_4DFE10(x.ToInt(), y.ToInt(), (*z_pos - dword_6F6110).ToInt());
+        *z_pos = *FloorPlusOne_4E62B0(&temp, *z_pos);
+        block_4DFE10 = Map_0x370::get_block_4DFE10(x.ToInt(), y.ToInt(), (*z_pos - kFpOne_6F6110).ToInt());
     }
     s32 v11 = GetArrowDirectionFromBlock_4E5FC0(block_4DFE10, a5);
 
-    if (Map_0x370::sub_4E6190(x, y, *z_pos - dword_6F6110, v11, a6) != 3)
+    if (Map_0x370::sub_4E6190(x, y, *z_pos - kFpOne_6F6110, v11, a6) != 3)
     {
         Fix16 z_temp;
-        *z_pos = *Map_0x370::sub_4E6400(&z_temp, x, y, *z_pos);
+        *z_pos = *Map_0x370::GetRailwayZBelowCoord_4E6400(&z_temp, x, y, *z_pos);
     }
 }
 
-STUB_FUNC(0x4E6660)
-s32 Map_0x370::sub_4E6660(Fix16* a2, Fix16* a3, Fix16* a4, Fix16 a5)
+WIP_FUNC(0x4E6660)
+s32 Map_0x370::sub_4E6660(Fix16* pX, Fix16* pY, Fix16* pZ, Fix16 dist)
 {
-    NOT_IMPLEMENTED;
-    return 0;
+    char_type bTurned = 0;
+    Fix16 x = *pX;
+    Fix16 y = *pY;
+    Fix16 z = *pZ;
+
+    sub_4E65A0(x, y, &z, 1, 0);
+    gmp_block_info* pBlock;
+    SetRoadBlockAt_4E6660(pBlock, x, y, z);
+    s32 direction = GetArrowDirectionFromBlock_4E5FC0(pBlock, 1);
+
+    Fix16 tmp;
+    Fix16 side = *sub_4E5D70(&tmp, x, y, ReturnAngleFromRoadDirection_4F7940(&direction));
+    if (side > kFpHalf_6F5F18)
+    {
+        switch (direction)
+        {
+            case road_direction::up_1:
+                direction = road_direction::left_4;
+                break;
+            case road_direction::down_2:
+                direction = road_direction::right_3;
+                break;
+            case road_direction::left_4:
+                direction = road_direction::down_2;
+                break;
+            case road_direction::right_3:
+                direction = road_direction::up_1;
+                break;
+        }
+    }
+    else if (side < kFpHalf_6F5F18)
+    {
+        switch (direction)
+        {
+            case road_direction::up_1:
+                direction = road_direction::right_3;
+                break;
+            case road_direction::down_2:
+                direction = road_direction::left_4;
+                break;
+            case road_direction::left_4:
+                direction = road_direction::up_1;
+                break;
+            case road_direction::right_3:
+                direction = road_direction::down_2;
+                break;
+        }
+    }
+
+    gmp_block_info* pPrev;
+    if (side != kFpHalf_6F5F18)
+    {
+        Fix16 to_centre = *sub_4E5E00(&tmp, x, y, ReturnAngleFromRoadDirection_4F7940(&direction)) - kFpHalf_6F5F18;
+        if (to_centre > kFpZero_6F610C)
+        {
+            if (dist >= to_centre)
+            {
+                sub_4E5D10(&x, &y, to_centre, direction);
+                dist -= to_centre;
+                direction = GetArrowDirectionFromBlock_4E5FC0(pBlock, 1);
+                if (dist >= kFpHalf_6F5F18)
+                {
+                    pPrev = pBlock;
+                    sub_4E5D10(&x, &y, kFpHalf_6F5F18, direction);
+                    dist -= kFpHalf_6F5F18;
+                    gmp_block_info* pNext = GetRoadBlockAt_4E6660(x, y, z);
+                    if (!pNext || !HasGreenArrowForPathDirection_4E5E90(pNext, direction, 1))
+                    {
+                        StepOneBlock_4E6660(&x, &y, dist, direction);
+                    }
+                    SetRoadBlockAt_4E6660(pBlock, x, y, z);
+                    if (pBlock != pPrev)
+                    {
+                        sub_4E65A0(x, y, &z, 1, 0);
+                        SetRoadBlockAt_4E6660(pBlock, x, y, z);
+                    }
+                }
+                else
+                {
+                    sub_4E5D10(&x, &y, dist, direction);
+                    // The original skips the loop and jumps straight to the shared exit
+                    goto done;
+                }
+            }
+            else
+            {
+                sub_4E5D10(&x, &y, dist, direction);
+                goto done;
+            }
+        }
+    }
+    else
+    {
+        Fix16 to_edge = *sub_4E5E00(&tmp, x, y, ReturnAngleFromRoadDirection_4F7940(&direction));
+        if (to_edge > kFpZero_6F610C)
+        {
+            sub_4E65A0(x, y, &z, 1, 1);
+            pPrev = pBlock;
+            sub_4E5D10(&x,
+                       &y,
+                       kFpOne_6F6110 - to_edge,
+                       Ang16::GetAngleFace_4F78F0(
+                           Ang16(ReturnAngleFromRoadDirection_4F7940(&direction).rValue + word_6F603E.rValue).Normalized_406C20()));
+            dist += kFpOne_6F6110 - to_edge;
+            gmp_block_info* pNext = get_block_4DFE10(x.ToInt(), y.ToInt(), (z - kFpOne_6F6110).ToInt());
+            if (pNext && (pNext->field_B_slope_type & 0xFC) == 0xFC)
+            {
+                pNext = get_block_4DFE10(x.ToInt(), y.ToInt(), z.ToInt());
+            }
+            if (!pNext || !HasGreenArrowForPathDirection_4E5E90(pNext, direction, 1))
+            {
+                StepOneBlock_4E6660(&x, &y, dist, direction);
+            }
+            SetRoadBlockAt_4E6660(pBlock, x, y, z);
+            if (pBlock != pPrev)
+            {
+                sub_4E65A0(x, y, &z, 1, 0);
+                SetRoadBlockAt_4E6660(pBlock, x, y, z);
+            }
+            else
+            {
+                sub_4E65A0(x, y, &z, 1, 0);
+            }
+        }
+    }
+
+    while (dist != kFpZero_6F610C)
+    {
+        if (HasGreenArrowForPathDirection_4E5E90(pBlock, direction, 1) && !bTurned)
+        {
+            pPrev = pBlock;
+            StepOneBlock_4E6660(&x, &y, dist, direction);
+            SetRoadBlockAt_4E6660(pBlock, x, y, z);
+            if (pBlock != pPrev)
+            {
+                sub_4E65A0(x, y, &z, 1, 0);
+                SetRoadBlockAt_4E6660(pBlock, x, y, z);
+            }
+            if (!HasGreenArrowForPathDirection_4E5E90(pBlock, direction, 1))
+            {
+                pPrev = pBlock;
+                Fix16 to_edge = *sub_4E5E00(&tmp, x, y, ReturnAngleFromRoadDirection_4F7940(&direction));
+                sub_4E5D10(&x,
+                           &y,
+                           kFpOne_6F6110 - to_edge,
+                           Ang16::GetAngleFace_4F78F0(
+                               Ang16(ReturnAngleFromRoadDirection_4F7940(&direction).rValue + word_6F603E.rValue).Normalized_406C20()));
+                dist += kFpOne_6F6110 - to_edge;
+                SetRoadBlockAt_4E6660(pBlock, x, y, z);
+                if (pBlock != pPrev)
+                {
+                    sub_4E65A0(x, y, &z, 1, 0);
+                    SetRoadBlockAt_4E6660(pBlock, x, y, z);
+                }
+                bTurned = 1;
+            }
+        }
+        else
+        {
+            bTurned = 0;
+            pPrev = pBlock;
+            if (dist >= kFpOne_6F6110)
+            {
+                sub_4E5D10(&x, &y, kFpHalf_6F5F18, direction);
+                direction = GetArrowDirectionFromBlock_4E5FC0(GetRoadBlockAt_4E6660(x, y, z), 1);
+                sub_4E5D10(&x, &y, kFpHalf_6F5F18, direction);
+                dist -= kFpOne_6F6110;
+                SetRoadBlockAt_4E6660(pBlock, x, y, z);
+                if (pBlock != pPrev)
+                {
+                    sub_4E65A0(x, y, &z, 1, 0);
+                    SetRoadBlockAt_4E6660(pBlock, x, y, z);
+                }
+            }
+            else
+            {
+                if (dist > kFpHalf_6F5F18)
+                {
+                    sub_4E5D10(&x, &y, kFpHalf_6F5F18, direction);
+                    SetRoadBlockAt_4E6660(pBlock, x, y, z);
+                    direction = GetArrowDirectionFromBlock_4E5FC0(pBlock, 1);
+                    dist -= kFpHalf_6F5F18;
+                }
+                sub_4E5D10(&x, &y, dist, direction);
+                dist = 0;
+                if (pBlock != pPrev)
+                {
+                    sub_4E65A0(x, y, &z, 1, 0);
+                    SetRoadBlockAt_4E6660(pBlock, x, y, z);
+                }
+            }
+        }
+    }
+
+done:
+    *pX = x;
+    *pY = y;
+    {
+        Fix16 found_z;
+        *pZ = *GetRailwayZBelowCoord_4E6400(&found_z, x, y, z);
+    }
+    return direction;
 }
 
-STUB_FUNC(0x4E7190)
-s32 Map_0x370::sub_4E7190(Fix16* a2, Fix16* a3, Fix16* a4, Fix16 a5)
+WIP_FUNC(0x4E7190)
+s32 Map_0x370::sub_4E7190(Fix16* pX, Fix16* pY, Fix16* pZ, Fix16 dist)
 {
-    NOT_IMPLEMENTED;
+    char_type bTurned = 0;
+    Fix16 x = *pX;
+    Fix16 y = *pY;
+    Fix16 z = *pZ;
+    Fix16 last_x = x;
+    Fix16 last_y = y;
+    Fix16 last_z = z;
+
+    sub_4E65A0(x, y, &z, 0, 0);
+    gmp_block_info* pBlock;
+    SetRoadBlockAt_4E6660(pBlock, x, y, z);
+    s32 direction = GetArrowDirectionFromBlock_4E5FC0(pBlock, 0);
+
+    Fix16 tmp;
+    Fix16 side = *sub_4E5D70(&tmp, x, y, ReturnAngleFromRoadDirection_4F7940(&direction));
+    if (side > kFpHalf_6F5F18)
+    {
+        switch (direction)
+        {
+            case road_direction::up_1:
+                direction = road_direction::right_3;
+                break;
+            case road_direction::down_2:
+                direction = road_direction::left_4;
+                break;
+            case road_direction::left_4:
+                direction = road_direction::up_1;
+                break;
+            case road_direction::right_3:
+                direction = road_direction::down_2;
+                break;
+        }
+    }
+    else if (side < kFpHalf_6F5F18)
+    {
+        switch (direction)
+        {
+            case road_direction::up_1:
+                direction = road_direction::left_4;
+                break;
+            case road_direction::down_2:
+                direction = road_direction::right_3;
+                break;
+            case road_direction::left_4:
+                direction = road_direction::down_2;
+                break;
+            case road_direction::right_3:
+                direction = road_direction::up_1;
+                break;
+        }
+    }
+
+    gmp_block_info* pPrev;
+    if (side != kFpHalf_6F5F18)
+    {
+        pPrev = pBlock;
+        Fix16 to_centre = *sub_4E5E00(&tmp, x, y, ReturnAngleFromRoadDirection_4F7940(&direction));
+        if (to_centre > kFpZero_6F610C)
+        {
+            if (dist >= to_centre)
+            {
+                sub_4E5D10(&x, &y, to_centre, direction);
+                dist -= to_centre;
+            }
+            else
+            {
+                sub_4E5D10(&x, &y, dist, direction);
+                dist = kFpZero_6F610C;
+            }
+        }
+        if (!HasGreenArrowForPathDirection_4E5E90(GetRoadBlockAt_4E6660(x, y, z), direction, 0))
+        {
+            StepOneBlock_4E6660(&x, &y, dist, direction);
+        }
+        SetRoadBlockAt_4E6660(pBlock, x, y, z);
+        if (pBlock != pPrev)
+        {
+            sub_4E65A0(x, y, &z, 0, 0);
+            SetRoadBlockAt_4E6660(pBlock, x, y, z);
+        }
+    }
+    else
+    {
+        Fix16 to_edge = *sub_4E5E00(&tmp, x, y, ReturnAngleFromRoadDirection_4F7940(&direction));
+        if (to_edge > kFpZero_6F610C)
+        {
+            sub_4E65A0(x, y, &z, 0, 1);
+            pPrev = pBlock;
+            sub_4E5D10(&x,
+                       &y,
+                       kFpOne_6F6110 - to_edge,
+                       Ang16::GetAngleFace_4F78F0(
+                           Ang16(ReturnAngleFromRoadDirection_4F7940(&direction).rValue + word_6F603E.rValue).Normalized_406C20()));
+            dist.mValue += kFpOne_6F6110.mValue - to_edge.mValue;
+            gmp_block_info* pNext = GetRoadBlockAtOrNull_4E7190(x, y, z);
+            if (!pNext || !HasGreenArrowForPathDirection_4E5E90(pNext, direction, 0))
+            {
+                StepOneBlock_4E6660(&x, &y, dist, direction);
+            }
+            SetRoadBlockAt_4E6660(pBlock, x, y, z);
+            if (pBlock != pPrev)
+            {
+                sub_4E65A0(x, y, &z, 0, 0);
+                SetRoadBlockAt_4E6660(pBlock, x, y, z);
+            }
+            else
+            {
+                sub_4E65A0(x, y, &z, 0, 0);
+            }
+        }
+    }
+
+    while (dist != kFpZero_6F610C)
+    {
+        if (HasGreenArrowForPathDirection_4E5E90(pBlock, direction, 0) && !bTurned)
+        {
+            last_x = x;
+            last_y = y;
+            last_z = z;
+            pPrev = pBlock;
+            StepOneBlock_4E6660(&x, &y, dist, direction);
+            SetRoadBlockAtOrNull_4E7190(pBlock, x, y, z);
+            if (pBlock != pPrev)
+            {
+                sub_4E65A0(x, y, &z, 0, 0);
+                SetRoadBlockAtOrNull_4E7190(pBlock, x, y, z);
+            }
+            if (!pBlock || !HasGreenArrowForPathDirection_4E5E90(pBlock, direction, 0))
+            {
+                gmp_block_info* pBefore = pBlock;
+                Fix16 to_edge = *sub_4E5E00(&tmp, x, y, ReturnAngleFromRoadDirection_4F7940(&direction));
+                sub_4E5D10(&x,
+                           &y,
+                           kFpOne_6F6110,
+                           Ang16::GetAngleFace_4F78F0(
+                               Ang16(ReturnAngleFromRoadDirection_4F7940(&direction).rValue + word_6F603E.rValue).Normalized_406C20()));
+                sub_4E5D10(&x,
+                           &y,
+                           kFpOne_6F6110 - to_edge,
+                           Ang16::GetAngleFace_4F78F0(
+                               Ang16(ReturnAngleFromRoadDirection_4F7940(&direction).rValue + word_6F603E.rValue).Normalized_406C20()));
+                dist += kFpOne_6F6110 + kFpOne_6F6110 - to_edge;
+                z = last_z;
+                SetRoadBlockAt_4E6660(pBlock, x, y, z);
+                if (pBlock != pBefore)
+                {
+                    sub_4E65A0(x, y, &z, 0, 0);
+                    SetRoadBlockAt_4E6660(pBlock, x, y, z);
+                }
+                bTurned = 1;
+            }
+        }
+        else
+        {
+            s32 new_direction = 0;
+            bTurned = 0;
+            switch (direction)
+            {
+                case road_direction::up_1:
+                case road_direction::down_2:
+                    pBlock = gMap_0x370_6F6268->get_block_4DFE10((last_x + kFpOne_6F6110).ToInt(),
+                                                                 last_y.ToInt(),
+                                                                 (last_z - kFpOne_6F6110).ToInt());
+                    if (pBlock)
+                    {
+                        new_direction = GetArrowDirectionFromBlock_4E5FC0(pBlock, 0);
+                        if (new_direction != road_direction::right_3)
+                            new_direction = 0;
+                    }
+                    if (!new_direction)
+                    {
+                        pBlock = gMap_0x370_6F6268->get_block_4DFE10((last_x - kFpOne_6F6110).ToInt(),
+                                                                     last_y.ToInt(),
+                                                                     (last_z - kFpOne_6F6110).ToInt());
+                        new_direction = GetArrowDirectionFromBlock_4E5FC0(pBlock, 0);
+                    }
+                    break;
+                case road_direction::right_3:
+                case road_direction::left_4:
+                    pBlock = gMap_0x370_6F6268->get_block_4DFE10(last_x.ToInt(),
+                                                                 (last_y + kFpOne_6F6110).ToInt(),
+                                                                 (last_z - kFpOne_6F6110).ToInt());
+                    if (pBlock)
+                    {
+                        new_direction = GetArrowDirectionFromBlock_4E5FC0(pBlock, 0);
+                        if (new_direction != road_direction::down_2)
+                            new_direction = 0;
+                    }
+                    if (!new_direction)
+                    {
+                        pBlock = gMap_0x370_6F6268->get_block_4DFE10(last_x.ToInt(),
+                                                                     (last_y - kFpOne_6F6110).ToInt(),
+                                                                     (last_z - kFpOne_6F6110).ToInt());
+                        new_direction = GetArrowDirectionFromBlock_4E5FC0(pBlock, 0);
+                    }
+                    break;
+            }
+
+            pPrev = pBlock;
+            if (dist >= kFpOne_6F6110)
+            {
+                sub_4E5D10(&x, &y, kFpHalf_6F5F18, direction);
+                GetRoadBlockAt_4E6660(x, y, z);
+                direction = new_direction;
+                sub_4E5D10(&x, &y, kFpHalf_6F5F18, direction);
+                dist -= kFpOne_6F6110;
+                StepOneBlock_4E6660(&x, &y, dist, direction);
+                SetRoadBlockAt_4E6660(pBlock, x, y, z);
+                if (pBlock != pPrev)
+                {
+                    sub_4E65A0(x, y, &z, 0, 0);
+                    SetRoadBlockAt_4E6660(pBlock, x, y, z);
+                }
+            }
+            else
+            {
+                if (dist > kFpHalf_6F5F18)
+                {
+                    sub_4E5D10(&x, &y, kFpHalf_6F5F18, direction);
+                    SetRoadBlockAt_4E6660(pBlock, x, y, z);
+                    direction = new_direction;
+                    dist -= kFpHalf_6F5F18;
+                }
+                sub_4E5D10(&x, &y, dist, direction);
+                dist = 0;
+                if (pBlock != pPrev)
+                {
+                    sub_4E65A0(x, y, &z, 0, 0);
+                    SetRoadBlockAt_4E6660(pBlock, x, y, z);
+                }
+            }
+        }
+    }
+
+    *pX = x;
+    *pY = y;
+    {
+        Fix16 found_z;
+        *pZ = *GetRailwayZBelowCoord_4E6400(&found_z, x, y, z);
+    }
+
+    // 9.6f: sub_42A660 reverses the direction (inlined, using it as a helper changes the code: 103 -> 301)
+    switch (direction)
+    {
+        case road_direction::up_1:
+            return road_direction::down_2;
+        case road_direction::down_2:
+            return road_direction::up_1;
+        case road_direction::left_4:
+            return road_direction::right_3;
+        case road_direction::right_3:
+            return road_direction::left_4;
+    }
     return 0;
 }
 
 MATCH_FUNC(0x4E7E90)
-char_type Map_0x370::sub_4E7E90(u8* a2, char_type* a3)
+char_type Map_0x370::FindFirstPavementCoord_4E7E90(u8* a2, char_type* a3)
 {
     for (u8 x = 1; x < 255; x++)
     {
@@ -3318,7 +3957,7 @@ char_type Map_0x370::CheckColumnHasSolidAbove_4E7FC0(Fix16 x, Fix16 y, Fix16 z)
     gmp_compressed_map_32* pDMap = this->field_0_pDmap;
 
     s32 z_int = z.ToInt();
-    gmp_col_info* pColInfo = (gmp_col_info*)&pDMap->field_40008_pColumn[pDMap->field_0_base[y.ToInt()][x.ToInt()]];
+    gmp_col_info* pColInfo = (gmp_col_info*)&pDMap->field_40008_pColumn[*pDMap->get_base_42A830(y.ToInt(), x.ToInt())];
     if (z_int < pColInfo->field_0_height)
     {
         if (z_int < pColInfo->field_1_offset)
@@ -3368,22 +4007,22 @@ char_type Map_0x370::CheckColumnHasSolidAbove_4E7FC0(Fix16 x, Fix16 y, Fix16 z)
 
 
 MATCH_FUNC(0x4E80A0)
-void gmp_compressed_map_32::sub_4E80A0(Map_sub* a2)
+void gmp_compressed_map_32::ApplyDmapInfos_4E80A0(Map_sub* a2)
 {
     u32 j = 0;
     for (u32 i = 0; i < a2->field_320_max_idx; i++, j++)
     {
-        u32 x = a2->field_0[j].field_4_x;
-        u32 y = a2->field_0[j].field_5_y;
-        field_0_base[y][x] = a2->field_0[j].field_0_column_idx;
+        u32 x = a2->field_0_dmap_infos[j].field_4_x;
+        u32 y = a2->field_0_dmap_infos[j].field_5_y;
+        *get_base_42A830(y, x) = a2->field_0_dmap_infos[j].field_0_column_idx;
     }
 }
 
 MATCH_FUNC(0x4E80E0)
-void Map_sub::sub_4E80E0(u8 x, u8 y, u32 column_idx)
+void Map_sub::AddOrUpdateDmapInfo_4E80E0(u8 x, u8 y, u32 column_idx)
 {
     u32 local_max_idx = field_320_max_idx;
-    gmp_dmap_info* v6 = &field_0[0];
+    gmp_dmap_info* v6 = &field_0_dmap_infos[0];
 
     for (u32 i = 0; i < local_max_idx; i++, v6++)
     {
@@ -3394,12 +4033,12 @@ void Map_sub::sub_4E80E0(u8 x, u8 y, u32 column_idx)
         }
     }
 
-    field_0[local_max_idx].set_data_463080(x, y, column_idx);
+    field_0_dmap_infos[local_max_idx].set_data_463080(x, y, column_idx);
     ++field_320_max_idx;
 }
 
 MATCH_FUNC(0x4E8140)
-s32 Map_0x370::sub_4E8140(gmp_block_info* pBlockInfo)
+s32 Map_0x370::AddBlock_4E8140(gmp_block_info* pBlockInfo)
 {
     s32 num_blocks = this->field_354_num_blocks;
     this->field_354_num_blocks = num_blocks + 1;
@@ -3408,7 +4047,7 @@ s32 Map_0x370::sub_4E8140(gmp_block_info* pBlockInfo)
 }
 
 MATCH_FUNC(0x4E8180)
-s32 Map_0x370::sub_4E8180(u32 read_block_idx)
+s32 Map_0x370::CloneOriginalBlock_4E8180(u32 read_block_idx)
 {
     if (read_block_idx < this->field_34C_num_blocks)
     {
@@ -3421,7 +4060,7 @@ s32 Map_0x370::sub_4E8180(u32 read_block_idx)
 }
 
 MATCH_FUNC(0x4E81D0)
-s32 Map_0x370::sub_4E81D0(u32 column_idx)
+s32 Map_0x370::CloneOriginalColumn_4E81D0(u32 column_idx)
 {
     s32 idx = column_idx;
 
@@ -3437,13 +4076,13 @@ s32 Map_0x370::sub_4E81D0(u32 column_idx)
 }
 
 MATCH_FUNC(0x4E8220)
-s32 Map_0x370::sub_4E8220(u32 column_idx, s32 z)
+s32 Map_0x370::CloneColumnExtendedToZ_4E8220(u32 column_idx, s32 z)
 {
     gmp_col_info* v5 = (gmp_col_info*)&field_0_pDmap->field_40008_pColumn[column_idx];
 
     if (z < v5->field_0_height && z >= v5->field_1_offset)
     {
-        return Map_0x370::sub_4E81D0(column_idx);
+        return Map_0x370::CloneOriginalColumn_4E81D0(column_idx);
     }
 
     gmp_col_info* v8 = (gmp_col_info*)&field_0_pDmap->field_40008_pColumn[field_360_column_words];
@@ -3485,23 +4124,110 @@ s32 Map_0x370::sub_4E8220(u32 column_idx, s32 z)
     return local_column_words;
 }
 
-STUB_FUNC(0x4E8370)
-u32 Map_0x370::sub_4E8370(u32 a2, s32 a3, char_type a4)
+WIP_FUNC(0x4E8370)
+s32 Map_0x370::sub_4E8370(u32 column_idx, s32 z, char_type do_drop)
 {
-    NOT_IMPLEMENTED;
-    return 0;
+    u16** pColumns = field_0_pDmap->field_40008_pColumn;
+    gmp_col_info* pColumn = (gmp_col_info*)&pColumns[column_idx];
+    if (z >= pColumn->field_0_height || z < pColumn->field_1_offset)
+    {
+        return -1;
+    }
+
+    if (column_idx < field_358_column_words)
+    {
+        s32 new_idx = field_360_column_words;
+        gmp_col_info* pNew = (gmp_col_info*)&pColumns[new_idx];
+        if (do_drop)
+        {
+            if (z == pColumn->field_0_height - 1)
+            {
+                pNew->field_0_height = pColumn->field_0_height - 1;
+                pNew->field_1_offset = pColumn->field_1_offset;
+                for (s32 i = 0; i < pNew->field_0_height - pNew->field_1_offset; i++)
+                {
+                    pNew->field_4_blockd[i] = pColumn->field_4_blockd[i];
+                }
+            }
+            else
+            {
+                pNew->field_0_height = pColumn->field_0_height - 1;
+                pNew->field_1_offset = pColumn->field_1_offset;
+                s32 i;
+                for (i = 0; i < z - pNew->field_1_offset; i++)
+                {
+                    pNew->field_4_blockd[i] = pColumn->field_4_blockd[i];
+                }
+                for (i = z - pNew->field_1_offset; i < pNew->field_0_height - pNew->field_1_offset; i++)
+                {
+                    pNew->field_4_blockd[i] = pColumn->field_4_blockd[i + 1];
+                }
+            }
+        }
+        else
+        {
+            if (z == pColumn->field_0_height - 1)
+            {
+                pNew->field_0_height = pColumn->field_0_height - 1;
+                pNew->field_1_offset = pColumn->field_1_offset;
+                for (s32 i = 0; i < pNew->field_0_height - pNew->field_1_offset; i++)
+                {
+                    pNew->field_4_blockd[i] = pColumn->field_4_blockd[i];
+                }
+            }
+            else if (z == pColumn->field_1_offset)
+            {
+                pNew->field_0_height = pColumn->field_0_height - 1;
+                pNew->field_1_offset = pColumn->field_1_offset + 1;
+                for (s32 i = 0; i < pNew->field_0_height - pNew->field_1_offset; i++)
+                {
+                    pNew->field_4_blockd[i] = pColumn->field_4_blockd[i + 1];
+                }
+            }
+            else
+            {
+                pNew->field_0_height = pColumn->field_0_height;
+                pNew->field_1_offset = pColumn->field_1_offset;
+                for (s32 i = 0; i < pNew->field_0_height - pNew->field_1_offset; i++)
+                {
+                    pNew->field_4_blockd[i] = pColumn->field_4_blockd[i];
+                }
+                pNew->field_4_blockd[z - pColumn->field_1_offset] = 0;
+            }
+        }
+        field_360_column_words += pNew->field_0_height - pNew->field_1_offset + 1;
+        return new_idx;
+    }
+
+    if (do_drop)
+    {
+        for (s32 i = z - pColumn->field_1_offset; i < pColumn->field_0_height - pColumn->field_1_offset - 1; i++)
+        {
+            pColumn->field_4_blockd[i] = pColumn->field_4_blockd[i + 1];
+        }
+        pColumn->field_0_height--;
+    }
+    else if (z == pColumn->field_0_height - 1)
+    {
+        pColumn->field_0_height--;
+    }
+    else
+    {
+        pColumn->field_4_blockd[z - pColumn->field_1_offset] = 0;
+    }
+    return column_idx;
 }
 
 MATCH_FUNC(0x4E8620)
 void Map_0x370::ChangeBlock_4E8620(s32 x, s32 y, s32 z, s32 info_type_to_set, u16 info_value)
 {
-    s32 column_idx = Map_0x370::sub_4E81D0(field_0_pDmap->field_0_base[y][x]);
-    field_0_pDmap->field_0_base[y][x] = column_idx;
-    field_4_obj.sub_4E80E0(x, y, column_idx);
+    s32 column_idx = Map_0x370::CloneOriginalColumn_4E81D0(*field_0_pDmap->get_base_42A830(y, x));
+    *field_0_pDmap->get_base_42A830(y, x) = column_idx;
+    field_4_obj.AddOrUpdateDmapInfo_4E80E0(x, y, column_idx);
 
     gmp_col_info* pColumn = (gmp_col_info*)&this->field_0_pDmap->field_40008_pColumn[column_idx];
 
-    s32 block_idx = Map_0x370::sub_4E8180(pColumn->field_4_blockd[z - pColumn->field_1_offset]);
+    s32 block_idx = Map_0x370::CloneOriginalBlock_4E8180(pColumn->field_4_blockd[z - pColumn->field_1_offset]);
 
     pColumn->field_4_blockd[z - pColumn->field_1_offset] = block_idx;
     gBlockInfo0_6F5EB0 = &this->field_0_pDmap->field_4000C_block[block_idx];
@@ -3537,15 +4263,15 @@ void Map_0x370::ChangeBlock_4E8620(s32 x, s32 y, s32 z, s32 info_type_to_set, u1
 MATCH_FUNC(0x4E87C0)
 void Map_0x370::AddNewBlock_4E87C0(s32 x, s32 y, s32 z, gmp_block_info* pBlockData)
 {
-    s32 column_idx = Map_0x370::sub_4E8220(field_0_pDmap->field_0_base[y][x], z);
-    field_0_pDmap->field_0_base[y][x] = column_idx;
-    field_4_obj.sub_4E80E0(x, y, column_idx);
+    s32 column_idx = Map_0x370::CloneColumnExtendedToZ_4E8220(*field_0_pDmap->get_base_42A830(y, x), z);
+    *field_0_pDmap->get_base_42A830(y, x) = column_idx;
+    field_4_obj.AddOrUpdateDmapInfo_4E80E0(x, y, column_idx);
     gmp_col_info* pColumn = (gmp_col_info*)&field_0_pDmap->field_40008_pColumn[column_idx];
     u32 block_id = pColumn->field_4_blockd[z - pColumn->field_1_offset];
 
     if (block_id < field_34C_num_blocks)
     {
-        pColumn->field_4_blockd[z - pColumn->field_1_offset] = Map_0x370::sub_4E8140(pBlockData);
+        pColumn->field_4_blockd[z - pColumn->field_1_offset] = Map_0x370::AddBlock_4E8140(pBlockData);
     }
     else
     {
@@ -3556,18 +4282,40 @@ void Map_0x370::AddNewBlock_4E87C0(s32 x, s32 y, s32 z, gmp_block_info* pBlockDa
 MATCH_FUNC(0x4E8940)
 void Map_0x370::RemoveBlock_4E8940(s32 x_pos, s32 y_pos, s32 offset, char_type do_drop)
 {
-    const s32 column_idx = sub_4E8370(field_0_pDmap->field_0_base[y_pos][x_pos], offset, do_drop);
+    const s32 column_idx = sub_4E8370(*field_0_pDmap->get_base_42A830(y_pos, x_pos), offset, do_drop);
     if (column_idx != -1)
     {
-        field_0_pDmap->field_0_base[y_pos][x_pos] = column_idx;
-        field_4_obj.sub_4E80E0(x_pos, y_pos, column_idx);
+        *field_0_pDmap->get_base_42A830(y_pos, x_pos) = column_idx;
+        field_4_obj.AddOrUpdateDmapInfo_4E80E0(x_pos, y_pos, column_idx);
     }
 }
 
-STUB_FUNC(0x4E8A10)
-void Map_0x370::sub_4E8A10(s32 a2, s32 a3)
+MATCH_FUNC(0x4E8A10)
+void Map_0x370::LowerColumn_4E8A10(s32 x_pos, s32 y_pos)
 {
-    NOT_IMPLEMENTED;
+    u32 column_idx = *field_0_pDmap->get_base_42A830(y_pos, x_pos);
+    gmp_col_info* pColumn = reinterpret_cast<gmp_col_info*>(&field_0_pDmap->field_40008_pColumn[column_idx]);
+    if (pColumn->field_1_offset == pColumn->field_0_height - 1 && pColumn->field_1_offset)
+    {
+        if (column_idx < field_358_column_words)
+        {
+            // Note: decrements the new column's height, not a copy of pColumn's
+            gmp_col_info* pNew = reinterpret_cast<gmp_col_info*>(&field_0_pDmap->field_40008_pColumn[field_360_column_words]);
+            pNew->field_1_offset = pColumn->field_1_offset - 1;
+            pNew->field_0_height--;
+            pNew->field_4_blockd[0] = pColumn->field_4_blockd[0];
+            field_360_column_words += 2;
+        }
+        else
+        {
+            pColumn->field_1_offset--;
+            pColumn->field_0_height--;
+        }
+    }
+    else
+    {
+        RemoveBlock_4E8940(x_pos, y_pos, pColumn->field_1_offset, 1);
+    }
 }
 
 MATCH_FUNC(0x4E8B70)
@@ -3577,24 +4325,24 @@ void Map_0x370::LowerLevel_4E8B70(s32 x_min, s32 x_max, s32 y_min, s32 y_max)
     {
         for (s32 column_x = x_min; column_x <= x_max; ++column_x)
         {
-            Map_0x370::sub_4E8A10(column_x, column_y);
+            Map_0x370::LowerColumn_4E8A10(column_x, column_y);
         }
     }
 }
 
 WIP_FUNC(0x4E8C00)
-void Map_0x370::sub_4E8C00(u32 a2, u32 a3, u32 a4)
+void Map_0x370::OnModifiedMapDataLoaded_4E8C00(u32 a2, u32 a3, u32 a4)
 {
     WIP_IMPLEMENTED;
 
     this->field_360_column_words = (a2 >> 2) + this->field_0_pDmap->field_40000_column_words;
     this->field_354_num_blocks = a3 / 0xC + field_0_pDmap->field_40004_num_blocks;
     this->field_4_obj.field_320_max_idx = a4 >> 3;
-    field_0_pDmap->sub_4E80A0(&field_4_obj);
+    field_0_pDmap->ApplyDmapInfos_4E80A0(&field_4_obj);
 }
 
 MATCH_FUNC(0x4E8CF0)
-void Map_0x370::sub_4E8CF0(u16*** outColumnPtr,
+void Map_0x370::GetModifiedMapData_4E8CF0(u16*** outColumnPtr,
                            u32* outColumnBytes,
                            gmp_block_info** outBlockPtr,
                            u32* outBlockBytes,
@@ -3687,7 +4435,7 @@ void Map_0x370::do_process_loaded_zone_data_4E8E30()
 }
 
 MATCH_FUNC(0x4E90E0)
-void Map_0x370::sub_4E90E0(u32 chunk_size)
+void Map_0x370::build_zone_list_4E90E0(u32 chunk_size)
 {
     u32 in_use_size = 0;
     s32 num_zones = 0;
@@ -3715,13 +4463,13 @@ void Map_0x370::sub_4E90E0(u32 chunk_size)
 }
 
 MATCH_FUNC(0x4E9160)
-void Map_0x370::sub_4E9160(s32 size)
+void Map_0x370::AddTileAnimations_4E9160(s32 size)
 {
     u8* pTileAnimDataIter = (u8*)this->field_340_pTileAnimData;
     while (pTileAnimDataIter != (u8*)this->field_340_pTileAnimData + size)
     {
         const gmp_tile_animation* pAnim = (const gmp_tile_animation*)pTileAnimDataIter;
-        gTileAnim_2_7052C4->sub_5BC2C0(pAnim);
+        gTileAnim_2_7052C4->AddGmpAnim_5BC2C0(pAnim);
         pTileAnimDataIter += (sizeof(u16) * pAnim->field_4_anim_length) +
             (sizeof(gmp_tile_animation) -
              sizeof(u16)); // field_4 is animation_length, 6 is the length of a record, each array entry is a u16
@@ -3760,7 +4508,7 @@ void Map_0x370::load_zone_4E9250(size_t a2)
     gmp_map_zone* v3 = (gmp_map_zone*)Memory::malloc_4FE4D0(a2);
     field_328_pZoneData = v3;
     File::Global_Read_4A71C0(v3, a2);
-    sub_4E90E0(a2);
+    build_zone_list_4E90E0(a2);
 }
 
 MATCH_FUNC(0x4E9280)
@@ -3769,7 +4517,7 @@ void Map_0x370::load_anim_4E9280(size_t size)
     gmp_tile_animation* pAlloc = static_cast<gmp_tile_animation*>(Memory::malloc_4FE4D0(size));
     field_340_pTileAnimData = pAlloc;
     File::Global_Read_4A71C0(pAlloc, size);
-    sub_4E9160(size);
+    AddTileAnimations_4E9160(size);
 }
 
 MATCH_FUNC(0x4E92B0)
@@ -3908,7 +4656,6 @@ void Map_0x370::LoadMap_4E95B0(const char_type* pGmpFileName)
 MATCH_FUNC(0x4E9660)
 Map_0x370::Map_0x370()
 {
-    field_4_obj.field_320_max_idx = 0;
     field_328_pZoneData = 0;
     field_32C_pZones = 0;
     field_338_pMapObjects = 0;
@@ -3929,20 +4676,14 @@ Map_0x370::Map_0x370()
     field_368_zone_type = 0xff; // dl
     field_36A_zone_x = 0;
     field_36B_zone_y = 0;
-    field_36C_bUnknown = 0;
+    field_36C_bMatchPos = 0;
     field_366 = 0;
     field_369 = 0xff; // dl
     field_36D = 0;
     field_36E = 0;
     field_36F = 0;
 
-    gBlockInfo1_6F5F40.field_0_left = 0;
-    gBlockInfo1_6F5F40.field_2_right = 0;
-    gBlockInfo1_6F5F40.field_4_top = 0;
-    gBlockInfo1_6F5F40.field_6_bottom = 0;
-    gBlockInfo1_6F5F40.field_8_lid = 0;
-    gBlockInfo1_6F5F40.field_A_arrows = 0;
-    gBlockInfo1_6F5F40.field_B_slope_type = 0;
+    gBlockInfo1_6F5F40.init_44C840();
 
     gBlockInfo2_6F6028.field_A_arrows = 0;
     gBlockInfo2_6F6028.field_0_left = 3073;

@@ -7,7 +7,7 @@
 class Sprite;
 
 EXTERN_GLOBAL(Fix16, kSmallWidthEpslion_703450);
-EXTERN_GLOBAL(Fix16, k_dword_6771E4);
+EXTERN_GLOBAL(Fix16, kCollisionPrismHalfHeight_6771E4);
 
 // 9.6f 0x41E160
 // https://decomp.me/scratch/A4s7c
@@ -15,12 +15,17 @@ inline bool __stdcall IntervalsOverlap_41E160(const Fix16& ourMin, const Fix16& 
 {
     if (ourMin < otherMin)
     {
-        return ((ourMax < otherMin)) ? false : true;
+        if (ourMax < otherMin)
+        {
+            return false;
+        }
+        return true;
     }
-    else
+    if (ourMin <= otherMax)
     {
-        return (ourMin <= otherMax) ? true : false;
+        return true;
     }
+    return false;
 }
 
 class Fix16_Rect
@@ -41,8 +46,22 @@ class Fix16_Rect
         field_8_top = y - tmp;
         field_C_bottom = y + tmp;
 
-        this->field_10_low_z = z - k_dword_6771E4;
-        this->field_14_high_z = z + k_dword_6771E4;
+        this->field_10_low_z = z - kCollisionPrismHalfHeight_6771E4;
+        this->field_14_high_z = z + kCollisionPrismHalfHeight_6771E4;
+    }
+
+    // Like ComputeCollisionPrism_4204D0, with the out-of-line Fix16 operators (sub_5DF270)
+    void ComputeShockPrism(Fix16 x, Fix16 y, Fix16 offset, Fix16 z, const Fix16& half_z)
+    {
+        offset = offset / 2;
+
+        field_0_left = x.Subtract_436A00(offset);
+        field_4_right = (const Fix16&)x + offset;
+        field_8_top = y.Subtract_436A00(offset);
+        field_C_bottom = (const Fix16&)y + offset;
+
+        field_10_low_z = z.Subtract_436A00(half_z);
+        field_14_high_z = (const Fix16&)z + half_z;
     }
 
     // 9.6f 0x41E350
@@ -57,11 +76,43 @@ class Fix16_Rect
 
     // TODO: None inline version of SetRect_41E350 ??
     EXPORT void SetRect_5A5E30(Fix16 left, Fix16 right, Fix16 top, Fix16 bottom);
+    EXPORT void MakeRect_4E6280(Fix16 x, Fix16 y, Fix16 w, Fix16 h);
+
+    // 9.6f 0x433560
+    inline bool OverlapsZ_433560(Fix16_Rect* pOther)
+    {
+        return IntervalsOverlap_41E160(field_10_low_z, field_14_high_z, pOther->field_10_low_z, pOther->field_14_high_z);
+    }
+
+    // 9.6f 0x463760
+    inline s32 GetMidZ_463760() const
+    {
+        return ((field_10_low_z + field_14_high_z) / 2).ToInt();
+    }
+
+    // 9.6f 0x463690, defined in map_0x370.cpp
+    inline bool EdgesCrossSegment_463690(Fix16_Point& p1, Fix16_Point& p2);
+
+    // 9.6f 0x463710
+    inline void SetFromPosSize_463710(Fix16 left, Fix16 top, Fix16 width, Fix16 height)
+    {
+        field_0_left = left;
+        field_8_top = top;
+        field_4_right = left + width;
+        field_C_bottom = top + height;
+    }
 
     void SetHiLowZ_41E370(Fix16 lowZ, Fix16 highZ)
     {
         this->field_10_low_z = lowZ;
         this->field_14_high_z = highZ;
+    }
+
+    Fix16_Rect(Fix16 left, Fix16 right, Fix16 top, Fix16 bottom, Fix16 z)
+    {
+        SetRect_41E350(left, right, top, bottom);
+        field_10_low_z = z - kCollisionPrismHalfHeight_6771E4;
+        field_14_high_z = z + kCollisionPrismHalfHeight_6771E4;
     }
 
     // TODO: Get inline addr
@@ -98,24 +149,30 @@ class Fix16_Rect
             false;
     }
 
-    Fix16& get_top_45ADD0()
+    Fix16 get_top_45ADD0()
     {
         return field_8_top;
     }
 
-    Fix16& get_left_45ADB0()
+    Fix16 get_left_45ADB0()
     {
         return field_0_left;
     }
 
-    Fix16& get_right_45ADA0()
+    Fix16 get_right_45ADA0()
     {
         return field_4_right;
     }
 
-    Fix16& get_bottom_45ADC0()
+    Fix16 get_bottom_45ADC0()
     {
         return field_C_bottom;
+    }
+
+    // 9.6f 0x4637A0
+    Fix16 get_low_z_4637A0()
+    {
+        return field_10_low_z;
     }
 
     Fix16 field_0_left;

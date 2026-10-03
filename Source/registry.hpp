@@ -38,11 +38,11 @@ class Registry
 
     EXPORT s32 Get_Screen_Setting_5870D0(const char_type* lpValueName, s32 a2);
 
-    EXPORT void sub_587290();
+    EXPORT void null_587290();
 
-    EXPORT char_type sub_5872A0(HKEY hKey, const char_type* a2, BYTE* lpData, u32 Data);
+    EXPORT char_type Set_Binary_5872A0(HKEY hKey, const char_type* a2, BYTE* lpData, u32 Data);
 
-    EXPORT bool sub_587340(HKEY hKey, const char_type* keyPath, s32 value, LPBYTE lpData);
+    EXPORT bool Get_Binary_587340(HKEY hKey, const char_type* keyPath, s32 value, LPBYTE lpData);
 
     EXPORT s32 Get_Int_5873E0(HKEY hKey, const char_type* subKey);
 
@@ -58,7 +58,7 @@ class Registry
 
     EXPORT DWORD Create_Player_Setting_587810(const char_type* lpValueName);
 
-    EXPORT void Set_Player_Setting_5878C0(const char_type* lpValueName, BYTE Data);
+    EXPORT void Set_Player_Setting_5878C0(const char_type* lpValueName, DWORD Data);
 
     EXPORT void Set_Screen_Setting_587170(const char_type* lpValueName, s32 Data);
 

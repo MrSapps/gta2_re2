@@ -63,28 +63,185 @@ void magical_germain_0x8EC::Load_kanji_dat_4D2090()
     File::Global_Close_4A70C0();
 }
 
-STUB_FUNC(0x4D2150)
-void magical_germain_0x8EC::sub_4D2150(s32 a2, u16 a3, u16 a4)
+// Outlines the pixels of colour field_8E8_v1 with colour field_8E9_v2 in a 256 wide sprite
+MATCH_FUNC(0x4D2150)
+void magical_germain_0x8EC::sub_4D2150(s32 a2, u16 width, u16 height)
 {
-    NOT_IMPLEMENTED;
+    u8(*pPixels)[256] = reinterpret_cast<u8(*)[256]>(a2);
+    for (s32 y = 0; y < height; y++)
+    {
+        for (s32 x = 0; x < width; x++)
+        {
+            if (pPixels[y][x] == field_8E8_v1)
+            {
+                if (x > 0 && pPixels[y][x - 1] != field_8E8_v1)
+                {
+                    pPixels[y][x - 1] = field_8E9_v2;
+                }
+                if (x < width - 1 && pPixels[y][x + 1] != field_8E8_v1)
+                {
+                    pPixels[y][x + 1] = field_8E9_v2;
+                }
+                if (y > 0 && pPixels[y - 1][x] != field_8E8_v1)
+                {
+                    pPixels[y - 1][x] = field_8E9_v2;
+                }
+                if (y < height - 1 && pPixels[y + 1][x] != field_8E8_v1)
+                {
+                    pPixels[y + 1][x] = field_8E9_v2;
+                }
+            }
+        }
+    }
 }
 
-STUB_FUNC(0x4D2240)
-u8* magical_germain_0x8EC::sub_4D2240(char_type* a2)
+// Expands a 16x16 1bpp glyph into the 256 pixel wide 8bpp sprite data
+MATCH_FUNC(0x4D2240)
+u8* magical_germain_0x8EC::sub_4D2240(char_type* pGlyph)
 {
-    NOT_IMPLEMENTED;
-    return 0;
+    u8* pDst = field_8D0_pSprtData;
+    u8* pBits = (u8*)pGlyph;
+    u8 bits;
+    for (s32 row = 0; row < 16; row++)
+    {
+        bits = *pBits++;
+        *pDst++ = (bits & 0x80) ? field_8E8_v1 : 0;
+        *pDst++ = (bits & 0x40) ? field_8E8_v1 : 0;
+        *pDst++ = (bits & 0x20) ? field_8E8_v1 : 0;
+        *pDst++ = (bits & 0x10) ? field_8E8_v1 : 0;
+        *pDst++ = (bits & 0x8) ? field_8E8_v1 : 0;
+        *pDst++ = (bits & 0x4) ? field_8E8_v1 : 0;
+        *pDst++ = (bits & 0x2) ? field_8E8_v1 : 0;
+        *pDst++ = (bits & 0x1) ? field_8E8_v1 : 0;
+        bits = *pBits++;
+        *pDst++ = (bits & 0x80) ? field_8E8_v1 : 0;
+        *pDst++ = (bits & 0x40) ? field_8E8_v1 : 0;
+        *pDst++ = (bits & 0x20) ? field_8E8_v1 : 0;
+        *pDst++ = (bits & 0x10) ? field_8E8_v1 : 0;
+        *pDst++ = (bits & 0x8) ? field_8E8_v1 : 0;
+        *pDst++ = (bits & 0x4) ? field_8E8_v1 : 0;
+        *pDst++ = (bits & 0x2) ? field_8E8_v1 : 0;
+        *pDst++ = (bits & 0x1) ? field_8E8_v1 : 0;
+        pDst += 256 - 16;
+    }
+    return pDst;
 }
 
-STUB_FUNC(0x4D23B0)
-u8* magical_germain_0x8EC::sub_4D23B0(char_type* a2)
+// Expands a 16x16 1bpp glyph at double size (2x2 pixels per bit) into the 256 pixel wide 8bpp sprite data
+MATCH_FUNC(0x4D23B0)
+u8* magical_germain_0x8EC::sub_4D23B0(char_type* pGlyph)
 {
-    NOT_IMPLEMENTED;
-    return 0;
+    u8* pDst = field_8DC_pSprtData;
+    u8* pBits = (u8*)pGlyph;
+    u8 bits;
+    u8 colour;
+    for (s32 row = 0; row < 16; row++)
+    {
+        bits = *pBits++;
+        colour = (bits & 0x80) ? field_8E8_v1 : 0;
+        pDst[0] = colour;
+        pDst[1] = colour;
+        pDst[256] = colour;
+        pDst[257] = colour;
+        pDst += 2;
+        colour = (bits & 0x40) ? field_8E8_v1 : 0;
+        pDst[0] = colour;
+        pDst[1] = colour;
+        pDst[256] = colour;
+        pDst[257] = colour;
+        pDst += 2;
+        colour = (bits & 0x20) ? field_8E8_v1 : 0;
+        pDst[0] = colour;
+        pDst[1] = colour;
+        pDst[256] = colour;
+        pDst[257] = colour;
+        pDst += 2;
+        colour = (bits & 0x10) ? field_8E8_v1 : 0;
+        pDst[0] = colour;
+        pDst[1] = colour;
+        pDst[256] = colour;
+        pDst[257] = colour;
+        pDst += 2;
+        colour = (bits & 0x8) ? field_8E8_v1 : 0;
+        pDst[0] = colour;
+        pDst[1] = colour;
+        pDst[256] = colour;
+        pDst[257] = colour;
+        pDst += 2;
+        colour = (bits & 0x4) ? field_8E8_v1 : 0;
+        pDst[0] = colour;
+        pDst[1] = colour;
+        pDst[256] = colour;
+        pDst[257] = colour;
+        pDst += 2;
+        colour = (bits & 0x2) ? field_8E8_v1 : 0;
+        pDst[0] = colour;
+        pDst[1] = colour;
+        pDst[256] = colour;
+        pDst[257] = colour;
+        pDst += 2;
+        colour = (bits & 0x1) ? field_8E8_v1 : 0;
+        pDst[0] = colour;
+        pDst[1] = colour;
+        pDst[256] = colour;
+        pDst[257] = colour;
+        pDst += 2;
+        bits = *pBits++;
+        colour = (bits & 0x80) ? field_8E8_v1 : 0;
+        pDst[0] = colour;
+        pDst[1] = colour;
+        pDst[256] = colour;
+        pDst[257] = colour;
+        pDst += 2;
+        colour = (bits & 0x40) ? field_8E8_v1 : 0;
+        pDst[0] = colour;
+        pDst[1] = colour;
+        pDst[256] = colour;
+        pDst[257] = colour;
+        pDst += 2;
+        colour = (bits & 0x20) ? field_8E8_v1 : 0;
+        pDst[0] = colour;
+        pDst[1] = colour;
+        pDst[256] = colour;
+        pDst[257] = colour;
+        pDst += 2;
+        colour = (bits & 0x10) ? field_8E8_v1 : 0;
+        pDst[0] = colour;
+        pDst[1] = colour;
+        pDst[256] = colour;
+        pDst[257] = colour;
+        pDst += 2;
+        colour = (bits & 0x8) ? field_8E8_v1 : 0;
+        pDst[0] = colour;
+        pDst[1] = colour;
+        pDst[256] = colour;
+        pDst[257] = colour;
+        pDst += 2;
+        colour = (bits & 0x4) ? field_8E8_v1 : 0;
+        pDst[0] = colour;
+        pDst[1] = colour;
+        pDst[256] = colour;
+        pDst[257] = colour;
+        pDst += 2;
+        colour = (bits & 0x2) ? field_8E8_v1 : 0;
+        pDst[0] = colour;
+        pDst[1] = colour;
+        pDst[256] = colour;
+        pDst[257] = colour;
+        pDst += 2;
+        colour = (bits & 0x1) ? field_8E8_v1 : 0;
+        pDst[0] = colour;
+        pDst[1] = colour;
+        pDst[256] = colour;
+        pDst[257] = colour;
+        pDst += 2;
+        pDst += 2 * 256 - 32;
+    }
+    return pDst;
 }
 
 MATCH_FUNC(0x4D2610)
-void magical_germain_0x8EC::sub_4D2610(wchar_t text_char)
+void magical_germain_0x8EC::RenderSmallGlyph_4D2610(wchar_t text_char)
 {
     u16 v2 = text_char;
     if (text_char < 0x100u)
@@ -104,7 +261,7 @@ void magical_germain_0x8EC::sub_4D2610(wchar_t text_char)
 }
 
 MATCH_FUNC(0x4D2690)
-void magical_germain_0x8EC::sub_4D2690(wchar_t text_char)
+void magical_germain_0x8EC::RenderLargeGlyph_4D2690(wchar_t text_char)
 {
     u16 v2 = text_char;
     if (text_char < 0x100u)
@@ -124,7 +281,7 @@ void magical_germain_0x8EC::sub_4D2690(wchar_t text_char)
 }
 
 MATCH_FUNC(0x4D2710)
-STexture* magical_germain_0x8EC::sub_4D2710(wchar_t text_char)
+STexture* magical_germain_0x8EC::GetSmallGlyphTexture_4D2710(wchar_t text_char)
 {
     kanji_0x10* pFound;
     kanji_0x10* pCurrent;
@@ -132,7 +289,7 @@ STexture* magical_germain_0x8EC::sub_4D2710(wchar_t text_char)
 
     for (s32 i = 0; i < 120; i++)
     {
-        pCurrent = &field_0[i];
+        pCurrent = &field_0_small_glyphs[i];
         if (pCurrent->field_2_text_char == text_char && pCurrent->field_0_v1 == field_8E8_v1 && pCurrent->field_1_v2 == field_8E9_v2)
         {
             pCurrent->field_C_id = field_8C0_count++;
@@ -154,13 +311,13 @@ STexture* magical_germain_0x8EC::sub_4D2710(wchar_t text_char)
     pFound->field_2_text_char = text_char;
     pFound->field_C_id = field_8C0_count++;
 
-    sub_4D2610(text_char);
+    RenderSmallGlyph_4D2610(text_char);
 
     return field_8D8_pTexture;
 }
 
 MATCH_FUNC(0x4D27D0)
-STexture* magical_germain_0x8EC::sub_4D27D0(wchar_t text_char)
+STexture* magical_germain_0x8EC::GetLargeGlyphTexture_4D27D0(wchar_t text_char)
 {
     kanji_0x10* pFound;
     kanji_0x10* pCurrent;
@@ -168,7 +325,7 @@ STexture* magical_germain_0x8EC::sub_4D27D0(wchar_t text_char)
 
     for (s32 i = 0; i < 20; i++)
     {
-        pCurrent = &field_780[i];
+        pCurrent = &field_780_large_glyphs[i];
         if (pCurrent->field_2_text_char == text_char && pCurrent->field_0_v1 == field_8E8_v1 && pCurrent->field_1_v2 == field_8E9_v2)
         {
             pCurrent->field_C_id = field_8C0_count++;
@@ -190,13 +347,13 @@ STexture* magical_germain_0x8EC::sub_4D27D0(wchar_t text_char)
     pFound->field_2_text_char = text_char;
     pFound->field_C_id = field_8C0_count++;
 
-    sub_4D2690(text_char);
+    RenderLargeGlyph_4D2690(text_char);
 
     return field_8E4_pTexture;
 }
 
 MATCH_FUNC(0x4D28A0)
-void magical_germain_0x8EC::sub_4D28A0(u16 font_type)
+void magical_germain_0x8EC::SetGlyphParamsFromFont_4D28A0(u16 font_type)
 {
     switch (font_type)
     {
@@ -236,104 +393,107 @@ void magical_germain_0x8EC::sub_4D28A0(u16 font_type)
     }
 }
 
-STUB_FUNC(0x4D29D0)
-void magical_germain_0x8EC::sub_4D29D0(u16 a2)
+MATCH_FUNC(0x4D29D0)
+void magical_germain_0x8EC::SetGlyphParamsFromRemap_4D29D0(u16 a2)
 {
-    NOT_IMPLEMENTED;
     if (gGame_0x40_67E008)
     {
         switch (a2)
         {
-            case 0u:
-                goto LABEL_3;
-            case 1u:
-                field_8E8_v1 = -103;
-                field_8E9_v2 = -99;
+            case 0:
+                field_8E8_v1 = 0x89;
+                field_8E9_v2 = 0x8D;
                 break;
-            case 2u:
-                goto LABEL_15;
-            case 3u:
-                field_8E8_v1 = 121;
-                field_8E9_v2 = 125;
+            case 1:
+                field_8E8_v1 = 0x99;
+                field_8E9_v2 = 0x9D;
                 break;
-            case 4u:
-                field_8E8_v1 = 53;
-                field_8E9_v2 = 58;
+            case 2:
+                field_8E8_v1 = 0x69;
+                field_8E9_v2 = 0x6D;
                 break;
-            case 5u:
-                goto LABEL_7;
-            case 6u:
-                field_8E8_v1 = 28;
-                field_8E9_v2 = 24;
+            case 3:
+                field_8E8_v1 = 0x79;
+                field_8E9_v2 = 0x7D;
                 break;
-            case 7u:
-                goto LABEL_9;
-            case 8u:
-                goto LABEL_10;
-            default:
-                return;
+            case 4:
+                field_8E8_v1 = 0x35;
+                field_8E9_v2 = 0x3A;
+                break;
+            case 5:
+                field_8E8_v1 = 0x27;
+                field_8E9_v2 = 0x2C;
+                break;
+            case 6:
+                field_8E8_v1 = 0x1C;
+                field_8E9_v2 = 0x18;
+                break;
+            case 7:
+                field_8E8_v1 = 0x48;
+                field_8E9_v2 = 0x4C;
+                break;
+            case 8:
+                field_8E8_v1 = 0xFC;
+                field_8E9_v2 = 0xFA;
+                break;
         }
     }
     else
     {
         switch (a2)
         {
-            case 0u:
-            case 1u:
-            case 2u:
-                field_8E8_v1 = -23;
-                field_8E9_v2 = -17;
+            case 0:
+            case 1:
+            case 2:
+                field_8E8_v1 = 0xE9;
+                field_8E9_v2 = 0xEF;
                 break;
-            case 3u:
-            case 0xDu:
-            LABEL_3:
-                field_8E8_v1 = -119;
-                field_8E9_v2 = -115;
+            case 3:
+                field_8E8_v1 = 0x89;
+                field_8E9_v2 = 0x8D;
                 break;
-            case 4u:
-            LABEL_7:
-                field_8E8_v1 = 39;
-                field_8E9_v2 = 44;
+            case 4:
+                field_8E8_v1 = 0x27;
+                field_8E9_v2 = 0x2C;
                 break;
-            case 5u:
-            LABEL_10:
-                field_8E8_v1 = -4;
-                field_8E9_v2 = -6;
+            case 5:
+                field_8E8_v1 = 0xFC;
+                field_8E9_v2 = 0xFA;
                 break;
-            case 8u:
-                field_8E8_v1 = -8;
-                field_8E9_v2 = -11;
+            case 8:
+                field_8E8_v1 = 0xF8;
+                field_8E9_v2 = 0xF5;
                 break;
-            case 0xAu:
-                field_8E8_v1 = 39;
-                field_8E9_v2 = 35;
+            case 10:
+                field_8E8_v1 = 0x27;
+                field_8E9_v2 = 0x23;
                 break;
-            case 0xEu:
-            LABEL_15:
-                field_8E8_v1 = 105;
-                field_8E9_v2 = 109;
+            case 13:
+                field_8E8_v1 = 0x89;
+                field_8E9_v2 = 0x8D;
                 break;
-            case 0xFu:
-            LABEL_9:
-                field_8E8_v1 = 72;
-                field_8E9_v2 = 76;
+            case 15:
+                field_8E8_v1 = 0x48;
+                field_8E9_v2 = 0x4C;
                 break;
-            default:
-                return;
+            case 14:
+                field_8E8_v1 = 0x69;
+                field_8E9_v2 = 0x6D;
+                break;
         }
     }
 }
 
 MATCH_FUNC(0x4D2B40)
-void magical_germain_0x8EC::sub_4D2B40()
+void magical_germain_0x8EC::InitGlyphCaches_4D2B40()
 {
     u16 v2 = gGtx_0x106C_703DD4->GetSpriteIdxFromFont_5AA710(word_703C3E, 0);
     u16 sprite_idx = gGtx_0x106C_703DD4->GetSpriteTrueIndex_5AA460(sprite_types_enum::font_7, v2);
     field_8D4_sprite_index = gGtx_0x106C_703DD4->get_sprite_index_5AA440(sprite_idx);
 
-    for (s32 i = 0; i < GTA2_COUNTOF_S(field_0); i++)
+    for (s32 i = 0; i < GTA2_COUNTOF_S(field_0_small_glyphs); i++)
     {
-        kanji_0x10* pKanji = &field_0[i];
+        kanji_0x10* pKanji = &field_0_small_glyphs[i];
         pKanji->field_2_text_char = 0;
         pKanji->field_0_v1 = 0;
         pKanji->field_1_v2 = 0;
@@ -350,9 +510,9 @@ void magical_germain_0x8EC::sub_4D2B40()
 
     field_8E0_sprite_index = gGtx_0x106C_703DD4->get_sprite_index_5AA440(v9);
 
-    for (s32 j = 0; j < GTA2_COUNTOF_S(field_780); j++)
+    for (s32 j = 0; j < GTA2_COUNTOF_S(field_780_large_glyphs); j++)
     {
-        kanji_0x10* pKanji_2 = &field_780[j];
+        kanji_0x10* pKanji_2 = &field_780_large_glyphs[j];
         pKanji_2->field_2_text_char = 0;
         pKanji_2->field_0_v1 = 0;
         pKanji_2->field_1_v2 = 0;

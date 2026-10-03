@@ -33,9 +33,10 @@ class BurgerKing_1
     EXPORT BOOL __stdcall make_input_devices_498800(HINSTANCE hInstance);
     EXPORT void set_game_pad_device_properties_4989C0();
     EXPORT void __stdcall input_devices_init_498C40(HINSTANCE hInstance);
-    EXPORT void sub_498CB0(u32 a1);
+    EXPORT void SetAltKeyState_498CB0(u32 a1);
+    EXPORT bool acquire_input_device_498730(struct IDirectInputDeviceA* pGamePadDevice);
     EXPORT bool game_pad_read_498D20();
-    EXPORT void sub_498C80(s32* a1, DIDEVICEOBJECTDATA* device_data_keys);
+    EXPORT void AddKeyToInputBits_498C80(s32* a1, DIDEVICEOBJECTDATA* device_data_keys);
     EXPORT void read_input_device_498DA0(s32* input_bits, u8 bUnk);
 
     u8 field_0;
@@ -49,10 +50,23 @@ struct BurgerKingBurger_0xC
     s32 field_8_rng_rnd;
 };
 
+// The text header at the start of a replay file
+struct ReplayHeader_10C
+{
+    char_type field_0_version[8];
+    char_type field_8_date[30];
+    char_type field_26_computer_name[30];
+    char_type field_44_map_name[40];
+    char_type field_6C_style_name[40];
+    char_type field_94_script_name[40];
+    char_type field_BC_debug_str[40];
+    char_type field_E4_flags[40];
+};
+
 class BurgerKing_67F8B0
 {
   public:
-    EXPORT void sub_4CDCD0(); // static dtor
+    EXPORT void StaticShutdown_4CDCD0(); // static dtor
     EXPORT void clear_inputs_4CDCE0();
     EXPORT void set_input_4CDCF0(s32 mask_idx);
     EXPORT void clear_input_4CDD10(s32 mask_idx);
@@ -62,8 +76,8 @@ class BurgerKing_67F8B0
     EXPORT void SaveReplay_4CDED0();
     EXPORT void modify_inputs_4CDF30(s32 match_mask);
     EXPORT void AppendReplayHeader_4CDF70();
-    EXPORT char_type LoadReplayHeader_4CE380(char_type a1);
-    EXPORT void sub_4CE650();
+    EXPORT void LoadReplayHeader_4CE380(char_type bLoadDebug);
+    EXPORT void VerifyAttractFilesExist_4CE650();
     EXPORT void GetNextAttrReplay_4CE6E0(char_type* pAttrPathOut);
     EXPORT void input_init_replay_4CE740(HINSTANCE a2);
     EXPORT void input_init_live_4CE880(HINSTANCE a2);
@@ -71,10 +85,11 @@ class BurgerKing_67F8B0
     EXPORT void replay_save_4CEA40(u32* input_bits);
     EXPORT u32 get_input_bits_4CEAC0();
     EXPORT void save_replay_inputs_4CED00(s32 a2, s32 a3);
-    EXPORT void sub_4CED90();
+    EXPORT void DisplayInputBits_4CED90();
     EXPORT bool RecOrPlayBackState_4CEDF0();
     EXPORT void ShowInput_4CEE10();
 
+    // 9.6f 0x44AA60
     bool inlined_check()
     {
         if (field_38_replay_state == Unkn_1 || field_38_replay_state == Replay_3)
@@ -82,6 +97,18 @@ class BurgerKing_67F8B0
             return true;
         }
         return false;
+    }
+
+    // 9.6f 0x44C050
+    inline bool IsInputSet_44C050(s32 mask_idx)
+    {
+        return (u32)(field_4_input_bits & field_8_input_masks[mask_idx]) > 0;
+    }
+
+    // 9.6f 0x44AA80
+    inline s32 GetLastRecRngIdx_44AA80()
+    {
+        return field_3C_rec_buff[field_7533C_used_recs_count - 1].field_0_rng_idx;
     }
 
     char_type field_0_bShutDown;

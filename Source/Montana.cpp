@@ -9,24 +9,9 @@ DEFINE_GLOBAL(Montana_2EE4*, gMontana_2EE4_705BBC, 0x705BBC);
 DEFINE_GLOBAL(Montana_FA4*, gMontana_FA4_705BC0, 0x705BC0);
 DEFINE_GLOBAL(s32, gDisplayDraw_67B57C, 0x67B57C);
 DEFINE_GLOBAL(s32, gDisplayAdd_67B578, 0x67B578);
-DEFINE_GLOBAL_INIT(Fix16, dword_67B434, Fix16(1), 0x67B434);
-DEFINE_GLOBAL_INIT(Fix16, dword_705B80, Fix16(0x180000, 0), 0x705B80);
-DEFINE_GLOBAL_INIT(Fix16, dword_705AC4, Fix16(0), 0x705AC4);
-
-MATCH_FUNC(0x5c5f60)
-Montana_2EE4::Montana_2EE4()
-{
-    for (s32 i = 0; i < GTA2_COUNTOF(field_0); i++)
-    {
-        field_0[i].field_0_sprt = 0;
-    }
-    field_2EE0_free_indx = 0;
-}
-
-MATCH_FUNC(0x5c5f90)
-Montana_2EE4::~Montana_2EE4()
-{
-}
+DEFINE_GLOBAL_INIT(Fix16, kFpOne_67B434, Fix16(1), 0x67B434);
+DEFINE_GLOBAL_INIT(Fix16, kFp96_705B80, Fix16(0x180000, 0), 0x705B80);
+DEFINE_GLOBAL_INIT(Fix16, kFpZero_705AC4, Fix16(0), 0x705AC4);
 
 // https://decomp.me/scratch/qyVgM reg swap
 WIP_FUNC(0x5c5cf0)
@@ -40,7 +25,7 @@ void Montana_4::AddSprite_5C5CF0(Sprite* pSprite)
     {
         if (pSprite->field_28_num == 34)
         {
-            z_pos = dword_705B80;
+            z_pos = kFp96_705B80;
         }
         else
         {
@@ -49,7 +34,7 @@ void Montana_4::AddSprite_5C5CF0(Sprite* pSprite)
     }
     else
     {
-        z_pos = dword_705AC4;
+        z_pos = kFpZero_705AC4;
     }
 
     Montana_C* pLastNonNull; // TODO: not initialized before 'for' loop
@@ -64,7 +49,7 @@ void Montana_4::AddSprite_5C5CF0(Sprite* pSprite)
         }
         else
         {
-            a2_1 = dword_705AC4;
+            a2_1 = kFpZero_705AC4;
         }
 
         if (z_pos < a2_1)
@@ -85,20 +70,20 @@ void Montana_4::AddSprite_5C5CF0(Sprite* pSprite)
                     {
                         return;
                     }
-                    pIter = pIter->field_8;
+                    pIter = pIter->field_8_pRight;
                 }
             }
             else
             {
-                pIter = pIter->field_8;
+                pIter = pIter->field_8_pRight;
             }
         }
     }
 
-    Montana_C* pAllocated = gMontana_2EE4_705BBC->sub_4C4B40();
+    Montana_C* pAllocated = gMontana_2EE4_705BBC->Alloc_4C4B40();
     pAllocated->field_0_sprt = pSprite;
     pAllocated->mpNext = NULL;
-    pAllocated->field_8 = NULL;
+    pAllocated->field_8_pRight = NULL;
 
     if (!field_0_pFirst)
     {
@@ -112,7 +97,7 @@ void Montana_4::AddSprite_5C5CF0(Sprite* pSprite)
             {
                 if (pSprite->field_28_num >= pLastNonNull->field_0_sprt->field_28_num)
                 {
-                    pLastNonNull->field_8 = pAllocated;
+                    pLastNonNull->field_8_pRight = pAllocated;
                 }
                 else
                 {
@@ -121,7 +106,7 @@ void Montana_4::AddSprite_5C5CF0(Sprite* pSprite)
             }
             else
             {
-                pLastNonNull->field_8 = pAllocated;
+                pLastNonNull->field_8_pRight = pAllocated;
             }
         }
         else
@@ -149,22 +134,21 @@ void Montana_4::Draw_5C5DF0()
 
         pIter = gMontana_FA4_705BC0->Pop_4C4BA0();
         pIter->field_0_sprt->Draw_59EFF0();
-        pIter = pIter->field_8;
+        pIter = pIter->field_8_pRight;
     }
 }
 
 MATCH_FUNC(0x5c5e50)
 void Montana_4::Reset_5C5E50()
 {
-    gMontana_2EE4_705BBC->field_2EE0_free_indx = 0;
+    gMontana_2EE4_705BBC->Reset_4C4B70();
     field_0_pFirst = 0;
 }
 
 // TODO: Doesn't match due to SEH stuff
-WIP_FUNC(0x5c5e70)
+MATCH_FUNC(0x5c5e70)
 Montana_4::Montana_4()
 {
-    WIP_IMPLEMENTED;
     if (!gMontana_2EE4_705BBC)
     {
         gMontana_2EE4_705BBC = new Montana_2EE4();
@@ -177,12 +161,36 @@ Montana_4::Montana_4()
     Reset_5C5E50();
 }
 
-STUB_FUNC(0x5c5f10)
+// TODO: target loads gMontana_2EE4_705BBC into ecx and pushes esi inside the if
+WIP_FUNC(0x5c5f10)
 Montana_4::~Montana_4()
 {
-    NOT_IMPLEMENTED;
-    GTA2_DELETE_AND_NULL(gMontana_2EE4_705BBC);
-    GTA2_DELETE_AND_NULL(gMontana_FA4_705BC0);
+    WIP_IMPLEMENTED;
+
+    if (gMontana_2EE4_705BBC)
+    {
+        GTA2_DELETE_AND_NULL(gMontana_2EE4_705BBC);
+    }
+
+    if (gMontana_FA4_705BC0)
+    {
+        GTA2_DELETE_AND_NULL(gMontana_FA4_705BC0);
+    }
+}
+
+MATCH_FUNC(0x5c5f60)
+Montana_2EE4::Montana_2EE4()
+{
+    for (s32 i = 0; i < GTA2_COUNTOF(field_0_entries); i++)
+    {
+        field_0_entries[i].field_0_sprt = 0;
+    }
+    Reset_4C4B70();
+}
+
+MATCH_FUNC(0x5c5f90)
+Montana_2EE4::~Montana_2EE4()
+{
 }
 
 MATCH_FUNC(0x4954f0)
@@ -196,27 +204,41 @@ void Montana::ResetAll_4954F0()
 
 // TODO: move
 // https://decomp.me/scratch/qe97a
-WIP_FUNC(0x5BEE90)
-EXPORT unsigned __int64 get_rdtsc_5BEE90()
+MATCH_FUNC(0x5BEE90)
+EXPORT s32 get_rdtsc_5BEE90()
 {
     // NOTE: Actually is inline assembly, surprisingly
     unsigned __int64 t;
-    __asm 
-    { 
-        pushad 
-        rdtsc 
-        mov DWORD PTR t, eax 
-        mov DWORD PTR t+4, edx 
+    __asm
+    {
+        // The original has the 16-bit pushaw/popaw. Prefix pushad/popad with an operand-size
+        // override so the compiler still sees them and saves ebx/esi/edi.
+        _emit 0x66
+        pushad
+        rdtsc
+        mov DWORD PTR t, eax
+        mov DWORD PTR t+4, edx
+        _emit 0x66
         popad
     }
-    return static_cast<int>(t);
+    return static_cast<s32>(t);
+}
+
+DEFINE_GLOBAL_INIT(u32, dword_705334, 1701493, 0x705334);
+
+// Converts a cycle count from get_rdtsc_5BEE90 for the profiler display (dword_705334 is the
+// number of cycles per unit)
+MATCH_FUNC(0x5BEED0)
+EXPORT s32 __stdcall sub_5BEED0(s32 cycles)
+{
+    return (u32)cycles / dword_705334;
 }
 
 MATCH_FUNC(0x495510)
 void Montana::DisplayAdd_495510(Sprite* pSprite)
 {
     const s32 rdtsc = get_rdtsc_5BEE90();
-    if (pSprite->field_1C_zpos >= dword_67B434)
+    if (pSprite->field_1C_zpos >= kFpOne_67B434)
     {
         field_0_cols[pSprite->ComputeZLayer_5A1BD0()]->AddSprite_5C5CF0(pSprite);
     }

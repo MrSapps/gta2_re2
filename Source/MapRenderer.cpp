@@ -771,10 +771,7 @@ void MapRenderer::ProjectVert_4EB940(Fix16& xpos, Fix16& ypos, Fix16& zpos, Vert
 
     f32 inv_z = 1.0f / (gViewCamera_676978->field_98_cam_pos2.field_8_z.ToFloat() + (8.0f - zpos.ToFloat()));
     pVert->z = inv_z;
-    {
-        u32 tmp = (u32)gViewCamera_676978->field_70_screen_px_center_x;
-        pVert->x = xpos.ToFloat() * gViewCamera_676978->field_60.x.ToFloat() * pVert->z + tmp;
-    }
+    pVert->x = xpos.ToFloat() * gViewCamera_676978->field_60.x.ToFloat() * pVert->z + (u32)gViewCamera_676978->field_70_screen_px_center_x;
     pVert->y = ((ypos.ToFloat() * gViewCamera_676978->field_60.x.ToFloat()) * pVert->z) + (u32)gViewCamera_676978->field_74_screen_px_center_y;
 }
 

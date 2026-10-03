@@ -775,7 +775,7 @@ void MapRenderer::DrawRightSide_4EAF40(u16& right_word)
 
 // https://decomp.me/scratch/GkGnQ
 WIP_FUNC(0x4EB940)
-void __stdcall ProjectVert_4EB940(Fix16& xpos, Fix16& ypos, Fix16& zpos, Vert* pVert)
+void MapRenderer::ProjectVert_4EB940(Fix16& xpos, Fix16& ypos, Fix16& zpos, Vert* pVert)
 {
     set_vert_xyz_relative_to_cam_inlined(xpos, ypos, zpos, pVert);
 

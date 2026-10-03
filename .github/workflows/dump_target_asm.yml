@@ -34,6 +34,7 @@ jobs:
         python vc6_setup.py
         python build.py --ignore_no_match
         cd Scripts/bin_comp
+        python rich_header.py 10.5.exe 9.6f.exe ../../build_vc6/decomp_main.exe | tee rich.txt
         python dump_target_asm.py
         python dump_fingerprints.py
         cd ..
@@ -41,7 +42,7 @@ jobs:
     - name: Push to claude/target-asm
       shell: bash
       run: |
-        mkdir /tmp/out && cp Scripts/bin_comp/target_asm.json Scripts/bin_comp/target_data.json Scripts/bin_comp/target_extra.json Scripts/bin_comp/fingerprints.json Scripts/bin_comp/target_96f.json /tmp/out/ && cp -r Scripts/asm /tmp/out/asm
+        mkdir /tmp/out && cp Scripts/bin_comp/target_asm.json Scripts/bin_comp/target_data.json Scripts/bin_comp/target_extra.json Scripts/bin_comp/fingerprints.json Scripts/bin_comp/target_96f.json Scripts/bin_comp/rich.txt /tmp/out/ && cp -r Scripts/asm /tmp/out/asm
         cd /tmp/out
         git init -q -b claude/target-asm
         git config user.name "github-actions" && git config user.email "github-actions@users.noreply.github.com"

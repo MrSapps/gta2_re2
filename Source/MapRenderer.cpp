@@ -87,17 +87,6 @@ static inline void ProjectVert_46BC70(Fix16& xpos, Fix16& ypos, Fix16& zpos, Ver
     pVert->y = ypos.ToFloat() * gViewCamera_676978->field_60.x.ToFloat() * pVert->z + (u32)gViewCamera_676978->field_74_screen_px_center_y;
 }
 
-static inline void set_vert_xyz_relative_to_cam_inlined(Fix16 xCoord, Fix16 yCoord, Fix16 z_val, Vert* pVerts)
-{
-    Camera_0xBC* pCam = gViewCamera_676978;
-
-    s32 next_idx = (pVerts - gTileVerts_6F65A8) + 4;
-
-    gTileVerts_6F65A8[next_idx].x = (xCoord + pCam->field_98_cam_pos2.field_0_x).ToFloat();
-    gTileVerts_6F65A8[next_idx].y = (yCoord + pCam->field_98_cam_pos2.field_4_y).ToFloat();
-    gTileVerts_6F65A8[next_idx].z = z_val.ToFloat();
-}
-
 static inline void TransformTriangleUVs_46B910(u16& rotation_and_flip)
 {
     s32 vert_idx;
@@ -588,7 +577,8 @@ void MapRenderer::DrawLeftSide_4EA390(u16& left_word)
 }
 
 MATCH_FUNC(0x4ead90)
-void __stdcall set_vert_xyz_relative_to_cam_4EAD90(Fix16 xCoord, Fix16 yCoord, Fix16 z_val, Vert* pVerts)
+// Inline: ProjectVert_4EB940 inlines it, the callers that pass an s32 z (ProjectVertTop/Bottom) call it
+inline void __stdcall set_vert_xyz_relative_to_cam_4EAD90(Fix16 xCoord, Fix16 yCoord, Fix16 z_val, Vert* pVerts)
 {
     Camera_0xBC* pCam = gViewCamera_676978;
 
@@ -777,7 +767,7 @@ void MapRenderer::DrawRightSide_4EAF40(u16& right_word)
 WIP_FUNC(0x4EB940)
 void MapRenderer::ProjectVert_4EB940(Fix16& xpos, Fix16& ypos, Fix16& zpos, Vert* pVert)
 {
-    set_vert_xyz_relative_to_cam_inlined(xpos, ypos, zpos, pVert);
+    set_vert_xyz_relative_to_cam_4EAD90(xpos, ypos, zpos, pVert);
 
     pVert->z = 1.0f / (gViewCamera_676978->field_98_cam_pos2.field_8_z.ToFloat() + (8.0f - zpos.ToFloat()));
     {

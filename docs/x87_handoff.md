@@ -60,6 +60,10 @@ under "Still unexplained") for the details behind each point.
    doesn't change the y line. In the 4EB940 testbed, `inline`, `static inline`, `__forceinline`, cdecl and the
    definition order relative to an inline Top member all give the same 11 lines; reference parameters are worse
    (47/63).
+11. **Field types don't matter either.** In the 4EB940 testbed (TU head patched per variant), all give the same
+   11 lines: centre fields `u32` (with and without the casts), in an `s32`/`u32` array or `{x, y}` struct, in a
+   union with an `f32`; `Vert` with `f32`, `u32` diff/spec, an `xyz[3]` or `f[8]` array, `x`/`y` in unions with
+   `s32`, `w` as `DWORD`. So the y-line store isn't steered by alias classes from types.
 9. **Not the front end.** C1XX from RTM, SP3, SP5 and SP6 paired with our C2.DLL (8799) give byte-identical code
    for the cluster and 4EB940. Together with point 1, every VC6 compiler-side cause we can test is ruled out.
 
@@ -128,8 +132,11 @@ builds fail; cut the TU before the first such function and append only what you 
    0x470250 (`DrawRightSide`) and 0x46D9A0 (`draw_bottom`) the same way: they also show which calls 9.6f made.
 2. **Work the y line in the 4EB940 testbed** rather than in the cluster: whatever makes its y high-dword store
    wait for the pointer accesses should carry over to the inlined Top/Bottom. The set_vert definition order
-   is settled (point 10) and isn't the cause. Still untested: `Vert` or `Camera_0xBC` field types that VC6
-   might treat as overlapping the temp.
+   is settled (point 10) and field types are ruled out (point 11). Left: what else in the original 4EB940
+   could make the dead store wait. Its x line needed the `{ u32 tmp = centre; ... }` block (centre loaded
+   before x), which hints that the original evaluated the conversion in a different place in the
+   expression than our source does; try statement and temporary shapes for the y line that move the centre
+   load relative to the y and fov loads.
 3. Use the same 9.6f route for other inline helpers: any 9.6f callee listed in `docs/inlines_96f.md` can now be
    compiled with VC7 and checked exactly (`/O2 /Ob0 /G5 /GX`, external linkage, the right calling convention;
    `static __stdcall` when the 9.6f callee takes register arguments).

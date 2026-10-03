@@ -27,6 +27,27 @@ class Garage_48
         return false;
     }
 
+    // 9.6f 0x434AF0
+    inline bool IsParkingCarAndF3D_434AF0(Car_BC* pCar)
+    {
+        return pCar == field_0 && field_3D;
+    }
+
+    // 9.6f 0x489650
+    inline void Reset_489650()
+    {
+        field_10 = NULL;
+        field_C = 0;
+        field_28_push_dir.x = 0;
+        field_28_push_dir.y = 0;
+        field_18_park_x_min = 0;
+        field_1C_park_y_min = 0;
+        field_20_park_x_max = 0;
+        field_24_park_y_max = 0;
+        field_30_target_x = 0;
+        field_34_target_y = 0;
+    }
+
     bool IsMaybeParkingCar_493540(Car_BC* pCar)
     {
         if (pCar == field_0)
@@ -42,10 +63,10 @@ class Garage_48
     s32 field_C;
     Door_38* field_10;
     Ped* field_14;
-    Fix16 field_18;
-    Fix16 field_1C;
-    Fix16 field_20;
-    Fix16 field_24;
+    Fix16 field_18_park_x_min;
+    Fix16 field_1C_park_y_min;
+    Fix16 field_20_park_x_max;
+    Fix16 field_24_park_y_max;
     Fix16_Point_POD field_28_push_dir;
     Fix16 field_30_target_x;
     Fix16 field_34_target_y;
@@ -58,7 +79,7 @@ class Garage_48
     char_type field_41;
     char_type field_42;
     char_type field_43;
-    s32 field_44;
+    u32 field_44;
 };
 
 EXTERN_GLOBAL(Garage_48*, gGarage_48_6FD26C);

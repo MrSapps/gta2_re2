@@ -166,9 +166,9 @@ Tried before the volatile trick (the flag gets optimised away in all of these):
 - `if (!bDone) do { ... } while (lstrlenA(p));` with a plain local.
 - Reusing `lpData` itself as the flag (`lpData = NULL;` ... `lpData = (LPCVOID)1;`).
 
-## BurgerKing_1::sub_498CB0 (STUB)
+## BurgerKing_1::SetAltKeyState_498CB0 (STUB)
 
-Target: `mov 4(%esp),%eax; shr $7,%al; mov %al,byte_67B80C; ret $4`. It loads the whole
+Target: `mov 4(%esp),%eax; shr $7,%al; mov %al,gAltKeyDown_67B80C; ret $4`. It loads the whole
 dword, then shifts only `al`. Every spelling below compiles to a byte load
 (`mov 4(%esp),%al; shr $7,%al`), or to a dword shift plus `and $1,%al`. Tested in a scratch
 TU with `build.py --single_cpp ../build_vc6/scratch_t.cpp`:
@@ -404,7 +404,7 @@ Tried: splitting the `FindGroundZ` call and `.ToUInt8()` into two statements (0.
 ## Car_BC::GetDoorWorldPos_43B420 (WIP, was sub_43B420)
 
 World position of door `door_idx`: the door offset from `get_car_remap_5AA3D0` (+1 skips
-`num_doors`, then `door_info[]`), turned into `Fix16` with `dword_6F6850.sub_41FE70`,
+`num_doors`, then `door_info[]`), turned into `Fix16` with `gPixelsToFix16_6F6850.SignedPixelsToFix16_41FE70`,
 rotated by the sprite angle and added to the sprite position.
 
 Ratio 0.564. The first rotated coordinate uses the inline `Fix16 operator*` (`__allshr`) and
@@ -463,7 +463,7 @@ Tried: declaring `step`/`direction` first; setting `step = 1` between the global
 
 ## thirsty_lamarr::sub_492430 (WIP)
 
-Left-to-right version of the WIP `sub_492260`: draws the counter digits, skipping
+Left-to-right version of the WIP `DrawDigits_492260`: draws the counter digits, skipping
 leading zeros (a leading zero that is still rolling, `field_13_offset != 0`, is drawn at
 its offset height), and returns the x after the last digit. The x/y `Fix16` arguments
 go through the out-of-line constructor `FromInt_4926F0` that this file emits.
@@ -471,7 +471,7 @@ go through the out-of-line constructor `FromInt_4926F0` that this file emits.
 Ratio 0.457. Structure and calls are the same, but registers differ throughout. The original keeps
 `field_27_sprite_w` in `cl` across iterations (reloaded after each draw for
 `curr_xpos +=`, then reused as the next width argument) and keeps `bFirst` at 0x13, not
-in an arg slot. Worth another try together with `sub_492260`.
+in an arg slot. Worth another try together with `DrawDigits_492260`.
 
 ## sound_obj::ProcessType3_CopRadioAndMusic_57DD50 (WIP)
 
@@ -493,7 +493,7 @@ of them produce the `sete`.
 ## Map_0x370::sub_4DF3E0 (WIP, was STUB)
 
 Returns the zone of `zone_type` whose centre is nearest (max-abs distance) to the block
-`(xpos, ypos)`, starting from `dword_6F5B8C` (255.0). Ratio 0.644.
+`(xpos, ypos)`, starting from `kFp255_6F5B8C` (255.0). Ratio 0.644.
 
 The distance is computed in plain registers: `(w & 0xFE) << 13` is `(w >> 1) << 14`
 folded into one shift, which VC6 only produces when the shifts are in one integer
@@ -543,10 +543,10 @@ random jitter, <= 40). Ratio 0.817.
 What got it there:
 - No null check on `field_8_char_b4_ptr`: test the sprite type and read the pointer, not
   `AsCharB4_40FEA0()`.
-- The original calls `Ang16::sub_406C20` for both normalisations: build the angle with
-  `Ang16(s32)` (no inline `Normalize`) and call `sub_406C20()` explicitly.
+- The original calls `Ang16::Normalize_406C20` for both normalisations: build the angle with
+  `Ang16(s32)` (no inline `Normalize`) and call `Normalize_406C20()` explicitly.
 - `dword_6FD540 * dword_6FD4A8` (operand order picks the load order), and
-  `dword_6FD4A0 * dword_6FD540` in the `<= 40` case.
+  `kFP16One_6FD4A0 * dword_6FD540` in the `<= 40` case.
 - `zpos += dword_6FD470` written in both the 41..59 and the `<= 40` blocks (0.695 -> 0.817);
   written once after them VC6 lays the tail out differently.
 
@@ -587,7 +587,7 @@ early `return` in the else (0.664), `% 2 == 0` (0.550).
 Debug overlay: for each junction (1..544) with a non-zero `field_C_min_x` that the view
 camera can see, projects its corner to the screen and draws its index with `%d`. Ratio 0.349.
 
-The projection is the `Camera_0xBC::sub_40CFC0` formula with this TU's copies of the
+The projection is the `Camera_0xBC::WorldToScreen_40CFC0` formula with this TU's copies of the
 constants (`dword_6FFC7C / (u + dword_6FFC9C)`). Written out in the function, VC6
 inlines every `Fix16` operator (0.259). Moved into a `static inline` helper, VC6 inlines
 only the first multiply and calls `Multiply_408680`/`Add_408660`/`Subtract_436A00` for the
@@ -596,7 +596,7 @@ projection helper (see `matching_quirks.md`).
 
 Still different:
 - The original calls an out-of-line `Fix16(u8)` (`0x45C4E0`) for the x argument of
-  `sub_58CF10`, ours inlines both.
+  `IsPointInBoundaries_58CF10`, ours inlines both.
 - VC6 adds a count-down register for the loop (`movl $0x220`), the original only has the
   `u16` index compared with `0x221`.
 - Stack slots for the saved x/y bytes and the frame size (0x40 vs 0x3C).
@@ -697,7 +697,7 @@ Debug ids drawn at a sprite's screen position: car ids, ped ids and `model:id` f
 Ratio 0.333 (low because of register allocation; the instruction sequence is mostly
 right).
 
-- The car block uses the inline helper `sub_4BA2C0` (moved above this function). Its font
+- The car block uses the inline helper `DrawTextScaled_4BA2C0` (moved above this function). Its font
   parameter must be `u16` (stored with `mov %dx`), and it computes `scale_y` first and
   `x * scale` inside the `DrawText_5D8A10` argument list: then VC6 inlines the y multiply
   (`imull (%esi)`) and calls `Multiply_408680` for x after pushing the other arguments,
@@ -716,7 +716,7 @@ function, reloads the car pointer from `this`, and delays the shifts. The three
 ## PoliceCrew_38::sub_571540 (WIP, was STUB)
 
 Shut-down for a crew with a car (`Kfc_30::field_24 == 2`): same shape as the matched
-`sub_571350`, with the car's `field_76_last_seen_timer > 200` checks and the despawn state
+`TryDespawnOffscreenCrew_571350`, with the car's `field_76_last_seen_timer > 200` checks and the despawn state
 set to 4. Returns nothing (now `void`). Ratio 0.867.
 
 The code is identical apart from three `je`s in the "car, no ped" branch: the original jumps
@@ -728,17 +728,17 @@ both branches (0.812), an explicit `return` after it (no change).
 
 Shut-down for the other crew kinds. If the player is driving, the crew either gets back
 into its car (group members flagged `field_238 = 3`) or, once everyone is ready, leaves
-and despawns; otherwise like `sub_571350`, with `field_7C_uni_num == 2` cars kept. Now
+and despawns; otherwise like `TryDespawnOffscreenCrew_571350`, with `field_7C_uni_num == 2` cars kept. Now
 `void`. Ratio 0.748.
 
-- `pPed_6FEDDC == pCar->field_54_driver` (the global on the left) gives the original's
+- `gCurrentCrewPed_6FEDDC == pCar->field_54_driver` (the global on the left) gives the original's
   `cmp 0x54(%eax),%ecx`.
 
 Still different:
 - The original keeps the `field_28 = 5; field_2C = 1` return block right after the first
   group path and the other paths jump back to it; ours puts the shared copy elsewhere.
 - In the first member loop the original does `inc %dl` and the store before reading
-  `field_4_ped_list[i]` (same loop as `sub_571350` otherwise). Rewriting it as a `while`
+  `field_4_ped_list[i]` (same loop as `TryDespawnOffscreenCrew_571350` otherwise). Rewriting it as a `while`
   with `u8 idx = i++` made it worse (0.655).
 
 ## PoliceCrew_38::sub_575310 (WIP, was STUB)
@@ -872,8 +872,8 @@ Still different:
 
 ## Start_NetworkGame_5E5A30 (WIP, was STUB)
 
-- 0.429. Added `gNetworkGameSettings_707098` (NetworkGameSettings). It overlaps the existing `dword_7071A0` /
-  `dword_7071B0` in Game_0x40.cpp (game_speed / police_on fields).
+- 0.429. Added `gNetworkGameSettings_707098` (NetworkGameSettings). It overlaps the existing `gNetworkGameSpeed_7071A0` /
+  `gNetworkPolice_7071B0` in Game_0x40.cpp (game_speed / police_on fields).
 - The registry part reads `UseProtocol` (GUID) and `UseConnection` (a `Connection_Unknown` buffer via
   `operator new`), and `ModemNumber` when `gNetPlay.field_4` is set. Then it runs `Network_20324` UI →
   `CopyGameSettings`, the map/sty/scr names, and `SetMultiplayerParams`.
@@ -889,7 +889,7 @@ Still different:
   Added `kZero_705DD8`, a local `Car_18_Cmd` struct (the idx fields at 8/0x10/0x24) and the
   `sub_511A70` stub.
 - It is an 8-case switch on the touch-point type (car / ped / driver / stopped ped id checks). Then
-  `field_C` 2 starts a thread (`sub_5120C0`) and 3 calls `sub_511A70` + `sub_5C8680`.
+  `field_C` 2 starts a thread (`SpawnThread_5120C0`) and 3 calls `sub_511A70` + `FreeTrigger_5C8680`.
 - In case 4 (cmd types 0xD4/0xD6/else) each branch must have its own full `GetBasePointer` + id compare.
   VC6 then tail-merges the compare into the case 6/7 code as the target does (0.36 → 0.43).
 - Remaining: register/scheduling differences in most cases. Our case 3 car branch is tail-merged into case 5,
@@ -901,7 +901,7 @@ Still different:
 - 0.526. Same shape as `fire_truck_gun_5E0E70`, with a fallback to the army-jeep gun sprite (model 248,
   offsets `dword_706EA4` / `dword_706EE8`) when the model 114 turret isn't there. It emits
   `EmitFlameStreamSegment_53F4C0` or spawns bullet 195.
-- Turret angle: target calls `Ang16::sub_409300` (a normalising "ctor") on the `operator+` result. Added an inline
+- Turret angle: target calls `Ang16::AssignNormalized_409300` (a normalising "ctor") on the `operator+` result. Added an inline
   `Ang16(Ang16&, s32)` ctor wrapper; `gun_ang = Ang16(a + b, 0)` gives the 32-bit temp store (0.21 → 0.53).
 - Remaining: the out-of-line `Ang16(const s16&, s32)` ctor from `operator+` is inlined in the target, and
   the EH state starts at 2 vs our 1.
@@ -932,7 +932,7 @@ Still different:
   3. Set the put-out-fire objective.
   4. Wait for the objective result.
   5. Despawn.
-- Uses the `sub_421560`, `IsDespawning_4215B0` and `sub_4214B0` inline helpers instead of raw field writes.
+- Uses the `SetUniNum_421560`, `IsDespawning_4215B0` and `IsMarkedForDespawn_4214B0` inline helpers instead of raw field writes.
 - `dword_67D384` (Fix16) is the arrival distance.
 - Not tuned yet. Next step: run the permuter, and check the case 2 `Max_44E540(Abs...)` distance test against the target.
 
@@ -982,10 +982,10 @@ Still different:
 ## Particle_4C::UpdateCircularBurst_state_5_539890 (WIP, was STUB)
 
 - 0.381 on the first write-up. Same frame as `5384C0`, with these differences:
-  - `field_20` is reset to `dword_6FD49C` after the follow block on every path.
+  - `field_20` is reset to `kFP16Zero_6FD49C` after the follow block on every path.
   - There is no x offset; `off_y = -dword_6FD45C` always.
   - Cases 6 and 7 take x/y/z from the followed sprite.
-  - `default` uses `field_20 / dword_6FD4A4` (inline `__allshl` / `__alldiv`). On `rng(7) == 4` it spawns a smoke particle through `Particle_8::New_53E3C0(0, ...)` with `SetType_4206F0(8)`.
+  - `default` uses `field_20 / kFP16Two_6FD4A4` (inline `__allshl` / `__alldiv`). On `rng(7) == 4` it spawns a smoke particle through `Particle_8::New_53E3C0(0, ...)` with `SetType_4206F0(8)`.
 - The original keeps the jitter flag in `bl` and returns `bl` (still 1) from the first early return. Writing `return bJitter;` there made no difference.
 
 ## Particle_4C::UpdateObjectBeamLink_state_38_538AC0 (WIP, was STUB)
@@ -993,7 +993,7 @@ Still different:
 - 0.147, but the structure is right:
   - Draws a beam from this sprite to `field_28_pSprite` (it must be a `code_obj1_4` sprite).
   - Splits the delta into `max(|dx|, |dy|) / dword_6FD364` steps and spawns a state-43 beam segment particle at each step's midpoint.
-  - Then puts this sprite on a circle around the target. The angle is the target angle + `word_6FD3EE`, plus rng jitter in sub-states 4/5.
+  - Then puts this sprite on a circle around the target. The angle is the target angle + `kAng180_6FD3EE`, plus rng jitter in sub-states 4/5.
 - **Shared returns:** all three `return true` paths share one block, so it uses the nested form.
 - **Point slots:** the original reuses the `src` slot for the circle offset and `dst` for the final position.
 - **What's left:**
@@ -1013,10 +1013,10 @@ Still different:
 ## Particle_4C::UpdateCollisionBurst_state_31_34_53BAC0 (WIP, was STUB)
 
 - 0.313 on the first write-up. An impact burst attached to a car or ped (`field_28_pSprite`):
-  - **Ped:** the source velocity is the ped's `sub_45B520`.
+  - **Ped:** the source velocity is the ped's `GetVelocityVector_45B520`.
   - **Car:** the velocity is `GetPointVelocity_561350` at the gun-model (114) or fallback-model (248) attachment point. That is the same attachment code as `Particle_8::EmitImpactParticles_53FE40`.
-  - The burst moves along a random spread angle (`/ 71`, `sub_406C20`).
-  - **On a hit:** it moves `Particle_8`'s `field_0` (state 31) or `field_4` (state 34) to the hit. It also sets the damage owner from the shooter's `field_267_varrok_idx`. On a ped hit it calls `HandleGenericImpact_553E00` and `frosty_pasteur::sub_512C00(id, 194/198, 1)`.
+  - The burst moves along a random spread angle (`/ 71`, `Normalize_406C20`).
+  - **On a hit:** it moves `Particle_8`'s `field_0` (state 31) or `field_4` (state 34) to the hit. It also sets the damage owner from the shooter's `field_267_varrok_idx`. On a ped hit it calls `HandleGenericImpact_553E00` and `frosty_pasteur::RecordWeaponHit_512C00(id, 194/198, 1)`.
 - **Return block:** every failure check in the original jumps to one shared `return true` block. Ours uses early returns, so the next step is the nested form.
 - Uses `Fix16_Point::RotateByAngle_40F6B0` for the rotations. The other `Particle_4C` WIPs write the same rotation out by hand.
 
@@ -1044,10 +1044,10 @@ Still different:
 ## Weapon_30::sub_5DFB60 (WIP, was STUB)
 
 - 0.146. This is the shocker's chain lightning:
-  - It collects the sprites in a box around `a3` (`gPurpleDoom_1_679208->CollectRectCollisions_477F30`). The box is `k_dword_706EC0` wide for the first link and `dword_706EBC` after that.
+  - It collects the sprites in a box around `a3` (`gPurpleDoom_1_679208->CollectRectCollisions_477F30`). The box is `kFP16Two_706EC0` wide for the first link and `dword_706EBC` after that.
   - For each ped or car within the angle window (`word_706D6C` / `word_706E28` around `a4`), that has map line of sight (`sub_4E5640`) and isn't already hit (`gWeapon_8_707018` list), it does three things. It draws the arc (`sub_5DE910`), recurses once (`a2 < 1`), and shocks the ped or damages the car. The car damage is `AccumulateDamage_43DA90(300)`, with scoring for the player.
   - At the end it takes one ammo with a 1/2 chance.
-- The ped branch normalises the angle difference out of line (`sub_406C20`). The car branch normalises it inline (the `Ang16 operator-` normalising ctor). Written to match.
+- The ped branch normalises the angle difference out of line (`Normalize_406C20`). The car branch normalises it inline (the `Ang16 operator-` normalising ctor). Written to match.
 - Both branches compute `Max(Abs(back_x), Abs(back_y))` and never use it. In the ped branch the y subtraction is the out-of-line `Fix16::Subtract_436A00`.
 - Changed the return type to `void` (nothing sets one). `shocker_5E06B0` ignores it.
 - **What's left:** the original frame is 0x1C bytes bigger.
@@ -1075,7 +1075,7 @@ Still different:
   - It rotates the trailer's rear-wheel point by the trailer angle and the cab's hitch point (`gTrailerHitchOffset_66AAC8`) by the cab angle, and adds each body's `get_cp1_40B560()`.
   - It takes the angle between the two points, then eases the trailer's angle toward it with `sub_405E80`. When the cab drives straight with the gas pressed, it uses `sub_405DA0` with the cab speed instead.
   - Finally it puts the trailer at hitch minus the rotated `gTrailerCabOffset_66AAE0`.
-- Angles go through the `* 71` / `/ 71` `Fix16` radian conversions (`Ang16_to_Fix16`, `Ang16(Ang16(raw / 71), 0)` via `sub_409300`).
+- Angles go through the `* 71` / `/ 71` `Fix16` radian conversions (`Ang16_to_Fix16`, `Ang16(Ang16(raw / 71), 0)` via `AssignNormalized_409300`).
 - `sub_405DA0` (0x76) and `sub_405E80` (0x110) were missing from the source. They're now `STUB_FUNC`s in fix16.cpp, with signatures from this call site. They still need target asm.
 - **What's left:** the original's EH state is 3 at entry (three point locals constructed with no code), and `esi`/`edi` are swapped.
 - Changed the return type to `void`. Its caller, `CarPhysics_B0`, ignores it.
@@ -1094,7 +1094,7 @@ Still different:
 - `case 4: default:` gave an if chain (0.57). A separate `case 4` plus `return` after the switch gave the table (0.62). The permuter then moved `case 4` to the top to fix the register alternation (1.0).
 
 ### sub_405DA0 (0x405DA0): MATCH, first try
-- Turns an angle toward a target by at most `*pSpeed`, the short way round, then wraps it into [0, 2pi). It's the same shape as `sub_405CE0`, written with the same `Fix16` globals and the same two wrap loops that `sub_40E790` uses.
+- Turns an angle toward a target by at most `*pSpeed`, the short way round, then wraps it into [0, 2pi). It's the same shape as `SmoothApproachAngle_405CE0`, written with the same `Fix16` globals and the same two wrap loops that `WrapAngle_40E790` uses.
 
 ### sub_405E20, sub_405E80 (0x405E20, 0x405E80): MATCH
 - `sub_405E80` clamps an angle into a +-`dword_669140` window around a target, allowing for the wrap. It then returns whether the angle sits on either edge, tested with `sub_405E20`.
@@ -1105,7 +1105,7 @@ Still different:
 - These are out-of-line copies emitted after Weapon_30.cpp's functions, used by `sub_5DE910`: `+=`, `/= Fix16` and max(|x|, |y|). The csv names them `Fix16::sub_...`, but they're `Fix16_Point` members (`this` is a point).
 
 ### sub_5DE910 (0x5DE910): WIP 0.149
-- The electro-beam draw. It starts at `a1`, or at the muzzle offset rotated by `word_707004` plus `stru_706E58` when `byte_706C94` is clear. It first lays `dword_706CF4`-long segments, each with a random kink (`rng(rng(4)+1)*32`, scaled by `dword_706D34`, in `Ang16`). It then lays straight segments the rest of the way to `a2`, using max(|x|,|y|) for the count. Each segment's midpoint goes to `Particle_8::EmitElectricArcParticle`.
+- The electro-beam draw. It starts at `a1`, or at the muzzle offset rotated by `word_707004` plus `stru_706E58` when `byte_706C94` is clear. It first lays `kFP16Quarter_706CF4`-long segments, each with a random kink (`rng(rng(4)+1)*32`, scaled by `dword_706D34`, in `Ang16`). It then lays straight segments the rest of the way to `a2`, using max(|x|,|y|) for the count. Each segment's midpoint goes to `Particle_8::EmitElectricArcParticle`.
 - The call sequence is almost the target's. The distance is computed three times, the first `atan2` result is dead, and `rng(2)` is called and dropped.
 - The EH state is 0xA at entry and never changes. So 10 `Fix16_Point` locals are declared at the top, plus the by-value `a1`. That took it from 0.075 to 0.149.
 - What's left is VC6's inline budget. Our build calls `Fix16_Point_POD()` out of line for the first two locals. The original instead inlines the loop-1 `mid /= k; mid += cur` with `Fix16 /=` as calls (0x539F90), and calls the copies at 0x5E40E0/0x5E40C0 in loop 2. Using inline `Fix16_Point` operators for both loops gave the right loop-1 code but inlined loop 2 and left 6 ctor calls (0.072). Writing the length out by hand gave 2 calls (0.067). See the ctor note in matching_quirks.md.
@@ -1118,7 +1118,7 @@ Still different:
 
 ### frosty_pasteur_0xC1EA8::sub_511A70 (0x511A70): MATCH
 - Looks a car model up in the script's car list (`field_340_car_list`, read as bytes) and sets
-  the generator's type from `byte_6212F0` (0x41 when it isn't in the list). The second argument
+  the generator's type from `kDecidePowerupGenTypes_6212F0` (0x41 when it isn't in the list). The second argument
   is a `Generator_2C`, not a `SCR_CMD_HEADER`.
 - It uses `gfrosty_pasteur_6F8060` instead of `this`. 0.957 to match by writing the compare as
   `car_model == *pList` and the increments as `pList++, i++`.
@@ -1145,7 +1145,7 @@ Still different:
 ### sound_obj::HandlePedVoiceEvent_423080 (0x423080): WIP 0.992
 - Picks a ped's voice sample by voice event (`Ped::field_250`), with cooldown bytes
   `byte_67554A/B/C` and `word_675548` for repeated shouts (Elvis gets his own), then queues it.
-  `bTank` (tank driver, or `Ped::sub_45B4E0`) is uninitialised on the player path, as in the
+  `bTank` (tank driver, or `Ped::IsLawEnforcement_45B4E0`) is uninitialised on the player path, as in the
   original.
 - 0.809 -> 0.974: the entity index is used unsigned (`(u32)... % 5`). 0.974 -> 0.987: split the
   rate sum so `field_14` is reloaded. 0.987 -> 0.992: the permuter's ternary for the volume and
@@ -1173,8 +1173,8 @@ Still different:
   0.690: state 5 before state 4. 0.802: case 0's inverted `if`. 0.924: the distance check
   written out. Match: `if (!(dx > dy)) dx = dy;` instead of the ternary.
 
-### eager_benz::sub_592660 (0x592660): WIP 0.343
-- Scores a ped kill, the ped counterpart of `sub_592DD0`. Points depend on the victim's
+### eager_benz::OnPedKilled_592660 (0x592660): WIP 0.343
+- Scores a ped kill, the ped counterpart of `OnCarDestroyed_592DD0`. Points depend on the victim's
   occupation (cop, army, SWAT, FBI, gang members, Elvis with his own counter) and the kill type
   (`field_290`); network kills of players use a separate table. Then the exploding score, cash
   and the crime report (6/7/8/9).
@@ -1184,7 +1184,7 @@ Still different:
 
 ### Char_B4::HandlePedCollision_548BD0 (0x548BD0): WIP 0.592
 - A 5x5 switch on both peds' `field_238` types. It covers Elvis followers, pushing the other ped
-  away (`atan2` + 180 degrees, with `sub_406C20` or the inline `Normalize`), slowing down,
+  away (`atan2` + 180 degrees, with `Normalize_406C20` or the inline `Normalize`), slowing down,
   turning 30 degrees, stepping back to the saved position, and cops arresting a wanted ped.
 - 0.457 -> 0.592: case order from the jump tables, the `occ != 43` branch first, and the
   differences passed straight to `atan2`. The frame-size difference is under "Still
@@ -1220,7 +1220,7 @@ Still different:
   cases in address order and an unsigned sample index. One register difference is left.
 
 ### Ambulance_20::HandleObjectiveState_4FAAC0 (0x4FAAC0): WIP 0.961
-- The paramedic crew loop. Each ped of the crew, through `dword_6F6D60`, walks to a patient in
+- The paramedic crew loop. Each ped of the crew, through `gParamedicCrewPed_6F6D60`, walks to a patient in
   `field_10`, revives them (cops come back as cops), then gets back in and leaves.
 - 0.485 -> 0.724: case order 14, 0, 28, 36, 16, 35. 0.835: the `field_225 == 1` branch of
   case 14 first, with an explicit `else` for the no-car path. 0.892: one `field_8 = pPatient`
@@ -1229,8 +1229,8 @@ Still different:
   original loads `y` first) and the copy of the objective target. A `Fix16_Vec` struct copy made
   that worse.
 
-### PoliceCrew_38::sub_572920 (0x572920): WIP 0.396
-- The chasing crew, built on the matched `sub_572340`. Members follow the criminal on foot, or
+### PoliceCrew_38::State5_PursueOrChase_572920 (0x572920): WIP 0.396
+- The chasing crew, built on the matched `State3_AlertedSearch_572340`. Members follow the criminal on foot, or
   get back in the car when the criminal is far away or fast. The crew-state check goes in the
   sibling's order (`!= 3` first). Left: the original puts the two "timer ran out" blocks at
   the end of the function, and the case tails merge differently.
@@ -1298,3 +1298,255 @@ Still different:
 
 ### Fix16 out-of-line operator copies, Fix16_Rect::MakeRect_4E6280: match
 - See matching_quirks.md. `MakeRect_4E6280` stores left, top, right, bottom in that order.
+
+### Near-miss pass, batch B (2026-10-02)
+
+Each was a few asm lines away from the original. What is left and what was tried:
+
+- `sound_obj::ProcessPoliceRadioWordsPlayback_427220` (0x427220): known unexplained cmp-before-volatile-load; tried volatile u32, index locals, precomputed bool, >14, cast-volatile store.
+- `keybrd_0x204::GetLayout_4D6000` (0x4d6000): lea &v2 scheduled before the two KLID byte loads in orig; tried decl orders, u16 copy, store order, result local, temps.
+- `jolly_poitras_0x2BC0::sub_56BA60` (0x56ba60): len=126 store vs outer loop counter init order; tried len at every position, decl order, struct copy, pStats local, 600 permuter iterations.
+- `menu_option_0x82::sub_4B6330` (0x4b6330): orig reloads field_6E (cmp 0x6E(%ecx),%ax) in loop cond though nothing in the loop stores; VC6 CSEs it to old_count's reg whatever the spelling (s16 old_count, casts, volatile worse, 800 permuter iters). Same issue in sibling 0x4b6390.
+- `sub_4B7E10` (0x4b7e10): xpos load before the arg-slot push; tried s32/u32 ypos/xpos params with casts, branch inversion, explicit Fix16 (inlines ctor, worse).
+- `CarPhysics_B0::ShowPhysicsDebug_559430` (0x559430): lea 0x818 (field_650 this) placement around pushes; theta local, pText reorder, 600 permuter iters.
+- `SetGamma_5D9910` (0x5d9910): matches (0) just by uncommenting gErrorLog_67C530.Write_4D9620, but commit e538f1b8 (Valps, 2026-09-30) demoted it from MATCH on purpose because that call crashes the standalone exe at boot. Main session/user should decide.
+- `Car_BC::sub_43B2B0` (0x43b2b0): known unsolved return width (bool call result returned unextended, other paths eax); not retried beyond analysis (IsField238_45EDE0 has 96 callers testing al).
+- `MapRenderer::Set_UV_4F4190` (0x4f4190): fmuls (1/16384) scheduled after the idx load in orig; AsFloat/ToFloat/mValue*k/local float, 400 permuter iters (x87 scheduling, cf. Draw*Sided* note).
+- `Hud_Brief_704::ClearAllBriefsWithPriority_5D4890` (0x5d4890): known: ebp shrink-wrap (pushed after null check). Code otherwise identical. Tried if+do/while, early return, break, if(pIter) Start(), decl order, 500 permuter iters. VC6 does shrink-wrap in similar matched loops (struct_4::RemoveByRngValue_5A6C40).
+- `Car_BC::sub_43B850` (0x43b850): known: u16 load then test $6,%ch; tried IsFlagSet_411930 inline, local copy, shifts, casts, != 0.
+- `Map_0x370::sub_4E8C00` (0x4e8c00): add operand order (result in the field's reg, edx); 9.6f has our order. Tried operand swaps, locals, param reassign, pDmap local, inline getters, /4 and /12 spellings, 400 permuter iters.
+- `RouteFinder::sub_589E20` (0x589e20): known: loop-top test of a flag known 0 on entry (unrotated while). Tried for(;;)+break, && condition, if/else, return in loop, char/s32 flag.
+- `Object_2C::sub_526830` (0x526830): known: switch clobbers value (add $-39) and reloads param in default; tried direct returns, default return, param reassign, switch(a1-39), (u32) switch, result=a1 init.
+- `Map_0x370::do_process_loaded_zone_data_4E8E30` (0x4e8e30): base+index operand order in two places (zone-info loop: offset reg then add field_334; mov %bl,(base,idx)); 9.6f has our order. Tried + operand swaps, byte offsets, for loop, local placement.
+
+### Near-miss pass, batches A2 and B2 (2026-10-02)
+
+- `sound_obj::HandlePedVoiceEvent_423080` (0x423080): no change. skipped: documented unexplained (add %eax,%edi; 3000 permuter iterations)
+- `Camera_0xBC::UpdateBoundaries_435B90` (0x435b90): no change. only diff: reg alloc in final field_20 = field_78 +/- dword_67691C block (right: field in eax/dword in edi swapped); operand order swaps have no effect; 9.6f-style rewrite (one v, checks on fields, v*=) much worse
+- `Car_BC::HandleUserInput_4418D0` (0x4418d0): no change. only diff: 'cmp %bl,%al' (bl=0) vs our 'test %al,%al' after HandleRoofTurretRotation call; tried !=0, !=(char)0, ==true, !=field_B8, local zero var, combined condition; same in 9.6f
+- `Car_6C::dtor_446DC0` (0x446dc0): no change. only diff: last delete (gSprite_Unused_677938) loads ptr into ecx then mov ecx->esi, ours esi then esi->ecx (Car_14 delete just above uses esi in both). Dropping the if made it worse
+- `Ped::ComputeAimAngle_45C9D0` (0x45c9d0): no change. VC6 duplicates the return tail into the atan2 branch (forwarding the stored angle) where orig jmps to the shared reload tail; tried branch inversion, rValue stores, named temp, getter, 500 permuter iters
+- `Ped::Deallocate_45EB60` (0x45eb60): no change. bitfield b0 clear: orig dword load, and $0xFE,%al, dword store, scheduled after the timer store; ours and $-2 on edx with field_16C load hoisted. Tried &= masks, u8 cast, reorder, inline setter (bool/u8/s32)
+- `menu_option_0x82::SelectPrevHorizontalIdx_4B6390` (0x4b6390): no change. original reloads field_6E in the loop compare (cmp 0x6E(%ecx),%ax), VC6 CSEs it to si in ours; same in 9.6f and in sibling 4B6330. Tried s16 old, swapping old/new init
+- `MapRenderer::Draw4SidedDiagonalUpLeft_4EF880` (0x4ef880): no change. (skipped) known MapRenderer Draw*Sided* x87/vertex store scheduling, not attempted
+- `Ambulance_110::ProcessPatientQueue_4FA500` (0x4fa500): no change. only diff: original interleaves load/sar/store for x,y,z (as if stores may alias), ours hoists the 3 loads; tried separate decl/assign, ToUInt8, stores through u8* pointers
+- `Ambulance_20::UpdateState_4FB330` (0x4fb330): no change. only diff: case 3 '>500' false path should jle back to shared epilogue (0x3F) rather than the adjacent duplicate pop/ret; tried return after state=5, inverted if, break in default
+- `Mike_A80::DebugDrawProfiling_4FF250` (0x4ff250): no change. skipped: documented (load order of five averages; 8 orderings tried before)
+- `youthful_einstein::SetNewFugitive_516590` (0x516590): no change. original reloads field_0 into edx (not esi/ecx) before SetPlayerArrowColour; with local pPlayer VC6 reuses esi, without it uses ecx and the else branch's gHud reg shifts too. Tried field/GetPlayerPed/pPed local/ref
+- `NetPlay::EnumSessions_51E650` (0x51e650): closer, 18->7. wrong flag (orig 0x80 RETURNSTATUS, not STOPASYNC); else only fails on hr<0; nested success + single return -1. Left: else jge into the modem's shared return-count block
+- `NetPlay::RemovePlayerByName_520F80` (0x520f80): no change. original spills bRemoved=0 to a stack slot (not const-propagated), found path returns ebx=1; tried bRemoved=1 after the call, while(!bRemoved && i<count) loop: VC6 const-props both
+- `struct_4::CleanupSpriteList_5A7080` (0x5a7080): no change. keep-branch block (pLast = pIter) laid out between the two unlink branches in orig; tried inverted conds, continue forms, if+do/while, nested ifs, 600 permuter iters
+- `gtx_0x106C::GetSpriteTrueIndex_5AA460` (0x5aa460): no change. known unexplained (quirks list): default 'mov 8(%esp),%eax'. Tried default return direct, (s32) cast, s32 param (still ax and breaks 13 callers)
+- `Montana_4::dtor_5C5F10` (0x5c5f10): no change. same pattern as 0x446dc0: original looks like an inlined scalar deleting dtor (ptr tested in ecx, push esi + mov ecx->esi inside the if), ours keeps ptr in esi; tried moving ~Montana_2EE4 after use, an inline 'delete this' helper
+- `SetWindowedMode_5D9510` (0x5d9510): no change. push $0x316 scheduled before the height arithmetic in orig; all operand orders compile the same, locals much worse, 500 permuter iters
+
+### Near-miss pass, batch D (2026-10-02)
+
+- `Map_0x370::sub_4E6190` (0x4E6190): no change. only diff: original cross-jumps case 3/4 inner switch tails into case 2/1 (jmp into other case's dec/jne); ours duplicates. Inner case order, default:return 0, casts, if-returns: no effect
+- `Car_BC::GetHitchPoint_439FB0` (0x439FB0): no change. this in esi vs edi, sum of x*cos+y*sin kept in eax in original, missing EH state before final operator+ (original calls 0x40AC50 non-visible?); ternary/local sprite/hand-written rotation/non-inline add all worse
+- `Gang_144::ApplyKillRespectChange_4BEF70` (0x4BEF70): closer 23->21. compare swapped. Left: original moves pGang to ecx and computes respect*reaction before the lea of field_11C[p], then reloads via full address; inline member helper, locals, casts, pointer: no change
+- `Car_BC::IsSpriteShrunk_43DC00` (0x43DC00): closer 28->22. return a != b (Fix16 op in first branch, .mValue in second: matches setne/xor shapes). Left: load order/regs (esi popped early in orig)
+- `Player::AddCarToHistory_5645B0` (0x5645B0): closer 29->23. for(;i<3;p++,i++){ if(!*p){*p=new;return;} } then shift. Left: esi/edi swap of the two history pointers, shift stores through a copied pointer (mov %esi,%eax) in orig; decl orders, pointer alias, struct copy, memcpy: no change
+- `Map_0x370::HasGreenArrowForPathDirection_4E5E90` (0x4E5E90): no change. same as 0x4E6190: original tail-merges identical HasBlockDesiredArrow calls across switch cases (case4-else = case3-if, case1-else push 2; jmp into it). Ternary/if-chain/compiler flags don't reproduce; likely the same unexplained cross-case merge
+- `miss2_0x11C::Locate_509FD0` (0x509FD0): no change. register rotation only (eax/ecx/edx) in the STOP_LOCATE_CHAR_FOOT/CAR case blocks; pObj/typed local/getter/default position/velocity local: no change
+- `frosty_pasteur_0xC1EA8::LoadStringTbl_5121E0` (0x5121E0): closer 24->22. str_count before if, single store after (empty path stores ax=0 like orig). Left: dead (len+9)&~1 in edi, tableSize test via bx instead of zero-extended stack slot, first-loop regs
+- `Mike_A80::sub_4FFD90` (0x4FFD90): no change. x87 'fildl x; flds 630; fsub %st(1),%st ... fstp %st(0)' (x kept and popped) vs our fsubrs; double/f64 x, dead right/top locals, casts: no change (already in match_attempts)
+- `Car_BC::ManageTVAntenna_4425D0` (0x4425D0): closer 39->11. Ang16 towerAng; declared at top (9.6f), towerAng = Get...() (T x; x = f()). Left: sprite rot is loaded into cx and reused for the conversion, orig compares against memory and reloads; operand order, s32 NotEqual (9.6f 0x41CFF0 returns s32), towerFp local: no change
+- `Car_BC::EmitExplosion_43D690` (0x43D690): no change. original has an EH frame around building the implicit Fix16(2) z argument (out-of-line Fix16 ctor 0x4369F0 treated as throwing, arg address saved for cleanup); ours has none because the inline Fix16(s32) body is visible. Same family as the 'Fix16(s32) ctor copies can't be written' note
+
+### Near-miss pass, batch F (2026-10-02)
+
+- `Type_3_HandleCarImpactSound_4174C0` (0x4174C0): closer 0.822->0.915. if chain -> switch gives the original's `sub $0`/`dec`. Left: cases 0 and 1 compute the 0x7FFFFFE3/0x7FFFFFE7 multiply in ecx, original in edx
+- `TrainCab_414710` (0x414710): closer 0.684->0.961. zone read through `pTrainStation->field_10_pZone` each time, not a local. Left: original's failure jumps go to the success path's epilogue, ours to the shared one after the else
+- `0x5D3B80` (DrawBrief): no change. identical except the y Fix16 ctor calls the duplicate copy FromInt_4926F0 instead of 4369F0 (duplicate-helper-copies quirk)
+- `0x57DD50`: skipped, the known sete issue above
+- `0x4D94E0`: no change. needs field_0 as a real ofstream member, which crashes the standalone build (see the source note)
+- `0x554710`: no change. original pushes/pops ebp inside one branch (late-ebp-push quirk)
+- `0x5552B0`: no change. layout only: original puts the shared `return 0` epilogue right after the loop's bottom test
+- `0x4C1AB0`: no change. u16 fields right, eax/ecx roles swapped throughout
+- `0x5D1B10`: no change. original loads its s16 params with a 16-bit mov (9.6f too) and keeps 0 in ebx for three stores
+- `0x541430`: no change. Ang16 sum is a 16-bit add placed before the point ctor, plus an epilogue-sharing difference
+- `0x5DCF60`: no change. ped pointer kept in ebx with y loaded later; failure path does `xor eax,eax; mov %al,global`
+
+### Near-miss pass, batch G (2026-10-02)
+
+- `Montana_4::AddSprite_5C5CF0` (0x5C5CF0): closer. `field_2EE0_free_indx` is u32 (jb), dropped an (s16) cast (movswl). Left: ebx/ebp swap; a (u8) cast on the first compare gets the permuter to 4 but is wrong
+- `Crane_15C` dtor (0x47E5B0): matches if field_0..field_20 become Fix16_Point, but then the matched ctor 0x47E610 calls the Fix16_Point_POD ctor out of line. One-for-one trade, not taken
+- `Frontend` ctor (0x4AF2A0): no change. original zeroes the name/password/bonus-stage arrays with direct disp(%esi) stores; ours shares 0 in ebx or uses a lea base. Permuter segfaults on it
+- `Frontend::DrawBackground_4B6E10` (0x4B6E10): no change. VC6 merges the two final retry blits into one tail (see Still unexplained)
+- `Ped::HandlePickupCollision_45DE80` (0x45DE80): no change. ebx/edi pushed only after the early returns (late push quirk)
+- `Frontend::GetNextUnlockedMainStage_4B7270` (0x4B7270): no change. ours goes branchless and doesn't hoist the loop flag load; 1800 permuter iterations, 54 -> 44 at best
+- `Network_20324::SetGameSpeedTextLabelAndSlider_51CFC0`: skipped, on the Still unexplained list
+
+### Near-miss pass, batch C (2026-10-02)
+
+- `Car_14::GetRandomTrafficSpeed_583750` (0x583750): closer 14->7. shared lo/hi/factor locals and one final lerp. Left: final sum in ecx, orig eax; by-value return, swapped operands, +=, a Lerp inline, `&(*p = x)`: same code
+- `0x442520`: only the EH state stores around `Fix16_Point::operator-` (0x40AC80) differ. `throw()` on it matches this one but changes 5 matched functions (Crane_15C x3, draw_4F3FB0, 0x40AC80), not kept
+- `0x463FB0`: order of two blocks in the switch default; every spelling gives the same layout, 9.6f has the original's
+- `0x4EB940`: the MapRenderer x87 scheduling quirk
+- `0x5AA9A0`: the door part fixes with a separate offset variable, but that shifts registers across the whole function (82 diff lines)
+- `0x4CDF30`: ebx/edi swap, nothing moved it
+- `0x5D4A10`: calls the duplicate Fix16(s32) ctor copy (documented)
+- `0x5213E0`: return block order; while(cond) loop and a result variable also tried, both failed
+
+### Near-miss pass, batches D2 and E2 (2026-10-02)
+
+- `CarPhysics_B0::ApplyReverseEngineForce_55EF20` (0x55EF20): closer 46->2, logic fix (y > 0 branch: negative impulse for 90..180, positive for 180..270; reversed angle through a temporary and Normalize_406C20). Left: the temporary is at 6(%esp) in the original, 4(%esp) in ours
+- `sound_obj::UpdateCarEngineAudio_57E220` (0x57E220): closer 21->6. clamp to 100 after the paused if/else fixes the block layout. Left: scheduling only
+- `DrawPlayerStatsHelper_5D61A0` (0x5D61A0): closer 23->16. no x_offset local fixes registers; any local for the 18/22 ternary swaps ebx/ebp back
+- `Door_4D4::dtor_49D570` (0x49D570): closer 21->20. ~DoorData_10_Pool clears the pool head (9.6f 0x44C7F0). Left: missing EH frame, see the `<new>` quirk
+- `Char_B4::HandleObjectCollision_548840` (0x548840): no change. original EH state is 4 at entry (ours 1): three more destructible locals. Three dummy Fix16_Point locals get it to 11 diff lines (not kept, a guess). Success path also shares the epilogue in the original
+- `sharp_pare_0x15D8::ReadTextures_5B92E0` (0x5B92E0): matches exactly without the standalone guard `if (i > 992) return;`. Kept for now (decision: document, don't match): removing it brings back the original's out-of-range read. If a standalone-only guard macro is added later, this becomes a match
+- `UpdateStatsForKiller_46F720`: closer 14->4. test the loop pointer after the loop instead of a flag. Left: one register in the group-respect branch
+- `HandleCollision_522E10`: closer 17->16. ResolveCollisionWithPed_5229B0's third param is u8. Left: the original sends both arms of the inlined As2C check into one shared call
+- `AdjustPlaybackRate_41A580`: closer 43->39. fixed-point maths follows the asm now. Left: this/difference register swap throughout
+- `ResolveCollisionWithWorld_522B20`: closer 48->41. bug fix: the collision point is *f18 (was an uninitialised local); Divide_442CB0. Left: EH state numbering
+- `EnumAddress_cb_51E030`: no change. late ebp push
+- `sub_4DF3E0`: no change. by-value abs/max helpers didn't help
+- `sub_575650`: no change. switch value clobber (add $-3) vs our lea
+- `PushCarInfo_564680`: no change. original shifts with rep movsl alone; ours movsl + movsb
+- `EnumerateMaps_51BFA0`: no change. one `if (map_count > 0)` around the rest: 15 -> 51, reverted
+
+### Near-miss pass, batch I (2026-10-02)
+
+- `MapRenderer::sub_4F4250`, `sub_4F49B0`: closer 31->19. `T_gbh_DrawTile` takes the diffuse colour as u8 (pushed without zero extension). Left: x87 scheduling around the ProjectVert inlines
+- `MapRenderer::sub_4EC450`, `sub_4ECAF0`, `sub_4ECE40` (and `sub_4EC7A0`): closer 47->28, 49->30, ->28. atan2(dy, dx) order, angle test `> 45 && < 225`, Fix16(f32) via 16384.0f, 4ECE40 uses GetTexture_46BB50. Left: x87 scheduling
+- `MapRenderer::draw_lid_4EE130`: no change
+- `Weapon_30::oil_stain_5E1DC0` matched once the z bound was `k_dword_706EDC - k_dword_706F70` and the half depth/lower bound got named locals (inline budget)
+
+### Near-miss pass, batch H (2026-10-02)
+
+- `MapRenderer::draw_left_4F3C00`, `sub_4F4600`: closer 31->16 with the u8 `T_gbh_DrawTile` colour. Left: the ProjectVertTop_46BD40 scheduling (Still unexplained)
+- `MapRenderer::sub_4F66C0` (0x4F66C0): no change. original loads gBlockRight 16-bit in the draw_right branch and reloads Left/Top in another order after the calls. The `*(u32*)&gBlockBottom` hack there has no effect
+- `sub_4DADA0` (0x4DADA0): no change. original puts the clear block and pager-clear tail in the middle of the show path; inverted if, early returns, bShow at outer scope: same or worse
+
+### Near-miss pass, batch J (2026-10-02)
+
+- `Sprite::ShrinkSprite_59E390` matched with `b = ReduceWidthBy(x); b |= ReduceHeightBy(y);`
+- `Car_BC::CarShrinkSprite_43DC80` matched with `Fix16(w << 14, 0)` and the sprite w/h read into locals (w first)
+- `ConvertColourBanks_5D7CB0`: closer 0.146->0.638. Only a 10-byte `jmp +8; nop...` gap after the `pgbh_SetColourDepth` call is left; looks like a binary patch in the exe, likely unmatchable
+- `MapRenderer::set_shading_lev_4E9DB0`: closer 0.442->0.755. Shared values as locals up front. Left: v6 and `v6 + v2` stack slots swapped
+- `Trailer::sub_407BD0`: closer 0.476->0.843. Explicit out-of-line y line (see "Big functions run out of inline expansions"). Left: eax/edi swap for offset.x/y and multiply order
+- `GetDoorWorldPos_43B420`: no change. The `(const Fix16&)` cast reaches 0x408660 and sin/cos locals fix part 1, but then the arg copies are lost; best 0.55 < 0.564
+- `Particle_4C` 0x53B670: no change (known stack slot / add-to-memory issue)
+- `SCRCMD_STORE_CAR_INFO` 0x509180: no change. eax/ecx swap for pCar vs gStoredCar; four restructurings didn't move it
+
+### Near-miss pass, batches K, L, M and Fable trial (2026-10-02)
+
+- Matched: `CarPhysics_B0::ApplyReverseEngineForce_55EF20` (`theta = field_58_theta + kAng180`), `Ped::UpdateStatsForKiller_46F720` (Ped* local, no Player* local), `get_skid_obj_type_55D490` (per-case returns, cases 0,2,1,3), `SmoothApproachAngle_405CE0` and `SmoothApproachClamped_4F75D0` (missing else branch, single `*curr += *vel` at the end), `Ped::ReactToAttacker_465B20`, `sound_obj::EnqueueRadioLocationPhrase_426E10` (local order mid_x, mid_y, halves), `Crane_15C::ComputeHookPos_47E620`/`_47E730` (rotation written out), `Hud_2B00::ctor_5D6CD0` (ctor moved to the top of Hud.cpp), `Car_6C::SpawnCarAtRoadDirection_444CF0` (u8 z, else-if chain with a pCar=0 local), `Char_B4::sub_54C090`, `Player::RestoreCarsFromSave_56A0F0` (SpawnCar inline with const Fix16& scale, u8 loop index, u16 model)
+- `ChooseRadioEmitterForVehicle_57E6C0`: closer 94->49. Left: the found block of the search loops sits after the case 0 loop with `jae ret; jmp top`; for/do/goto/break variants failed
+- `sad_mirzakhani::ProcessBonusEvent_4320D0`: closer 69->12. Left: eax/ecx/edx swap in the inlined Add_2D4
+
+### Near-miss pass, batches N2, K2, M2, L2 (2026-10-03, partial)
+
+- Matched: `sound_obj::ProcessType8_Crane_412820` (u8 loop + switch with `continue` cases, shared tail), `sound_obj::HandleTrainCabRollingFrictionSound_4143A0` (same shape as 4140C0), `CarPhysics_B0::StepMovementAndCollisions_55E470` (indexed store)
+- `Wolfy_7A8::New_543800`: closer 0.234->0.539. u8 index and two return blocks as in 9.6f. Left: 10.5 cross-jumps both tails into one block, ours only partly (Still unexplained: identical code merged)
+- `sub_4F76A0`: closer 96->~35. Left: original keeps a separate success store + jmp per branch, ours tail-merges
+- `sound_obj::ProcessOtherObjects_41F520`: closer (field_1_age u8, jle->jbe). Left: VC6 tail merging of identical case tails picks other blocks than the original
+- `sub_50E190`: no change. `Next()` arg gBase in edx instead of eax on every path; the inlined Abs(y) copy gets its own temp slot
+- `DrawScoreTable_4B5430`: closer 0.729->0.978. palette s32, `y = ypos + 40*i`. Left: ebx/ebp load order and a temp slot
+- Matched (second part): `sound_obj::HandleAICarHornBeep_413D10` (`fAC > 2` first, rate as one expression), `Frontend::GetNextUnlockedBonusStage_4B7360`, `PedGroup::CoordinateGroupCarEntry_4C9F00` (9.6f inline IsSwatVanOrBankVan_403BC0), `InitializeGame_4DA4D0` (restored global resets, 14-byte memset), `Bink::OpenSlot1_513560` (if/else FatalError, missing 5/6/5 format case), `CarPhysics_B0::ScarePedsOnDrivingFast_559C30`, `CarPhysics_B0::HandleGravityOnSlope_55AA00` (Fix16_Point local, cases break to one call), `Car_14::GetRandomTrafficSpeed_583750` (Fable), `Montana_4::ctor_5C5E70` (definition order)
+- `UpdateCarEngineAudio_57E220` (Fable): closer 6->1. Left: order of the 0x58 store in the 2nd sample
+- `EnforceGearSensitiveMaxSpeed_562D00`: 0.699->0.944 (atan2_40F790 in the inline). Left: shared store at the end of the y clamp
+- `GetPrevUnlockedStageBonusCode_4B7800`: 0.312->0.530; `pistol_5DD860`: 0.721->0.931 (two Fix16_Point locals); `GetTaxiNear_457BF0`: 0.330->0.705 (MaxAbsDistance_42A6B0 calls Max_44E540); `GetPreviousUnlockedBonusStage_4B7120`: 0.239->0.432; `TurnTowardsAngle_54CAE0`: 71->61 (subtraction order fixed; original shares two add+normalize blocks)
+- No change: `4174C0` (Fable; product reg ecx vs edx), `4C9B60` (register allocation), `43B5A0` (x' product sunk past the ypos calls), `GetSpeed_50E190`
+- Matched: `CarPhysics_B0::ComputeCombinedCenterOfMass_559EC0` (`Fix16 m; m = f();`, one return expression)
+- `ComputeScanlineIntersectionX_4F77D0`: 0.533->0.822, same restructure as 4F76A0. `SmoothApproach_4F7540`: 0.233->0.434 (9.6f statement order; left: clamp/delta tails merge differently). `HandleRoofTurretRotation_440D90`: 0.651->0.664 (gun jeep `+=` on bLeftOn; left: angle kept in %di through the second Normalize loop)
+- `Camera_0xBC::ComputeTargetFacingAngle_4358D0`: no change. Original keeps the rotation in dx and adds kAng180 as a 16-bit add + jns; ours spills the Ang16 and uses lea. Operand order, s16 sum in operator+, rValue ctor, block local, shared helper all tried
+- Fable worker, second list: matched `Sprite::IsTouchingSlopeBlock_5A1EB0` (9.6f inline `Map_0x370::IsGradientSlopeAt_466CF0` for the eight open-coded slope checks) and `sad_mirzakhani::sub_432170` (if/else-if chain). No change: `TrainCab_414710` (VC6 threads the failure `je`s to the else epilogue; early return, inverted if, goto all identical), `DrawPlayerStatsHelper_5D61A0` (original calls two Fix16(int) copies, 4369F0 and 4926F0; we link one), `Map_0x370::sub_4E6190` (case 3/4 tails merging into 2/1 unexplained)
+- `UpdateSteeringAngle_562560`: 0.496->0.857 with `GetLength_out_of_line_x_squared`. Left: GetTrailerAwareTurnRatio_55A100 called before the division
+- `CanStepForwardWithRegionCheck_54ECB0`: 0.752->0.931 (case order 1,3,2,4 from the jump table, one shared check after the switch; fixed an inverted bit-0 test and `&= ~1u`). Left: shared return blocks in the other order
+- `Bink::OpenSlot2_5133E0`: 0.443->0.838 (BinkOpen failure as the else). Left: `mov $2,%ebx` not hoisted above the `je`
+- `Car_BC::GetDoorWorldPosition_43B5A0`: no change; the explicit out-of-line y line (as in 407BD0) made it worse locally and did nothing inside RotateVector_41FC90
+
+### Near-miss pass, batches O, P, Q, R (2026-10-03, partial)
+
+- Matched: `Hud_CopHead_C_Array::DrawWantedLevel_5D0110` (inline DrawFigureScaled_4C71B0 rotation by const&, explicit pointer loop), `Object_2C::ReleaseSubObjects_527F10` (field_C = 0 in each branch), `Crane_15C::ComputeHookOffset_47E840` (RotateByAngle_40F6B0 with out-of-line Multiply/Add), `Object_3C::GetMovementSpeedAndAngle_521FD0` (Fix16_Point local declared at the top, out-of-line GetSpeedVector_52ADF0, file-local GetLength variant), `CarPhysics_B0::ApplyMovementStep_560F20` (Ang16(s16,u8) by value)
+- `ProcessType7_Weapon_42A500`: 111->28. Left: rate add reassociation and GetLoopStart arg load order
+- `Ped::RecruitNearbyPeds_46E080`: 116->56. sub_4204D0 inline stays a comment (worse). Left: z stored in desiredCount's param slot
+- `DoorData_10::Init_49C340`: 116->16 (flip flag is 0x3C00, old source had 0x2C00). Left: v8 stored before the tile load
+- `Frontend::DrawCredits_4B7AE0`: draw_x u16. Left: case 0 jumps into case 1's tail; goto duplicates it
+- `PickUpCar_47F930`: closer (car_info::is_0x10). Left: EH epilogue copied into 3 exits
+- `Ped::BusCustomer_AI_461290`: 134->41 (case order 38,35,31,34). Left: whole-function register rotation
+- `Type6_413A10`: 136->69. Left: pRozzA esi/edi swap and the final imul operand
+- No change: `571A30` (shared ret block placement), `51F210` (register allocation)
+- Matched: `Sprite::RotatedRectCollisionSAT_5A0380` (inline budget: last point via out-of-line ProjectOntoAxis_5A5AA0/GetNegatedAngle_5A26E0), `Car_BC::UpdateTrainCarriagesOnTrack_4413B0` (logic fix, carriage positions chain), `Object_2C::NewObj3C_528130` (file-local GetLength, block-scoped Ang16 local for the atan2 result)
+- `Wolfy_7A8::sub_543690`: 113->12. `Sprite::MinDistanceToAnySpriteBBoxCorner_5A22B0`: 116->4 (only the first Abs inline, the others out of line; KeepMin helper). `Ped::AttackTargetStateMachine_46D460`: closer (declaration order). Left: shared `b11 = false` block placement
+- `Firefighter_28::Service_4A81F0`: no change (by-value MaxAbsDistance helper fixes the zero reg but then Abs stays out of line)
+- Matched: `Object_2C::ShouldCollideWithSprite_525370` (gotos to nested ifs, case 12/13 sub-chain), `Object_2C::SetMovementVector_5224E0` (file-local GetLength, Fix16_Point declared before the if), `CarPhysics_B0::HandleWorldCollision_55FD00` (`Fix16 damage; ... = damage = call()`, particles through a const& inline)
+- `TryCreateRoadblockAt_577370`: 113->30 (implicit u8->Fix16 is the out-of-line FromInt_45C4E0; separate case 3/4 bodies). `Char_B4::sub_54C3E0`: 116->59 (also fixed which local is passed per branch). `CanStepForward_54FEC0`: 136->32. Left: return block merging
+- `text_0x14::InsertLineBreaks_5B5BC0`: no change (a file-local GetCharWidth_4539D0 copy fixed the frame but 132->158)
+- Matched: `CarPhysics_B0::UpdateReferencePoint_563460` and `UpdateCenterOfMassPoint_563350` (rotation written out, out-of-line y line, `throw()` on the out-of-line Fix16 copies), `Sprite::FindOverlappingBoundingBoxCorners_5A0150` (HalfWH written out), `Ped_List_4::FindClosestPedInViewCone_4713C0` (by-ref MaxAbsDistance, re-read pIter->ped)
+- `Object_2C::UpdateMovementAndEffects_527070`: 0.723->0.973 (case split for a jump table). Left: eax/ecx/edx rotation in the tail. `Object_2C::HandleImpact_528E50`: 119->99 (case 1/2 fold into the shared PoolGive tail elsewhere)
+- No change: `446530` (x/y/rotation loaded before the train check), `492430` (original re-tests after the continue test instead of threading)
+- Matched: `CarPhysics_B0::ComputeSlopeCorrection_55AB50` (switch with returning default instead of a goto into a case)
+- `ApplyExplosionImpulse_443710`: 151->114 (out-of-line GetLength helper, Divide_442CB0, locals at top). Left: no EH state for the NormalizeSafe temp across Divide_442CB0
+- `CarPhysics_B0::ApplyDriveForce_5615D0`: no change; only the two `Fix16_Point()` ctors called out of line (inline budget)
+- Matched: `Hud_Arrow_7C::UpdateTargets_5D0620` (file-local GetLength with kFpZero_7064C0), `ExplodingScore_50::DrawNumbers_596C90` (private out-of-line copy of 9.6f inline 4B90E0), `CarAI_78::sub_452DF0` (kF16Zero_677B90 in a file-local GetLength), `Object_2C::ResolveCollisionWithPed_5229B0` (and the out-of-line `Fix16_Point::Negate_40ACB0`, now emitted and verified)
+- Closer: `EnterCarStateMachine_46BDC0` 185->99, `GetNearestZoneOfType_4DF240` 185->28, `CarAI_78::sub_448770` 186->60, `RectHitsDiagonalWall_4E11E0` 175->~12, `UpdateCarEngineAudio_57E220` (distance store order), `HandleMapBoundaryCollisionX_55C820` 0.515->0.581 (left: how many `-x_old` negations VC6 inlines)
+- No change: `4320D0` (Fable: eax/ecx/edx roles in the inlined Add_2D4), `561130` (needs throw() on operator- 0x40AC80, which changes 5 matches), `5238B0` (goto-shaped layout), `55C5C0`, `446530`, `492430`
+- Matched: `Ped::SetObjective_463570` (one call after the switch, case order from the jump table), `Ped::SpawnWeaponOnDeath_45E080` (one SetO8Timer after the switch, direct cam field reads, electro_batton case in enum order)
+- `NormalizeSafe_442AD0`: 170->52 (two inline length variants with the original's out-of-line calls). Left: stack packing (0x20 vs 0x28). `IsSpriteInView_435630`: 188->134. `tank_main_gun_5E10E0`: 181->95 (left: EH state 3 around the offset+pos temp)
+- Fable, closest leftovers (no matches): `57E220` now 1 line, the `mov $0x81020409,%eax` load scheduled after the div; only `operator=` on a member is a barrier (a temp, a local or a static inline helper are not). `5A22B0`: corner.y load scheduled above the xd subtraction. `543690`: lea temp register swapped between the two returns. `4320D0`: Add_2D4 register roles unchanged by every variant. `49C340`: 10.5 doesn't hoist the tile-idx load above the v8 store (9.6f and ours do). `4B5430`: param load order and the const s32& temp slot. `562D00`: VC6 duplicates the y-clamp store + epilogue. `54ECB0`: the original keeps `return true` inline after the range check and one shared `return false` at the end; VC6 merges identical `return false` tails into the first earlier identical block but not a later `return true` into an earlier `mov $1,%al`
+- Matched: `Ped::FollowCarOnFootWithOffset_46A350` (Ang16 -=, repeated expression instead of a Sprite* local), `sound_obj::ProcessType6_Rozza_C88_413760` (goto loop as a for loop, `p88->pool[i].x` reads), `ExplodingScore_50::DrawSingleNumber_597100` (Camera local, one-case switch, ProjectWorldToScreen_4B90E0 with a scale local), `Weapon_30::car_mine_5E2550` (Fix16_Point at the top, `p += get_x_y_443580()`, GetH_447E10 getter)
+- Closer: `FindUsableCarDoor_467090` 182->76, `Type_10_HandleCarSkidSound_418940` 183->98, `ShowJunctionIds_588620` 190->111, `Char_B4::state_8_5520A0` 115->26 (logic fix: the electrocuted >100 check is outside the net if/else), `4E1520` 162->48
+- No change: `539040` (all 5 Particle_4C jitter originals build `Fix16(rng(3)-1)` as `movswl; add $0x3FFFF; shl $0xE`, ours `shl; sub $0x4000`), `5406B0` (needs out-of-line Fix16(0) ctors with an object with a dtor alive)
+- Matched: `Car_BC::UpdateAttachedToSprite_443360` (logic fix: the rotation uses pSprite->field_0, not rot; out-of-line Multiply/operator+ rotation)
+- Closer: `RegisterDoubleDoorNoCheck_49CFA0` 178->65 (case order 2,3,1,4), `Ped::sub_469FE0` 0.313->0.608, `Wolfy_30::state_4_540F90` 0.406->0.663, `SetObjective2_463830` 185->151 (left: VC6 copies the call + epilogue into each case, original shares one tail), `Car_6C::ctor_4469F0` 239->234 (CarAI_78 array is `??_H` in ours, a loop in the original)
+- `RectHitsDiagonalWall_4E11E0` (~12 lines): only `return 1` jumping into the shared EH epilogue is left, same unexplained case as `Start_NetworkGame_5E5A30`
+- No change: `46F1E0` (original tests the angle with jns right after the 16-bit sub/add)
+- `EmitElectricArcParticle_540320`: 202->21 (explicit Multiply/Negate rotation, block scope). Left: one operand order in MultiplyByFix16_401CB0
+- Matched: `Car_BC::TrySnapCarToNearestDrivableRoadAndDriveForward_445EC0` (params modified in place, pos_z declared at the call), `Object_2C::ResolveCollisionWithObject_522710` (Fix16_Point results declared up front, Negate_40ACB0 out of line, angle += through an Ang16& + Normalize_406C20), `Train_58::UpdatePassengerAI_578390` (new global gTargetCarDoor_6FF1D8 as the loop counter, inverted field_1818 test fixed)
+- Closer: `ApplyImpactForcesAndDamage_55FA60` 205->19 (left: three return tails should jump to one shared epilogue), `PoliceCrew_38::sub_575310` 233->49, `Orca_2FD4::ComputePath_554AB0` 216->48, `Garox_110C_sub::Update_5CF730` 225->60, `ApplyCarVelocityCameraOffset_436200` 233->119
+- No change: `4B0220` (5 KB of stores, register rotation everywhere), `521890` (ours hoists pPlayerIdx into ebp), `5DDA70` (rotation in %bx), `57DF10` (original keeps the restart tail unmerged)
+
+### Near-miss pass, batches AA-AE (2026-10-03, partial)
+
+- Matched: `Sprite::ShowHorn_59EE40` (Fix16 from `(s32)(x/(f32)(u32)width*640)` like the other Show* functions, not `Fix16(f32)`), `sound_obj::HandleCarEngineSound_4157C0` (gotos removed; separate per-path `Round(...)+25` statements, which VC6 tail-merges into the shared div/mul code like the original)
+- Closer: `Wolfy_30::state_18_33_541D60` 306->35 and `state_19_32_542060` 279->20 (else branch first, PolarToCartesian written out with the second multiply as out-of-line `Multiply_408680` because of the inline budget; left: register rotation), `HandleCarTireScrubSound_418720` 261->4 (u8 volume, structured ifs, `field_AC > 0`), `CarAI_78::ManageCollisions_452A20` 0.54->0.77 (`field_2A_stopped_timer` is u8), `StabilizeVelocityAtSpeed_562910` 0.41->0.96 (9.6f inline `MultiplyByFix16_49E3A0` as `*=` by reference, `RotateVelocity_562C20` on Fix16_Point_POD)
+- Matched: `Char_B4::state_7_551CB0` (both block lookups call `GetBlockTypeAtCoord_420420`/`get_block_4DFE10` in each branch; the seven `z == N` tests compare raw `mValue` to stay inside the inline budget; cases 8 and 9 as separate identical bodies), `PedManager::PedManager` 0x470650 (sprite setup and statics restored, implicit conversions for `set_xyz(0,0,0)`, `__forceinline` on the pool ctors because of the budget), `Garox_12E4_sub::DrawPause_5D63B0` (pass a u32 where the original calls the `Fix16(u32)` copy 0x4926F0)
+- Closer: `SelectObjectImpactSound_413120` 0.35->0.99 (two switches inside `if (model <= 110)`), `fire_truck_flamethrower_5E0B10` 236->20 and `fire_truck_gun_5E0E70` 241->15 (out-of-line rotation helpers, `Add_40AC50`, Fix16_Point locals before the field_24 store), `smg_5DDD20` 314->20, `TryHitchTrailer_442810` 0.31->0.73, `SpawnSkidSegment_55D200` 0.23->0.84, `Draw_59EFF0` 0.75->0.92, `PoliceCrew_38::State6_ShutDown_574720` 410->119, `state_13_14_5411E0` 237->103, `state_3_12_540D30` 343->243, `army_gun_jeep_5E13E0` 0.43->0.55, `FindBestTargetPed_466BF0` 0.31->0.43, `HandleCarDoorSounds_4182E0` 0.15->0.33, smaller gains in `4410D0`, `561E50`, `561380`, `5D8A10`, `4672E0` (path switch fix)
+- Logic fix: `DoGetNearestCarFromCoord_444FC0` never advanced its train car index (endless loop once a train car was found)
+- No change: `46EB60` (rewritten without gotos, regalloc left), `5E5A30` (shared EH epilogue)
+- Matched: `Ped::CarThief_AI_45FF60` (case order 0, 35, 31, 36, 1; Kill written out at each site; inline bus model compare; `*(xd > yd ? &xd : &yd)` instead of `Max_44E540`), `Sprite::FindCollisionIntersectionPoint_5A2710` (logic fixes: restore paths use the saved angle, second-half corners from pOther, bOutSideSelf/bOutSideOther were swapped; one named result; `GetBoundingBoxCorner_562450` moved to CarPhysics_B0.cpp)
+- Closer: `ProcessPedImpact_560B40` 0.26->0.95 (left: an EH state around the negated temporary; `throw()` on `operator/` removes it but breaks `ResolveCollisionWithObject_522710`), `state_18_33_541D60` 306->35, `smg_5DDD20` 314->20
+- No change: `59EB30` ShowId, `465D00` IsPedAThreat (register rotation)
+- Unverified data: `word_61A898` now defined with initial value 40, a guess (marked TODO in Char_Pool.cpp)
+- Matched: `Hud_CarName_4C::DrawCarName_5D4A10` and `Hud_Brief_704::DrawBrief_5D3B80` (the y/x positions passed as u32, so the call goes to the `Fix16(u32)` copy 0x4926F0), `CarPhysics_B0::UpdateWheelSkidEffects_55DC00` (SpawnSkidSegment param by value, a temporary per call with an EH state; assign rather than init for the inline ApplyScale results), `Ped::FollowTargetStateMachine_46AC20` (`RegulateVelocityByRef_433970`: a by-reference argument stops VC6 tail-merging inlined calls with different arguments), `CarAI_78::DoShortcutsUsingJunctions_447970` (u8 x/y/z locals, `(u16)route_pos`, if/else per case, 9.6f `ContainsPoint` 0x40CEE0 used)
+- Closer: `state_20_542340` 239->20 (timer > 8 branch first, cos product through `Multiply_408680`), `DrawPlayerNames_5CFE40` 247->172 (WorldToScreen_40CFC0 written out), `DrawDigits_492260` 246->198, `Car_214::sub_5C8780` 250->229, `DrawPlayerStatsHelper_5D61A0` (Fix16(u32) for the text x), `GetNearest{Horizontal,Vertical}EdgeToCoordinate` 5A0A70/5A1030 (one reused diff local)
+- Still unexplained: in `DrawDigits_492260`/`sub_492430` the original re-tests `c != '0'` and `idx == 8` after the `idx == 8` branch where ours threads the jump; `5CFE40` tests only `al` of `IsCoordsPosVisible_435A70` (bool return?); `5C8780` case 4 keeps three calls jumping to a shared compare where ours merges them; the out-of-line `Ang16` ctor 0x409300 in `5E0B10`
+- Matched: `Car_BC::CanCarCollideWithSprite_43AAF0` (u16 flag locals; `if (pSprite) {...} else {null case}`; the first type test reads `field_30_sprite_type_enum` directly, not the shared local; model 182 rather than `rocket_bullet_128`), `Ped::PullDriverOutOfCarStateMachine_46B2F0` (u8 loop index declared before pCar, which puts it in memory and pCar in ebx; split sub/Abs statements; `SetMaxSpeedByRef`)
+- Closer: `thirsty_lamarr::sub_492430` 152->46 and `DrawGangRespectBars_5CFA70` 0.45->0.92 (Fix16(u32) ctor, y offset fixes), `UpdateDirectedProjectile_state_3_12_5384C0` 0.55->0.93 (out-of-line rotation ops, speed added to xpos/ypos, block scope), `GetMainAndBonusStagesFromSeqFile_4B4440` 331->133 (`memset(field_1EB51_num_bonus_stages, 0, 3)`), `ComputeCarMassAndInertia_454410` 339->147, `GetNearest*EdgeToCoordinate` 325->150 / 327->142, plus `5606C0`, `55AD90`, `5A1490`, `4E1A30`
+- Logic fix: `RobbedDriver_AI_461630` tested `field_140_stolen_car` the wrong way round and could dereference null (diff count unchanged; zero register is ebp in the original, ebx in ours)
+- No change: `SpawnCabAndTrailerHelper_408370` (call sequence now identical, but the two extra destructible locals needed for EH state 4 use up the inline budget so the first `+` goes out of line)
+- Closer: `Ped::Reset_45AFC0` 0.02->0.80 (b0/b1 cleared first, `field_130 = -gPedAng_6787A0`), `Init_AI_Chase_44E0C0` 0.41->0.94 (logic fix: the found tile is converted with `Fix16(u8)`, the old code stored raw bytes; `if (v == 0) ... else if ((u16)v > 0)` gives the `jne`/`jbe` pair), `UpdateZPhysics_55AD90` 0.25->0.82 (one commented goto into the shared `zpos = cp3` block; `/=` reloads the field), `HandleObjectCollision_5606C0` 0.35->0.41, `PointInsideRotatedBounds_5A1490` 0.40->0.42, `Particle_4C::sub_538060`
+- Not committed: `MeleeAttackStateMachine_46B670` has a logic bug (the punch-to-death path falls through into `b5`/`Set_F250(18)` after the mugger block where the original returns). A rewrite fixes it but the diff grows 422->440 because one mugger block gets tail-merged
+- No change: `MakeTrafficForCurrCamera_5832C0` (original multiplies with width loaded first into edx; ours ends up 2 bytes short)
+- Systemic: in `5606C0` and `ProcessPedImpact_560B40` the original sets no EH state around binary `operator-` (0x40AC80) temporaries; `throw()` on it fixes those but breaks 5-6 matches
+- Closer (Fable): `Map_0x370::sub_4E1A30` 366->40 (the hit-test arguments were wrong: x+1/y+1 face coordinates, and a u32 first argument for the Fix16(u32) copy), `Car_BC::SpawnDamageFireEffect_43B870` 0.20->0.82 (logic fixes: both x/y scaled after the switch, case 2 condition, default uses the raw argument), `ProcessGroundCollisionAndSurfaceType_55B970` 0.26->0.47, `Particle_4C::sub_538060` 0.44->0.55 (position/rotation logic fixed)
+
+### Near-miss pass, batches AJ-AN (2026-10-03, partial)
+
+- 0x5349D0 `Garage_48::GaragesService_5349D0`: MATCH. Index locals and the `Fix16_Point car_pos` declared at the top (EH state 0 at entry), inlines `Door_38::CloseDoors_476A30`, `CarPhysics_B0::StopMoving_4895D0`, `Garage_48::Reset_489650`, u8 collision flag, `field_44` u32. The corner checks return through separate inline epilogues, done with a goto.
+- 0x561970 `ComputeEngineTorque`: closer 572->543. Out-of-line torque helpers, gear order inverted, logic fix (half thrust was added twice). Left: inline budget (gear 1 multiply goes out of line) and tail merging.
+- 0x550F60 `GetNextRotationToward`: closer 576->513. Unused `Ang16(&Fix16,0)` from 9.6f, case 0 is a nested switch. Left: register/slot choices.
+- 0x542E30 `state_22_23_24_25`: closer 595->439. Left: the original runs out of inline budget in cases 2/3 (out-of-line Ang16 ctor 0x409300).
+- 0x4E5640: closer 596->464. Static inline GetLength/PolarToCartesian with out-of-line helpers. Left: Fix16_Point_POD ctor out of line (inline budget).
+- 0x498DA0 `read_input_device`: closer 461->356. `acquire_input_device_498730` is a thiscall member, Poll() not Acquire(). Left: zero register held across the whole function.
+- 0x422B70 `ProcessPed`: closer 445->165. Case order from the jump table, case 26 falls into default. Left: ebx vs ebp allocation.
+- 0x539890 `UpdateCircularBurst_state_5`: closer 0.543->0.769 (5384C0 shape). Left: identical cases 4/5 not cross-jumped.
+- 0x53E450 `EmitBloodBurst`: closer 0.148->0.495. Source bug: `rng(50) + 25` was missing.
+- 0x53F060: closer 489->464. Source bug: the loop rotation must use `angle_2`.
+- 0x53D260 `Particle_4C::PoolUpdate`: closer 0.49->0.885. Case order, lazy set_xyz/set_z inlines, missing `|= 4`. Left: constant 1 kept in bl by the original.
+- 0x5D0850 `Hud_Arrow_7C::UpdateScreenPos`: closer 0.678->0.772. Note: compare_target_asm maps a value to 0 here, so its ratio is unreliable for this function.
+- 0x46C250 `Ped::ExitCarStateMachine`: closer 0.25->0.76. Driver branch first (`if (!passenger)`), driver paths pass `*sub_4E4E50(...)` straight to `AllocCharB4_45C830`. Left: frame one slot bigger, two `SetRemap` sites use `movzbw` in the original.
+- 0x53F4C0 `Particle_8::EmitFlameStreamSegment`: closer 0.414->0.533 with `RotateByAngle_MixOOL_40F6B0` (`y * sin` inline, rest out of line). Call sequence now identical. Left: frame 0x34 vs 0x4C, EH state at entry 1 vs 4, esi/edi swapped.
+- 0x461A60 `Ped::UpdateFacingAngle`: no change. The original lays cases out 2, 3, 1, 7, default with case 3 reusing case 2's atan2 tail; ours merges them into case 1's tail.
+- 0x5E4EE0 `WindowProc`: MATCH. `switch((u8)wParam)`, (u8) casts on Bink BOOL results, locals moved to function scope.
+- 0x59FB10 `IntersectsRectSAT`: closer 0.536->0.901. `-half_w`/`-half_h` in the last block as `Negate_4086A0` calls (takes the address, so VC6 stops keeping `-half_width` in a stack local and the frame size matches).
+- 0x53A280 `Particle_4C`: no change. The original enters EH state 2 after `Remove_477B00` (two more Fix16_Point locals); adding them makes our build call the Fix16_Point ctor out of line. The original also repeats the `type == car` compare (inline `AsCar_40FEB0`), which ours folds.
+- 0x4482C0 `CarAI_78`: closer 0.287->0.691. Source bugs: the loops must move the probe sprite, and the flag clear is `&= ~0x80`. gotos rewritten as early-out and loops.
+- 0x541850 `TimerAfter50Handler`: closer 0.275->0.351. Source bug: rect left/top were `r - x`/`r - y`.
+- 0x55F3B0 `ComputeLineLineIntersection`: closer 0.101->0.354. Out-of-line operators, `DotProductOOL_49E500`, three Fix16_Point locals up front (EH state 2).
+- 0x5620D0 `CalculateRearWheelForce`: closer 0.234->0.933. `Fix16_Point(Fix16(0), y)` and v25 up front (EH state 1), uninitialised locals declared in the order the default path loads them, helpers `GetLength_inline_5620D0` and `MultiplyByFix16_inline_5620D0`. Left: `v25.x *= stability` register form and the `(6FE228 - len)` schedule; any extra inline in the tail pushes GetLength's `y*y` out of line. Permuter best (0.715) was worse than the hand version.
+- 0x5DDFC0 `throwable`: 0.470->0.485. The `a4 == 96` branch jumps to the shared "thrown" reload block with a goto (the original's LABEL_36). Left: ours keeps 0 in ebx, the original keeps 1 in bl.

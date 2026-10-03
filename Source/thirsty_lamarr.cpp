@@ -3,7 +3,7 @@
 #include "gtx_0x106C.hpp"
 #include "sharp_pare_0x15D8.hpp"
 
-DEFINE_GLOBAL_INIT(Ang16, word_67B210, Ang16(0), 0x67B210);
+DEFINE_GLOBAL_INIT(Ang16, kAngZero_67B210, Ang16(0), 0x67B210);
 
 MATCH_FUNC(0x4f7660)
 s32 __stdcall GetMaxNumOfDigits_4F7660(s32 &max_value)
@@ -32,8 +32,8 @@ thirsty_lamarr::thirsty_lamarr()
 
     field_9_str[9] = 0;
     field_0_value = 0;
-    field_4 = -1;
-    field_8 = 0;
+    field_4_target_value = -1;
+    field_8_bRollingUp = 0;
     field_27_sprite_w = -1;
     field_28_sprite_h_calc = -1;
     field_2A_max_num_of_digits = 0;
@@ -57,7 +57,7 @@ void thirsty_lamarr::SetupDigitsParams_492110(s16 digit_transition_speed, s32 ma
 }
 
 MATCH_FUNC(0x492150)
-void thirsty_lamarr::sub_492150()
+void thirsty_lamarr::InitDigitSprites_492150()
 {
     u16 sprite_idx = gGtx_0x106C_703DD4->GetSpriteTrueIndex_5AA460(sprite_types_enum::user_6, field_36_sprite_idx);
     sprite_index* sprite_index = gGtx_0x106C_703DD4->get_sprite_index_5AA440(sprite_idx);
@@ -126,74 +126,60 @@ void thirsty_lamarr::ColorDigits_4921F0(s32 palette_type, s16 palette)
 
 // https://decomp.me/scratch/6E5vt
 WIP_FUNC(0x492260)
-s32 thirsty_lamarr::sub_492260(s32 base_xpos, s32 base_ypos)
+s32 thirsty_lamarr::DrawDigits_492260(s32 base_xpos, s32 base_ypos)
 {
     WIP_IMPLEMENTED;
-    u8 height = base_ypos;
+
     s32 curr_xpos = base_xpos;
-    s16 curr_idx = field_2E_non_used_digits;
-    bool bUnk = true;
+    bool bFirst = true;
     s32 ypos_default = base_ypos + (field_28_sprite_h_calc >> 1);
 
-    // draw from right to left
-    // last digit to the first one
-
-    s16 v8 = 9 - field_2E_non_used_digits;
-    for (; curr_idx < 9; curr_idx++, v8--)
+    // The x of each digit counts back from the last one
+    s32 digits_left = 9 - field_2E_non_used_digits;
+    for (s32 idx = field_2E_non_used_digits; idx < 9; idx++, digits_left--)
     {
-        s32 v9 = field_13_offset[curr_idx];
-        if (bUnk)
+        s32 offset = field_13_offset[idx];
+        if (bFirst)
         {
-            char curr_char = field_9_str[curr_idx];
-
-            if (curr_char == '0')
+            char_type curr_char = field_9_str[idx];
+            if (curr_char == '0' && idx != 8 && !field_13_offset[idx])
             {
-                if (curr_idx == 8 || field_13_offset[curr_idx] != 0)
-                {
-                    if (curr_idx == 8)
-                    {
-                        height = field_28_sprite_h_calc;
-                    }
-                    else
-                    {
-                        height = field_13_offset[curr_idx];
-                    }
-                }
-                else
-                {
-                    continue;
-                }
+                continue;
             }
-            else
+
+            u8 height;
+            if (curr_char != '0' || idx == 8)
             {
                 height = field_28_sprite_h_calc;
             }
+            else
+            {
+                height = field_13_offset[idx];
+            }
 
-            u16 unknown = field_28_sprite_h_calc * (58 - curr_char) - v9;
-            curr_xpos = base_xpos + (field_27_sprite_w >> 1) - field_27_sprite_w * v8;
-            sub_495470(gSharp_pare_0x15D8_705064->sub_5B95F0(curr_idx + field_34_first_digit_texture_idx - field_2E_non_used_digits,
-                                                             unknown,
-                                                             height),
+            u16 v = field_28_sprite_h_calc * (58 - curr_char) - offset;
+            curr_xpos = (field_27_sprite_w >> 1) - field_27_sprite_w * digits_left + base_xpos;
+            DrawTextureScaled_495470(gSharp_pare_0x15D8_705064->GetDigitTexture_5B95F0(idx + field_34_first_digit_texture_idx - field_2E_non_used_digits, v, height),
                        curr_xpos,
-                       base_ypos + height / 2,
+                       base_ypos + (s8)height / 2,
                        field_27_sprite_w,
                        height,
-                       word_67B210,
+                       kAngZero_67B210,
                        0,
                        0);
-            bUnk = false;
+            bFirst = false;
         }
         else
         {
-            u16 v16 = field_28_sprite_h_calc * (58 - field_9_str[curr_idx]) - v9;
-            sub_495470(gSharp_pare_0x15D8_705064->sub_5B95F0(curr_idx + field_34_first_digit_texture_idx - field_2E_non_used_digits,
-                                                             v16,
+            u16 v = field_28_sprite_h_calc * (58 - field_9_str[idx]) - offset;
+            DrawTextureScaled_495470(gSharp_pare_0x15D8_705064->GetDigitTexture_5B95F0(idx + field_34_first_digit_texture_idx - field_2E_non_used_digits,
+                                                             v,
                                                              field_28_sprite_h_calc),
-                       base_xpos + ((field_27_sprite_w >> 1) - (field_27_sprite_w * v8)),
+                       (field_27_sprite_w >> 1) - field_27_sprite_w * digits_left + base_xpos,
                        ypos_default,
                        field_27_sprite_w,
                        field_28_sprite_h_calc,
-                       word_67B210,
+                       kAngZero_67B210,
                        0,
                        0);
         }
@@ -205,9 +191,10 @@ s32 thirsty_lamarr::sub_492260(s32 base_xpos, s32 base_ypos)
 WIP_FUNC(0x492430)
 s32 thirsty_lamarr::sub_492430(s32 base_xpos, s32 base_ypos)
 {
-    s32 curr_xpos = base_xpos + (field_27_sprite_w >> 1);
+    // u32: converts with the Fix16(u32) constructor, whose out-of-line copy is 0x4926F0
+    u32 curr_xpos = base_xpos + (field_27_sprite_w >> 1);
     bool bFirst = true;
-    s32 ypos_default = base_ypos + (field_28_sprite_h_calc >> 1);
+    u32 ypos_default = base_ypos + (field_28_sprite_h_calc >> 1);
 
     for (s32 idx = field_2E_non_used_digits; idx < 9; idx++)
     {
@@ -231,12 +218,12 @@ s32 thirsty_lamarr::sub_492430(s32 base_xpos, s32 base_ypos)
             }
 
             u16 v = field_28_sprite_h_calc * (58 - curr_char) - offset;
-            sub_495470(gSharp_pare_0x15D8_705064->sub_5B95F0(idx + field_34_first_digit_texture_idx - field_2E_non_used_digits, v, height),
+            DrawTextureScaled_495470(gSharp_pare_0x15D8_705064->GetDigitTexture_5B95F0(idx + field_34_first_digit_texture_idx - field_2E_non_used_digits, v, height),
                        curr_xpos,
-                       base_ypos + (s8)height / 2,
+                       (u32)(base_ypos + (s8)height / 2),
                        field_27_sprite_w,
                        height,
-                       word_67B210,
+                       kAngZero_67B210,
                        0,
                        0);
             bFirst = false;
@@ -245,14 +232,14 @@ s32 thirsty_lamarr::sub_492430(s32 base_xpos, s32 base_ypos)
         else
         {
             u16 v = field_28_sprite_h_calc * (58 - field_9_str[idx]) - offset;
-            sub_495470(gSharp_pare_0x15D8_705064->sub_5B95F0(idx + field_34_first_digit_texture_idx - field_2E_non_used_digits,
+            DrawTextureScaled_495470(gSharp_pare_0x15D8_705064->GetDigitTexture_5B95F0(idx + field_34_first_digit_texture_idx - field_2E_non_used_digits,
                                                              v,
                                                              field_28_sprite_h_calc),
                        curr_xpos,
                        ypos_default,
                        field_27_sprite_w,
                        field_28_sprite_h_calc,
-                       word_67B210,
+                       kAngZero_67B210,
                        0,
                        0);
             curr_xpos += field_27_sprite_w;
@@ -262,7 +249,7 @@ s32 thirsty_lamarr::sub_492430(s32 base_xpos, s32 base_ypos)
 }
 
 MATCH_FUNC(0x4925c0)
-char_type thirsty_lamarr::sub_4925C0()
+char_type thirsty_lamarr::IsAnyDigitRolling_4925C0()
 {
     s32 uVar1 = field_2E_non_used_digits;
 
@@ -278,26 +265,26 @@ char_type thirsty_lamarr::sub_4925C0()
 }
 
 MATCH_FUNC(0x4925e0)
-void thirsty_lamarr::sub_4925E0()
+void thirsty_lamarr::UpdateRollingDigits_4925E0()
 {
     s32 v11;
     sscanf((const char_type*)&field_9_str, "%d", &v11);
 
-    if (field_4 == -1 || v11 == field_4 && !thirsty_lamarr::sub_4925C0())
+    if (field_4_target_value == -1 || v11 == field_4_target_value && !thirsty_lamarr::IsAnyDigitRolling_4925C0())
     {
         if (field_0_value == v11)
         {
-            field_4 = -1;
+            field_4_target_value = -1;
             return;
         }
-        field_4 = field_0_value;
+        field_4_target_value = field_0_value;
         if (field_0_value > v11)
         {
-            field_8 = true;
+            field_8_bRollingUp = true;
         }
         else
         {
-            field_8 = false;
+            field_8_bRollingUp = false;
         }
         sprintf((char_type*)&field_1D_buf, "%09d", field_0_value);
     }
@@ -306,7 +293,7 @@ void thirsty_lamarr::sub_4925E0()
     {
         if (field_9_str[idx + 20] != field_9_str[idx] || field_13_offset[idx])
         {
-            if (field_8)
+            if (field_8_bRollingUp)
             {
                 field_13_offset[idx] = field_2C_digit_transition_speed + field_13_offset[idx];
                 if (field_13_offset[idx] >= field_28_sprite_h_calc)

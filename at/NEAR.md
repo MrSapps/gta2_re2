@@ -27,6 +27,11 @@ Each function is a WIP_FUNC whose build asm is a few lines away from the origina
    `--raw ADDR` for side by side, `--target ADDR` for the original only. Use lowercase hex without 0x.
    `python3 $TOOLS/src.py ADDR` prints our source, and `python3 $TOOLS/iv.py ADDR -n` the 9.6f version's
    inlined callees (9.6f is an older build with inlining mostly off, useful for missing inline helpers).
+   **Always check the inlines first**: run `iv.py ADDR -n` and grep `$REPO/docs/inlines_96f.md` for the
+   address. A 9.6f callee without a ✓ is a helper 10.5 inlines that our source may still lack; add it
+   as an inline method (named after its 9.6f address, body from the 9.6f asm) and call it. If adding it
+   makes the diff worse, leave a `// 9.6f inlined: sub_XXXXXX` comment where it belongs instead.
+   Mention any inline you added or commented in the status note.
 2. Change the source. Rebuild: `cd $REPO && python3 build.py --ignore_no_match > $TMPW/b.log 2>&1;
    grep -E ' error ' $TMPW/b.log | head` (incremental, under a minute; give Bash a 600000 ms timeout), then
    `cd Scripts/bin_comp && python3 msvc_dump_new_data.py > /dev/null && python3 compare_target_asm.py ADDR`.

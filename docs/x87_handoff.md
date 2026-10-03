@@ -64,6 +64,13 @@ under "Still unexplained") for the details behind each point.
    11 lines: centre fields `u32` (with and without the casts), in an `s32`/`u32` array or `{x, y}` struct, in a
    union with an `f32`; `Vert` with `f32`, `u32` diff/spec, an `xyz[3]` or `f[8]` array, `x`/`y` in unions with
    `s32`, `w` as `DWORD`. So the y-line store isn't steered by alias classes from types.
+12. **Y-line statement shapes don't either.** 60 shapes of the 4EB940 y line, each with four product orders
+   (`y*fov*z`, `(f32)(y*fov)*z`, `fov*y*z`, `z*(y*fov)`): the centre in a block-local, function-level or
+   assigned-before-y local (`u32`, `s32`, `f32`), one `tmp` shared with the x line, both centres loaded up
+   front, the centre loaded before the x block, an f32 product local, an f32 fov local, and
+   `y = product; y += centre`. Best is 11 (no change); none moves the high-dword store after `fstps (%ecx)`
+   except the compound form, which only does so because it adds a `fsts 4(%ecx)` store and a camera reload
+   (16-18 lines).
 9. **Not the front end.** C1XX from RTM, SP3, SP5 and SP6 paired with our C2.DLL (8799) give byte-identical code
    for the cluster and 4EB940. Together with point 1, every VC6 compiler-side cause we can test is ruled out.
 
@@ -132,11 +139,11 @@ builds fail; cut the TU before the first such function and append only what you 
    0x470250 (`DrawRightSide`) and 0x46D9A0 (`draw_bottom`) the same way: they also show which calls 9.6f made.
 2. **Work the y line in the 4EB940 testbed** rather than in the cluster: whatever makes its y high-dword store
    wait for the pointer accesses should carry over to the inlined Top/Bottom. The set_vert definition order
-   is settled (point 10) and field types are ruled out (point 11). Left: what else in the original 4EB940
-   could make the dead store wait. Its x line needed the `{ u32 tmp = centre; ... }` block (centre loaded
-   before x), which hints that the original evaluated the conversion in a different place in the
-   expression than our source does; try statement and temporary shapes for the y line that move the centre
-   load relative to the y and fov loads.
+   is settled (point 10); field types (point 11) and y-line statement shapes (point 12) are ruled out.
+   The source-side ideas for this one store are close to exhausted. Two directions are left: the z line
+   and the inlined set_vert ahead of it (they decide what is in flight when the y line starts), and the
+   wider TU context, for example compiling 4EB940 with the full MapRenderer.cpp around it in different
+   orders.
 3. Use the same 9.6f route for other inline helpers: any 9.6f callee listed in `docs/inlines_96f.md` can now be
    compiled with VC7 and checked exactly (`/O2 /Ob0 /G5 /GX`, external linkage, the right calling convention;
    `static __stdcall` when the 9.6f callee takes register arguments).

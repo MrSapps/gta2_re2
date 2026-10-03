@@ -11,26 +11,81 @@ DEFINE_GLOBAL_ARRAY(Fix16, gCos_table_669260, 1440, 0x669260);
 DEFINE_GLOBAL_ARRAY(Fix16, gTanTable_6663C8, 1440, 0x6663C8);
 DEFINE_GLOBAL_INIT(Fix16, kFPZero_6691B0, Fix16(0), 0x6691B0);
 DEFINE_GLOBAL_INIT(Ang16, kAngZero_66A920, Ang16(0), 0x66A920);
-DEFINE_GLOBAL_INIT(Ang16, word_669156, Ang16(720), 0x669156);
-DEFINE_GLOBAL_INIT(Ang16, word_667A7C, Ang16(360), 0x667A7C);
-DEFINE_GLOBAL_INIT(Ang16, word_66916C, Ang16(1080), 0x66916C);
+DEFINE_GLOBAL_INIT(Ang16, kAng180_669156, Ang16(720), 0x669156);
+DEFINE_GLOBAL_INIT(Ang16, kAng90_667A7C, Ang16(360), 0x667A7C);
+DEFINE_GLOBAL_INIT(Ang16, kAng270_66916C, Ang16(1080), 0x66916C);
 
 MATCH_FUNC(0x408660)
-Fix16 Fix16::operator+(const Fix16& rhs) const
+Fix16 Fix16::operator+(const Fix16& rhs) const throw()
 {
     s32 value = mValue + rhs.mValue;
     return Fix16(value, 0);
 }
 
 MATCH_FUNC(0x408680)
-Fix16 Fix16::Multiply_408680(const Fix16& in) const
+Fix16 Fix16::Multiply_408680(const Fix16& in) const throw()
 {
     s32 value = (s32)((mValue * (__int64)in.mValue) >> 14);
     return Fix16(value, 0);
 }
 
+MATCH_FUNC(0x436A00)
+Fix16 Fix16::Subtract_436A00(const Fix16& in) const
+{
+    s32 value = mValue - in.mValue;
+    return Fix16(value, 0);
+}
+
+MATCH_FUNC(0x436A20)
+Fix16 Fix16::Divide_436A20(const Fix16& in) const
+{
+    s32 value = (s32)(((__int64)mValue << 14) / in.mValue);
+    return Fix16(value, 0);
+}
+
+MATCH_FUNC(0x451670)
+s32 Fix16::IsLess_451670(const Fix16& other) const
+{
+    return mValue < other.mValue;
+}
+
+MATCH_FUNC(0x451690)
+s32 Fix16::IsGreater_451690(const Fix16& other) const
+{
+    return mValue > other.mValue;
+}
+
+MATCH_FUNC(0x539F90)
+Fix16& Fix16::DivideAssign_539F90(const Fix16& rhs)
+{
+    mValue = (s32)(((__int64)mValue << 14) / rhs.mValue);
+    return *this;
+}
+
+// Out-of-line copy of operator/(const s32&) (20 bytes, called by Particle_8::EmitImpactParticles_53FE40)
+MATCH_FUNC(0x53E860)
+Fix16 Fix16::DivideInt_53E860(const s32& in) const
+{
+    s32 value = mValue / in;
+    return Fix16(value, 0);
+}
+
+MATCH_FUNC(0x561DB0)
+Fix16 Fix16::MultiplyInt_561DB0(const s32& in) const
+{
+    s32 value = mValue * in;
+    return Fix16(value, 0);
+}
+
+MATCH_FUNC(0x562430)
+Fix16& Fix16::MultiplyAssign_562430(const Fix16& rhs)
+{
+    mValue = (s32)((mValue * (__int64)rhs.mValue) >> 14);
+    return *this;
+}
+
 MATCH_FUNC(0x4086A0)
-Fix16 Fix16::Negate_4086A0() const
+Fix16 Fix16::Negate_4086A0() const throw()
 {
     return Fix16(-mValue, 0);
 }
@@ -80,7 +135,7 @@ Fix16 __stdcall Fix16::SquareRoot_436A70(Fix16& input)
 
 // 10.5 https://decomp.me/scratch/7a41K
 // 9.6f https://decomp.me/scratch/ZkUbq
-WIP_FUNC(0x405320)
+MATCH_FUNC(0x405320)
 Ang16 __stdcall Fix16::atan2_fixed_405320(Fix16& x, Fix16& y)
 {
     Ang16 v9;
@@ -92,18 +147,18 @@ Ang16 __stdcall Fix16::atan2_fixed_405320(Fix16& x, Fix16& y)
         }
         else
         {
-            return word_669156;
+            return kAng180_669156;
         }
     }
     else if (x == kFPZero_6691B0)
     {
         if (y > kFPZero_6691B0)
         {
-            return word_667A7C;
+            return kAng90_667A7C;
         }
         else
         {
-            return word_66916C;
+            return kAng270_66916C;
         }
     }
     else
@@ -114,17 +169,17 @@ Ang16 __stdcall Fix16::atan2_fixed_405320(Fix16& x, Fix16& y)
         {
             if (y > kFPZero_6691B0)
             {
-                return word_667A7C - v9;
+                return kAng90_667A7C - v9;
             }
             else
             {
-                if (v9 == word_667A7C)
+                if (v9 == kAng90_667A7C)
                 {
                     return kAngZero_66A920;
                 }
                 else
                 {
-                    return word_66916C + v9;
+                    return kAng270_66916C + v9;
                 }
             }
         }
@@ -132,11 +187,11 @@ Ang16 __stdcall Fix16::atan2_fixed_405320(Fix16& x, Fix16& y)
         {
             if (y > kFPZero_6691B0)
             {
-                return word_667A7C + v9;
+                return kAng90_667A7C + v9;
             }
             else
             {
-                return word_66916C - v9;
+                return kAng270_66916C - v9;
             }
         }
     }
@@ -158,14 +213,150 @@ EXPORT bool __stdcall IntervalIntersectsRange_438FB0(const Fix16& intervalStart,
     }
 }
 
-// TODO: A crt init func, needs adding to the CRT init table
-STUB_FUNC(0x4052D0)
+EXTERN_GLOBAL(Fix16, kFPZero_6691B0);
+EXTERN_GLOBAL(Fix16, kAngFix16FullCircle_66A8E4);
+EXTERN_GLOBAL(Fix16, kAngFix16HalfCircle_6691EC);
+
+// Turns the angle `cur` toward `*pTarget` by at most `*pSpeed`, the short way round, and wraps the
+// result into [0, 2pi). Called by Trailer::UpdateTrailerAlignment_407CE0.
+MATCH_FUNC(0x405DA0)
+EXPORT Fix16 __stdcall sub_405DA0(Fix16 cur, Fix16* pTarget, Fix16* pSpeed)
+{
+    if (*pTarget - cur > kAngFix16HalfCircle_6691EC)
+    {
+        cur += kAngFix16FullCircle_66A8E4;
+    }
+    else if (*pTarget - cur < -kAngFix16HalfCircle_6691EC)
+    {
+        cur -= kAngFix16FullCircle_66A8E4;
+    }
+
+    Fix16 diff = *pTarget - cur;
+    if (diff > kFPZero_6691B0)
+    {
+        if (diff > *pSpeed)
+        {
+            diff = *pSpeed;
+        }
+    }
+    else if (diff < kFPZero_6691B0)
+    {
+        if (diff < -*pSpeed)
+        {
+            diff = -*pSpeed;
+        }
+    }
+
+    Fix16 result = diff + cur;
+    for (; result < kFPZero_6691B0; result += kAngFix16FullCircle_66A8E4)
+    {
+        ;
+    }
+    for (; result >= kAngFix16FullCircle_66A8E4; result -= kAngFix16FullCircle_66A8E4)
+    {
+        ;
+    }
+    return result;
+}
+
+DEFINE_GLOBAL_INIT(Fix16, dword_66A924, Fix16(0x11C, 0), 0x66A924);
+DEFINE_GLOBAL_INIT(Fix16, dword_669140, Fix16(0x63D8, 0), 0x669140);
+DEFINE_GLOBAL_INIT(Fix16, dword_6691FC, Fix16(0x12B88, 0), 0x6691FC);
+
+// Is `*a` within dword_66A924 of `*b`, directly or one turn (kAngFix16FullCircle_66A8E4) either way.
+MATCH_FUNC(0x405E20)
+EXPORT s32 __stdcall sub_405E20(Fix16* a, Fix16* b)
+{
+    if ((*a > *b - dword_66A924 && *a < *b + dword_66A924) ||
+        (*a > *b - kAngFix16FullCircle_66A8E4 - dword_66A924 && *a < *b - kAngFix16FullCircle_66A8E4 + dword_66A924) ||
+        (*a > *b - dword_66A924 + kAngFix16FullCircle_66A8E4 && *a < *b + kAngFix16FullCircle_66A8E4 + dword_66A924))
+    {
+        return 1;
+    }
+    return 0;
+}
+
+// Clamps the angle `*pCur` into the window of +-dword_669140 around `*pTarget`, allowing for the
+// wrap at 0 / 2pi, and returns whether it ends up on either edge. Called by
+// Trailer::UpdateTrailerAlignment_407CE0.
+MATCH_FUNC(0x405E80)
+EXPORT s32 __stdcall sub_405E80(Fix16* pTarget, Fix16* pCur)
+{
+    Fix16 lo;
+    Fix16 hi;
+    if (*pTarget < dword_669140)
+    {
+        lo = dword_6691FC + *pTarget;
+        hi = *pTarget + dword_669140;
+        if (*pCur > lo - dword_669140 && *pCur < lo)
+        {
+            *pCur = lo;
+        }
+        else if (*pCur > hi && *pCur < lo)
+        {
+            *pCur = hi;
+        }
+    }
+    else if (*pTarget < kAngFix16HalfCircle_6691EC)
+    {
+        lo = *pTarget - dword_669140;
+        hi = *pTarget + dword_669140;
+        if (*pCur < lo || *pCur > hi + dword_669140)
+        {
+            *pCur = lo;
+        }
+        else if (*pCur > hi)
+        {
+            *pCur = hi;
+        }
+    }
+    else if (*pTarget < dword_6691FC)
+    {
+        lo = *pTarget - dword_669140;
+        hi = *pTarget + dword_669140;
+        if (*pCur < hi - dword_6691FC || *pCur > hi)
+        {
+            *pCur = hi;
+        }
+        else if (*pCur < lo)
+        {
+            *pCur = lo;
+        }
+    }
+    else
+    {
+        lo = *pTarget - dword_669140;
+        hi = *pTarget - dword_6691FC;
+        if (*pCur > hi && *pCur < hi + dword_669140)
+        {
+            *pCur = hi;
+        }
+        else if (*pCur < lo && *pCur > hi)
+        {
+            *pCur = lo;
+        }
+    }
+
+    if ((u8)sub_405E20(pCur, &lo) || (u8)sub_405E20(pCur, &hi))
+    {
+        return 1;
+    }
+    return 0;
+}
+
+// The original is a CRT init func (called from the CRT init table), here Init_trigonometry_tables
+// calls it. The constants are pi and 1/720: 1440 steps of the full circle.
+MATCH_FUNC(0x4052D0)
 EXPORT void __stdcall arc_tan_table_init_4052D0()
 {
-    for (s32 i = 0; i < 1440; i++)
+    s32 arg = 0;
+    Fix16* pTan = gTanTable_6663C8;
+    for (s32 i = 1440; i != 0; i--)
     {
-        // TODO: Probably construct Ang16(i, 0) and then had ToRadians() or something
-        gTanTable_6663C8[i] = Fix16(tan( ((f64)i / 1440.0) * 2 * 3.141592654));
+        f64 radians = arg * 3.141592654;
+        *pTan = Fix16(tan(radians * 0.001388888888888889));
+        arg++;
+        pTan++;
     }
 }
 

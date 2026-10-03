@@ -6,7 +6,7 @@
 MATCH_FUNC(0x431D30);
 silly_saha_0x2C::silly_saha_0x2C()
 {
-    sub_431D50();
+    Init_431D50();
 }
 
 MATCH_FUNC(0x431D40);
@@ -15,36 +15,36 @@ silly_saha_0x2C::~silly_saha_0x2C()
 }
 
 MATCH_FUNC(0x431D50);
-void silly_saha_0x2C::sub_431D50()
+void silly_saha_0x2C::Init_431D50()
 {
     field_0_pZone = 0;
-    field_4 = -1;
-    field_8 = 87;
-    field_C = 51;
-    field_10 = -1;
-    field_12 = -2;
+    field_4_event_type = -1;
+    field_8_car_model = 87;
+    field_C_occupation = 51;
+    field_10_gang_idx = -1;
+    field_12_remap = -2;
     field_14 = 0;
-    field_18 = 87;
-    field_1C = 0;
+    field_18_alt_car_model = 87;
+    field_1C_time_limit = 0;
     field_20_counterVal = 0;
     field_24 = 0;
-    field_25 = 0;
-    field_26 = 0;
-    field_28 = 0;
+    field_25_target_count = 0;
+    field_26_count = 0;
+    field_28_reward = 0;
     field_2A_bUsed = 0;
-    field_2B = 0;
+    field_2B_bActive = 0;
 }
 
 MATCH_FUNC(0x431DA0);
-void silly_saha_0x2C::sub_431DA0()
+void silly_saha_0x2C::Reset_431DA0()
 {
-    sub_431D50();
+    Init_431D50();
 }
 
 MATCH_FUNC(0x431DB0);
-void silly_saha_0x2C::sub_431DB0()
+void silly_saha_0x2C::Deactivate_431DB0()
 {
-    field_2B = 0;
+    field_2B_bActive = 0;
 }
 
 // ============
@@ -52,40 +52,40 @@ void silly_saha_0x2C::sub_431DB0()
 MATCH_FUNC(0x431DC0);
 sad_mirzakhani::sad_mirzakhani()
 {
-    field_1B8 = 0;
-    field_1BC = 0;
+    field_1B8_pScores = 0;
+    field_1BC_cur_time = 0;
 }
 
 MATCH_FUNC(0x431DF0);
 sad_mirzakhani::~sad_mirzakhani()
 {
-    field_1B8 = 0;
+    field_1B8_pScores = 0;
 }
 
 MATCH_FUNC(0x431E10);
-void sad_mirzakhani::sub_431E10(eager_benz* a2)
+void sad_mirzakhani::Init_431E10(eager_benz* a2)
 {
-    field_1BC = 0;
-    field_1B8 = a2;
+    field_1BC_cur_time = 0;
+    field_1B8_pScores = a2;
 }
 
 MATCH_FUNC(0x431E30);
-void sad_mirzakhani::sub_431E30()
+void sad_mirzakhani::Service_431E30()
 {
-    field_1BC = rng_dword_67AB34->field_0_rng;
+    field_1BC_cur_time = gpRng_67AB34->get_cur_rng_41CFE0();
 
-    silly_saha_0x2C* pIter = &field_0[0];
-    for (s32 i = GTA2_COUNTOF(field_0) - 1; i >= 0; i--)
+    silly_saha_0x2C* pIter = &field_0_bonuses[0];
+    for (s32 i = GTA2_COUNTOF(field_0_bonuses) - 1; i >= 0; i--)
     {
         if (pIter->field_2A_bUsed)
         {
-            if (pIter->field_2B)
+            if (pIter->field_2B_bActive)
             {
-                const u32 f1c = pIter->field_1C;
-                if (f1c != -1 && field_1BC - pIter->field_20_counterVal > f1c)
+                const u32 f1c = pIter->field_1C_time_limit;
+                if (f1c != -1 && field_1BC_cur_time - pIter->field_20_counterVal > f1c)
                 {
-                    pIter->field_26 = 0;
-                    pIter->sub_431DB0();
+                    pIter->field_26_count = 0;
+                    pIter->Deactivate_431DB0();
                 }
             }
         }
@@ -96,17 +96,17 @@ void sad_mirzakhani::sub_431E30()
 MATCH_FUNC(0x431E90);
 u16 sad_mirzakhani::next_free_idx_431E90()
 {
-    for (u16 i = 0; i < GTA2_COUNTOF(field_0); i++)
+    for (u16 i = 0; i < GTA2_COUNTOF(field_0_bonuses); i++)
     {
-        if (!field_0[i].field_2A_bUsed)
+        if (!field_0_bonuses[i].field_2A_bUsed)
         {
             return i;
         }
     }
-    return GTA2_COUNTOF(field_0);
+    return GTA2_COUNTOF(field_0_bonuses);
 }
 
-WIP_FUNC(0x431EC0);
+MATCH_FUNC(0x431EC0);
 u16 sad_mirzakhani::find_431EC0(u16 idx,
                                 s16 f_4,
                                 s32 car_info_idx,
@@ -117,8 +117,6 @@ u16 sad_mirzakhani::find_431EC0(u16 idx,
                                 s32 f_18,
                                 gmp_map_zone* pZone)
 {
-    WIP_IMPLEMENTED;
-
     u16 local_idx; // bp
     silly_saha_0x2C* pItem; // esi
     s16 l_4; // ax
@@ -129,43 +127,38 @@ u16 sad_mirzakhani::find_431EC0(u16 idx,
     s32 l_14; // eax
     s32 l_18; // eax
 
-    local_idx = idx;
-    if (idx >= 10u)
+    for (local_idx = idx; local_idx < 10u; local_idx++)
     {
-        return 10;
-    }
-    while (1)
-    {
-        pItem = &this->field_0[local_idx];
+        pItem = &this->field_0_bonuses[local_idx];
         if (!pItem->field_2A_bUsed)
         {
-            goto inc_idx;
+            continue;
         }
-        if (!pItem->field_2B)
+        if (!pItem->field_2B_bActive)
         {
-            goto inc_idx;
+            continue;
         }
-        l_4 = pItem->field_4;
+        l_4 = pItem->field_4_event_type;
         if (l_4 != f_4 && l_4 != -1)
         {
-            goto inc_idx;
+            continue;
         }
-        l_c = pItem->field_C;
-        if (l_c == occupation || l_c == 51 || sub_432240(occupation, pItem->field_C))
+        l_c = pItem->field_C_occupation;
+        if (l_c == occupation || l_c == 51 || IsOccupationInGroup_432240(occupation, pItem->field_C_occupation))
         {
-            l_8 = pItem->field_8;
-            if (l_8 == car_info_idx || l_8 == 87 || sub_432300(car_info_idx, pItem->field_8))
+            l_8 = pItem->field_8_car_model;
+            if (l_8 == car_info_idx || l_8 == 87 || AreCarModelsEquivalent_432300(car_info_idx, pItem->field_8_car_model))
             {
-                l_10 = pItem->field_10;
+                l_10 = pItem->field_10_gang_idx;
                 if (l_10 == f_10 || l_10 == -1)
                 {
-                    l_12 = pItem->field_12;
+                    l_12 = pItem->field_12_remap;
                     if (l_12 == f_12 || l_12 == -2)
                     {
                         l_14 = pItem->field_14;
                         if (l_14 == f_14 || l_14 == 23 || sub_432170(f_14, pItem->field_14))
                         {
-                            l_18 = pItem->field_8;
+                            l_18 = pItem->field_18_alt_car_model;
                             if ((l_18 == f_18 || l_18 == 87) && (pItem->field_0_pZone == pZone || !pItem->field_0_pZone))
                             {
                                 return local_idx;
@@ -177,14 +170,10 @@ u16 sad_mirzakhani::find_431EC0(u16 idx,
         }
         if (pItem->field_24 == 1)
         {
-            field_0[local_idx].sub_431DB0();
-        }
-    inc_idx:
-        if (++local_idx >= 10u)
-        {
-            return 10;
+            field_0_bonuses[local_idx].Deactivate_431DB0();
         }
     }
+    return 10;
 }
 
 MATCH_FUNC(0x431FE0);
@@ -207,182 +196,207 @@ s16 sad_mirzakhani::alloc_next_431FE0(s16 f_4,
         return idx;
     }
 
-    field_0[idx].field_4 = f_4;
-    field_0[idx].field_8 = f_8;
-    field_0[idx].field_C = f_c;
-    field_0[idx].field_10 = f_10;
-    field_0[idx].field_12 = f_12;
-    field_0[idx].field_14 = f_14;
-    field_0[idx].field_18 = f_18;
-    field_0[idx].field_0_pZone = pZone;
-    field_0[idx].field_20_counterVal = rng_dword_67AB34->field_0_rng;
-    field_0[idx].field_1C = f_1c;
-    field_0[idx].field_24 = f_24;
-    field_0[idx].field_25 = f_25;
-    field_0[idx].field_26 = 0;
-    field_0[idx].field_28 = f_28;
-    field_0[idx].field_2A_bUsed = 1;
-    field_0[idx].field_2B = 1;
+    field_0_bonuses[idx].field_4_event_type = f_4;
+    field_0_bonuses[idx].field_8_car_model = f_8;
+    field_0_bonuses[idx].field_C_occupation = f_c;
+    field_0_bonuses[idx].field_10_gang_idx = f_10;
+    field_0_bonuses[idx].field_12_remap = f_12;
+    field_0_bonuses[idx].field_14 = f_14;
+    field_0_bonuses[idx].field_18_alt_car_model = f_18;
+    field_0_bonuses[idx].field_0_pZone = pZone;
+    field_0_bonuses[idx].field_20_counterVal = gpRng_67AB34->get_cur_rng_41CFE0();
+    field_0_bonuses[idx].field_1C_time_limit = f_1c;
+    field_0_bonuses[idx].field_24 = f_24;
+    field_0_bonuses[idx].field_25_target_count = f_25;
+    field_0_bonuses[idx].field_26_count = 0;
+    field_0_bonuses[idx].field_28_reward = f_28;
+    field_0_bonuses[idx].field_2A_bUsed = 1;
+    field_0_bonuses[idx].field_2B_bActive = 1;
 
     return idx;
 }
 
 MATCH_FUNC(0x432080);
-s16 sad_mirzakhani::sub_432080(u16 idx)
+s16 sad_mirzakhani::GetBonusResult_432080(u16 idx)
 {
-    silly_saha_0x2C* pItem = &field_0[idx];
+    silly_saha_0x2C* pItem = &field_0_bonuses[idx];
     if (!pItem->field_2A_bUsed)
     {
         return -1;
     }
 
-    if (pItem->field_2B)
+    if (pItem->field_2B_bActive)
     {
         return -2;
     }
 
-    if (pItem->field_26 == pItem->field_25)
+    if (pItem->field_26_count == pItem->field_25_target_count)
     {
-        pItem->sub_431DA0();
+        pItem->Reset_431DA0();
         return -3;
     }
     else
     {
-        pItem->sub_431DA0();
+        pItem->Reset_431DA0();
         return -4;
     }
 }
 
 WIP_FUNC(0x4320D0);
-void sad_mirzakhani::sub_4320D0(s16 f_4, s32 f_8, s32 f_c, s16 f_10, s16 f_12, s32 f_14, s32 f_18, gmp_map_zone* pZone)
+void sad_mirzakhani::ProcessBonusEvent_4320D0(s16 f_4, s32 f_8, s32 f_c, s16 f_10, s16 f_12, s32 f_14, s32 f_18, gmp_map_zone* pZone)
 {
     WIP_IMPLEMENTED;
-    u16 found_idx = 0;
-    for (s16 i = 0; i < 10u; i = found_idx + 1)
+    for (u16 i = 0; i < 10u; i++)
     {
-        found_idx = find_431EC0(i, f_4, f_8, f_c, f_10, f_12, f_14, f_18, pZone);
-        // _found_idx = found_idx;
-        if (found_idx >= 10u)
+        i = find_431EC0(i, f_4, f_8, f_c, f_10, f_12, f_14, f_18, pZone);
+        if (i >= 10u)
         {
             break;
         }
-        silly_saha_0x2C* pFound = &field_0[found_idx];
-        pFound->field_26++;
-        if (pFound->field_26 == pFound->field_25)
+        silly_saha_0x2C* pFound = &field_0_bonuses[i];
+        field_0_bonuses[i].field_26_count++;
+        if (pFound->field_26_count == pFound->field_25_target_count)
         {
-            field_1B8->field_368_player->field_2D4_scores.AddCash_592620(field_1B8->field_368_player->field_6BC_multpliers.field_0_value *
-                                                                         pFound->field_28);
-            pFound->sub_431DB0();
+            field_1B8_pScores->field_368_player->Add_2D4(pFound->field_28_reward);
+            pFound->Deactivate_431DB0();
         }
     }
 }
 
-WIP_FUNC(0x432170);
+MATCH_FUNC(0x432170);
 s8 sad_mirzakhani::sub_432170(int a2, int a3)
 {
-    WIP_IMPLEMENTED;
-    switch (a3)
+    if (a3 == 1)
     {
-        case 1:
-            return a2 == 3;
-        case 12:
-            return a2 == 4;
-        case 21:
-            return a2 == 4;
-        case 15:
-            return a2 == 4;
-        case 16:
-            return a2 == 4;
-        case 17:
-            return a2 == 4;
-        case 14:
-            return a2 == 13;
+        if (a2 == 3)
+        {
+            return 1;
+        }
     }
-
-    if (a3 != 22)
+    else if (a3 == 12)
     {
-        return 0;
+        if (a2 == 4)
+        {
+            return 1;
+        }
     }
-
-    switch (a2)
+    else if (a3 == 21)
     {
-        case 4:
-        case 10:
-        case 11:
-        case 13:
-        case 14:
-        case 15:
-        case 16:
-        case 17:
-        case 18:
-        case 19:
-            break;
-        default:
-            return 0;
+        if (a2 == 4)
+        {
+            return 1;
+        }
     }
-    return 1;
+    else if (a3 == 15)
+    {
+        if (a2 == 4)
+        {
+            return 1;
+        }
+    }
+    else if (a3 == 16)
+    {
+        if (a2 == 4)
+        {
+            return 1;
+        }
+    }
+    else if (a3 == 17)
+    {
+        if (a2 == 4)
+        {
+            return 1;
+        }
+    }
+    else if (a3 == 14)
+    {
+        if (a2 == 13)
+        {
+            return 1;
+        }
+    }
+    else if (a3 == 22)
+    {
+        switch (a2)
+        {
+            case 4:
+            case 10:
+            case 11:
+            case 13:
+            case 14:
+            case 15:
+            case 16:
+            case 17:
+            case 18:
+            case 19:
+                return 1;
+        }
+    }
+    return 0;
 }
 
-WIP_FUNC(0x432240);
-s8 sad_mirzakhani::sub_432240(int occupation, int a3)
+MATCH_FUNC(0x432240);
+s8 sad_mirzakhani::IsOccupationInGroup_432240(int occupation, int a3)
 {
-    WIP_IMPLEMENTED;
-    switch (a3)
+    if (a3 == 46)
     {
-        case 46:
-            switch (occupation)
-            {
-                case ped_ocupation_enum::police:
-                case ped_ocupation_enum::swat:
-                case ped_ocupation_enum::fbi:
-                case ped_ocupation_enum::army_army:
-                case ped_ocupation_enum::walking_guard_29:
-                case ped_ocupation_enum::unknown_cop_occu_30:
-                case ped_ocupation_enum::unknown_cop_occu_31:
-                case ped_ocupation_enum::tank_driver:
-                case ped_ocupation_enum::roadblock_cop_37:
-                case ped_ocupation_enum::road_block_tank_man:
-                    return 1;
-                default:
-                    return 0;
-            }
-        case 47:
-            switch (occupation)
-            {
-                case ped_ocupation_enum::paramedic_23:
-                case ped_ocupation_enum::police:
-                case ped_ocupation_enum::swat:
-                case ped_ocupation_enum::fbi:
-                case ped_ocupation_enum::army_army:
-                case ped_ocupation_enum::walking_guard_29:
-                case ped_ocupation_enum::unknown_cop_occu_30:
-                case ped_ocupation_enum::unknown_cop_occu_31:
-                case ped_ocupation_enum::tank_driver:
-                case ped_ocupation_enum::roadblock_cop_37:
-                case ped_ocupation_enum::fireman:
-                case ped_ocupation_enum::road_block_tank_man:
-                    return 1;
-                default:
-                    return 0;
-            }
-        case 48:
-            if (occupation == ped_ocupation_enum::armed_gang_member_19 || occupation == ped_ocupation_enum::guard || occupation == ped_ocupation_enum::gang_driver_42)
-            {
+        switch (occupation)
+        {
+            case ped_ocupation_enum::police:
+            case ped_ocupation_enum::swat:
+            case ped_ocupation_enum::fbi:
+            case ped_ocupation_enum::army_army:
+            case ped_ocupation_enum::walking_guard_29:
+            case ped_ocupation_enum::unknown_cop_occu_30:
+            case ped_ocupation_enum::unknown_cop_occu_31:
+            case ped_ocupation_enum::tank_driver:
+            case ped_ocupation_enum::roadblock_cop_37:
+            case ped_ocupation_enum::road_block_tank_man:
                 return 1;
-            }
-            break;
-        default:
-            if (a3 == 49 && (occupation == ped_ocupation_enum::elvis || occupation == ped_ocupation_enum::elvis_leader))
-            {
+            default:
+                return 0;
+        }
+    }
+    else if (a3 == 47)
+    {
+        switch (occupation)
+        {
+            case ped_ocupation_enum::paramedic_23:
+            case ped_ocupation_enum::police:
+            case ped_ocupation_enum::swat:
+            case ped_ocupation_enum::fbi:
+            case ped_ocupation_enum::army_army:
+            case ped_ocupation_enum::walking_guard_29:
+            case ped_ocupation_enum::unknown_cop_occu_30:
+            case ped_ocupation_enum::unknown_cop_occu_31:
+            case ped_ocupation_enum::tank_driver:
+            case ped_ocupation_enum::roadblock_cop_37:
+            case ped_ocupation_enum::fireman:
+            case ped_ocupation_enum::road_block_tank_man:
                 return 1;
-            }
-            break;
+            default:
+                return 0;
+        }
+    }
+    else if (a3 == 48)
+    {
+        if (occupation == ped_ocupation_enum::armed_gang_member_19 || occupation == ped_ocupation_enum::guard || occupation == ped_ocupation_enum::gang_driver_42)
+        {
+            return 1;
+        }
+    }
+    else if (a3 == 49)
+    {
+        if (occupation == ped_ocupation_enum::elvis || occupation == ped_ocupation_enum::elvis_leader)
+        {
+            return 1;
+        }
     }
     return 0;
 }
 
 MATCH_FUNC(0x432300);
-bool sad_mirzakhani::sub_432300(int car_info_idx_1, int car_info_idx_2)
+bool sad_mirzakhani::AreCarModelsEquivalent_432300(int car_info_idx_1, int car_info_idx_2)
 {
     bool is_fed_car_1;
     bool is_fed_car_2;

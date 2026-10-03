@@ -3,10 +3,23 @@
 #include "Function.hpp"
 
 class Ped;
+class Fix16;
 
 class PedGroup
 {
   public:
+    // 9.6f 0x4038E0
+    inline void set_in_use_4038E0()
+    {
+        field_40_in_use = 1;
+    }
+
+    // 9.6f 0x4038F0
+    inline char_type get_in_use_4038F0()
+    {
+        return field_40_in_use;
+    }
+
     EXPORT void sub_4C8E60();
     EXPORT static void sub_4C8E80();
     EXPORT void ClearGroupData_4C8E90();
@@ -15,7 +28,7 @@ class PedGroup
     EXPORT void add_ped_to_end_of_list_4C8F90(Ped* pPed);
     EXPORT void replace_leader_4C8FE0(Ped* pPed);
     EXPORT bool PurgeMembersInCars_4C9040();
-    EXPORT char_type sub_4C9150();
+    EXPORT char_type AreAllMembersOffScreen_4C9150();
     EXPORT void ResetMembersToFollowLeader_4C91B0();
     EXPORT bool IsLeaderInCar_4C9210();
     EXPORT bool IsLeaderEnteringCarOrUnknown5_4C9220();
@@ -31,20 +44,27 @@ class PedGroup
     EXPORT Ped* sub_4C9ED0();
     EXPORT void CoordinateGroupCarEntry_4C9F00();
     EXPORT u32 sub_4CA3E0();
-    EXPORT Ped* FindFarthestMember_4CA3F0(u32* a2);
+    EXPORT Ped* FindFarthestMember_4CA3F0(Fix16* pFoundDistance);
     EXPORT void UpdateFormation_4CA4B0();
     EXPORT void UpdateMemberAIState_4CA5E0(u8 idx);
     EXPORT void UpdateMemberTightFollowState_4CA820(u8 a2);
     EXPORT bool IsAllMembersInSomeCar_4CAA20();
     EXPORT char_type HasNoActiveMembers_4CAAE0();
     EXPORT char_type AreAllMembersOnFoot_4CAB80();
-    EXPORT bool IsMemberTooFarFromLeader_4CAC20(s32 idx);
+    EXPORT bool IsMemberTooFarFromLeader_4CAC20(u8 idx);
     EXPORT bool IsLeaderCloseToTargetCar_4CAD40();
     EXPORT Ped* FindNearestOtherMember_4CAE80(u8 idx);
     EXPORT static void ResetAllGroups_4CB080();
     EXPORT static PedGroup* New_4CB0D0();
     EXPORT PedGroup();
     EXPORT ~PedGroup();
+
+    // 9.6f 0x433360
+    inline void SetCounts_433360(u8 count)
+    {
+        field_36_count = count;
+        field_34_count = count;
+    }
 
     inline s32 Get_F3C_433370()
     {

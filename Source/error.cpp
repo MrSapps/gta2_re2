@@ -14,11 +14,9 @@ DEFINE_GLOBAL(HWND, gHwnd_707F04, 0x707F04);
 EXTERN_GLOBAL(s32, gGTA2VersionMajor_708280);
 EXTERN_GLOBAL(s32, gGTA2VersionMajor_708284);
 
-STUB_FUNC(0x4D9470)
-void ErrorLog::sub_4D9470(const char_type* path, s32 a3)
+MATCH_FUNC(0x4D9470)
+void ErrorLog::Open_4D9470(const char_type* path, s32 a3)
 {
-    NOT_IMPLEMENTED;
-
     u8* fileNameLen = new u8;
     if (fileNameLen)
     {
@@ -30,20 +28,25 @@ void ErrorLog::sub_4D9470(const char_type* path, s32 a3)
     }
     this->field_3C_pLen = fileNameLen;
 
-    // TODO: Werid codegen here, looks like a switch on a3 maybe :')
     s32 mode;
     switch (a3)
     {
+        case 0:
+            mode = 8; // ios::app
+            break;
+
         case 1:
-            mode = 16; //ios::trunc; // 16
+            mode = 16; // ios::trunc
             break;
 
         default:
-            mode = 8; //ios::app; // 8
+            mode = 8; // ios::app
             break;
     }
 
-    //field_0_ofstr.open(path, mode, 420);
+#if defined(__clang__) || (_MSC_VER <= 1200)
+    ((ofstream&)field_0_ofstr).open(path, mode, filebuf::openprot);
+#endif
 
     log_timestamp_4D9540();
 }
@@ -53,7 +56,7 @@ WIP_FUNC(0x4D94E0)
 ErrorLog::ErrorLog(const char* FileName, int a3)
 {
     NOT_IMPLEMENTED;
-    sub_4D9470(FileName, a3);
+    Open_4D9470(FileName, a3);
 }
 
 // This func matches but for some reason it's crashing the patched version
@@ -63,17 +66,14 @@ EXPORT void __cdecl log_on_line_written_cb_4D9690(void* a1)
     ((ostream_type*)a1)->flush();
 }
 
-WIP_FUNC(0x4D9620)
+MATCH_FUNC(0x4D9620)
 void ErrorLog::Write_4D9620(const char_type* pMsg)
 {
-    WIP_IMPLEMENTED;
-
-    // For some reason log_on_line_written_cb_4D9690 addr gets pushed between these calls ??
-    ((ostream_type&)this->field_0_ofstr) << pMsg << '\n';
-
-    log_on_line_written_4D9670(log_on_line_written_cb_4D9690);
-
-    ((ostream_type&)this->field_0_ofstr).flush();
+#if defined(__clang__) || (_MSC_VER <= 1200)
+#else
+    using namespace std;
+#endif
+    ((ostream_type&)this->field_0_ofstr) << pMsg << endl << flush;
 }
 
 MATCH_FUNC(0x4D9650)
@@ -123,7 +123,7 @@ ErrorLog gFile_67C530; //DEFINE_GLOBAL(ErrorLog, gFile_67C530, 0x67C530);
 
 DEFINE_GLOBAL_ARRAY(char_type, gTmpBuffer_67C598, 256, 0x67C598); // TODO: Check
 DEFINE_GLOBAL_ARRAY(char_type, gErrStr_67C29C, 256, 0x67C29C);
-DEFINE_GLOBAL_ARRAY(char_type, byte_67C3A8, 256, 0x67C3A8);
+DEFINE_GLOBAL_ARRAY(char_type, gErrStr2_67C3A8, 256, 0x67C3A8);
 DEFINE_GLOBAL_ARRAY(char_type, gGlobalFileName_67C6AC, 256, 0x67C6AC);
 
 const char_type* gListTypes_61AB70[30] = {"objects",
@@ -195,10 +195,9 @@ struct Coord2
 
 #define err_a1_int(msg, arg) sprintf(gTmpBuffer_67C598, msg, va_1);
 
-STUB_FUNC(0x4A07C0)
+MATCH_FUNC(0x4A07C0)
 EXPORT void FatalError_4A07C0(s32 code, const char_type* pFileName, s32 lineNo, ...)
 {
-    NOT_IMPLEMENTED;
     va_list va; // [esp+94h] [ebp+34h] BYREF
 
     va_start(va, lineNo);
@@ -1840,7 +1839,7 @@ EXPORT void FatalError_4A07C0(s32 code, const char_type* pFileName, s32 lineNo, 
         }
 
         case 2014:
-            sprintf(gTmpBuffer_67C598, "%s binmake error : %s", SourceFileNameFromPath_4A07A0(gErrStr_67C29C), byte_67C3A8);
+            sprintf(gTmpBuffer_67C598, "%s binmake error : %s", SourceFileNameFromPath_4A07A0(gErrStr_67C29C), gErrStr2_67C3A8);
             break;
 
         case 2018:
@@ -2202,7 +2201,7 @@ EXPORT void FatalError_4A07C0(s32 code, const char_type* pFileName, s32 lineNo, 
         }
 
         case 8001:
-            sprintf(gTmpBuffer_67C598, "Too many %s phones for %s gang", gErrStr_67C29C, byte_67C3A8);
+            sprintf(gTmpBuffer_67C598, "Too many %s phones for %s gang", gErrStr_67C29C, gErrStr2_67C3A8);
             break;
         case 7004:
 
@@ -2227,43 +2226,41 @@ EXPORT void FatalError_4A07C0(s32 code, const char_type* pFileName, s32 lineNo, 
 
         case 5001:
         {
-            Coord2 c;
-            c.x = *(s32*)va_arg(va, const char_type*);
-            sprintf(gTmpBuffer_67C598, "Invalid fraction : %f", c.x.AsFloat());
+            Fix16 value = *va_arg(va, Fix16*);
+            sprintf(gTmpBuffer_67C598, "Invalid fraction : %f", value.AsFloat());
             break;
         }
 
         case 5002:
         {
-            Coord2 c;
-            c.x = *(s32*)va_arg(va, const char_type*);
-            sprintf(gTmpBuffer_67C598, "Invalid ambient light value : %f", c.x.AsFloat());
+            Fix16 value = *va_arg(va, Fix16*);
+            sprintf(gTmpBuffer_67C598, "Invalid ambient light value : %f", value.AsFloat());
             break;
         }
         case 6001:
         {
-            // TODO: Stack access is wrong here
             s32 va_1 = va_arg(va, s32);
             s32 va_2 = va_arg(va, s32);
 
-            s32 coords[3];
-            s32 coords1[3];
+            // One array with the "to" half stored back to front: this gives the original's stack slots.
+            // Two arrays or six scalars get laid out differently whatever the declaration order.
+            s32 coords[6];
             coords[0] = *va_arg(va, s32*);
             coords[1] = *va_arg(va, s32*);
             coords[2] = *va_arg(va, s32*);
 
-            coords1[0] = *va_arg(va, s32*);
-            coords1[1] = *(s32*)va_arg(va, s32*);
-            coords1[2] = *va_arg(va, s32*);
+            coords[5] = *va_arg(va, s32*);
+            coords[4] = *va_arg(va, s32*);
+            coords[3] = *va_arg(va, s32*);
 
             sprintf(gTmpBuffer_67C598,
                     "Unable to find a route from (%.4f, %.4f, %.4f) to (%.4f, %.4f, %.4f) in car id: %d model: %d",
                     coords[0] / 16384.0f,
                     coords[1] / 16384.0f,
                     coords[2] / 16384.0f,
-                    coords1[0] / 16384.0f,
-                    coords1[1] / 16384.0f,
-                    coords1[2] / 16384.0f,
+                    coords[5] / 16384.0f,
+                    coords[4] / 16384.0f,
+                    coords[3] / 16384.0f,
                     va_1,
                     va_2);
         }
@@ -2290,7 +2287,7 @@ EXPORT void FatalError_4A38C0(s32 Code, const char_type* pSourceFile, s32 lineNo
         const char_type destroyed = bDestroyed_6F5B70;
         if (!destroyed)
         {
-            sub_4DA740();
+            Shutdown_4DA740();
             GBH_Graphis_DMA_Video_Free_5D9830();
             // 16 was using esi instead of push 10h without the 0x6F5B70 bool
             // being cached in both branches of the if/else
@@ -2304,7 +2301,7 @@ EXPORT void FatalError_4A38C0(s32 Code, const char_type* pSourceFile, s32 lineNo
         const char_type destroyed = bDestroyed_6F5B70;
         if (!destroyed)
         {
-            sub_4DA740();
+            Shutdown_4DA740();
             GBH_Graphis_DMA_Video_Free_5D9830();
 
             va_list va;

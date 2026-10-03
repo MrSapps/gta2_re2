@@ -5,6 +5,7 @@
 #include "PedGroup.hpp"
 
 DEFINE_GLOBAL(Kfc_1E0*, gKfc_1E0_706280, 0x706280);
+DEFINE_GLOBAL(Fix16, dword_706148, 0x706148);
 
 MATCH_FUNC(0x4beb00)
 Kfc_30::Kfc_30()
@@ -22,11 +23,11 @@ void Kfc_30::Init_5CBC00()
 {
     field_1A = 150;
     field_1E_is_used = 0;
-    field_20_maybe_type = 0;
+    field_20_crew_type = 0;
     field_24 = 0;
     field_0_car = 0;
     field_4_ped = 0;
-    field_28 = 0;
+    field_28_state = 0;
     field_8_group = 0;
     field_2C = 0;
     field_1C = 0;
@@ -46,18 +47,25 @@ void Kfc_30::RemovePed_5CBC40(Ped* a2)
 }
 
 // https://decomp.me/scratch/HmQPr
-WIP_FUNC(0x5cbc60)
+MATCH_FUNC(0x5cbc60)
 bool Kfc_30::PedIsValid_5CBC60()
 {
-    WIP_IMPLEMENTED;
     if (field_4_ped && field_4_ped->isDead_403B60())
     {
         return false;
     }
-    // TODO: Something strange going on here:
-    // 10.5: mov 0x28(%ecx),%ecx
-    // 9.6f: mov 0x28(%esi),%esi
-    s32 v4 = field_28;
+    // A switch whose cases all return true: VC6 drops the compares but keeps the
+    // load of field_28_state (the stray mov 0x28(%ecx),%ecx). The case values are a guess.
+    switch (field_28_state)
+    {
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+            return true;
+    }
     return true;
 }
 
@@ -74,7 +82,7 @@ char_type Kfc_30::ReplaceLeaderIfNeeded_5CBC90()
     Ped* pPedAtIdx = pGroup->field_4_ped_list[idx];
     while (pPedAtIdx)
     {
-        if (pPedAtIdx->field_278_ped_state_1 != ped_state_1::dead_9 && !pPedAtIdx->field_16C_car)
+        if (pPedAtIdx->GetPedState_403990() != ped_state_1::dead_9 && !pPedAtIdx->field_16C_car)
         {
             Ped* pKfcPed = this->field_4_ped;
             if (pKfcPed->field_16C_car)
@@ -87,10 +95,10 @@ char_type Kfc_30::ReplaceLeaderIfNeeded_5CBC90()
                 Ped* pLeader = this->field_8_group->field_2C_ped_leader;
                 this->field_4_ped = pLeader;
                 pLeader->SetObjective(objectives_enum::no_obj_0, 9999);
-                const s32 occupation = pPedAtIdx->field_240_occupation;
-                pPedAtIdx->field_240_occupation = ped_ocupation_enum::dummy;
+                const s32 occupation = pPedAtIdx->get_occupation_403980();
+                pPedAtIdx->set_occupation_403970(ped_ocupation_enum::dummy);
                 pPedAtIdx->Kill_46F9D0();
-                pPedAtIdx->field_240_occupation = occupation;
+                pPedAtIdx->set_occupation_403970(occupation);
                 pPedAtIdx->SetObjective(objectives_enum::objective_28, 9999);
             }
             return 1;
@@ -102,14 +110,14 @@ char_type Kfc_30::ReplaceLeaderIfNeeded_5CBC90()
 }
 
 // https://decomp.me/scratch/sUPg8
-WIP_FUNC(0x5cbd50)
+MATCH_FUNC(0x5cbd50)
 void Kfc_30::UpdateStateMachine_5CBD50()
 {
-    WIP_IMPLEMENTED;
     char_type v36 = 0;
     char_type v39 = 1;
     char_type v40 = 1;
     char_type v41 = 0;
+    u8 idx;
     if (field_8_group)
     {
         if (!field_8_group->field_34_count)
@@ -123,234 +131,245 @@ void Kfc_30::UpdateStateMachine_5CBD50()
     {
         if (field_0_car)
         {
-            if (field_0_car->field_88_despawn_status == 5)
+            if (field_0_car->IsDespawning_4215B0())
             {
                 v36 = 1;
             }
-            if (field_0_car->field_74_damage == 32001)
+            if (field_0_car->IsMaxDamage_40F890())
             {
                 v36 = 1;
             }
-            if (field_0_car->sub_43A230())
+            if (field_0_car->HasSpriteZoom_43A230())
             {
                 v36 = 1;
             }
 
-            if (!field_0_car->field_54_driver || field_0_car->field_54_driver == field_4_ped)
-            {
-                if (!v36)
-                {
-                    char bFlag1 = 1;
-
-                    if (field_8_group)
-                    {
-                        u8 v29 = 0;
-                        for (Ped* v28 = field_8_group->field_4_ped_list[0]; field_8_group->field_4_ped_list[v29];
-                             v28 = field_8_group->field_4_ped_list[++v29])
-                        {
-                            if (v28->field_278_ped_state_1 != ped_state_1::dead_9)
-                            {
-                                bFlag1 = 0;
-                            }
-                        }
-                    }
-
-                    if (bFlag1)
-                    {
-                        //LABEL_76:
-                        if (!field_4_ped || field_4_ped->field_278_ped_state_1 == ped_state_1::dead_9)
-                        {
-                            field_24 = 2;
-                        }
-                    }
-                    if (field_24 == 2)
-                    {
-                        if (field_0_car)
-                        {
-                            field_0_car->field_7C_uni_num = 3;
-                            field_0_car->field_76_last_seen_timer = 0;
-                            field_0_car->field_76_last_seen_timer = -200;
-                        }
-                    }
-                    return;
-                }
-            }
-            else
+            if (field_0_car->field_54_driver && field_0_car->field_54_driver != field_4_ped)
             {
                 v41 = 1;
+                v36 = 1;
             }
+        }
+        else
+        {
+            v36 = 1;
         }
 
-        if (field_8_group)
+        if (v36)
         {
-            Ped* v7 = field_8_group->field_4_ped_list[0];
-            for (u8 i = 0; v7; v7 = field_8_group->field_4_ped_list[++i])
-            {
-                if (v7->field_168_game_object)
-                {
-                    v39 = 0;
-                }
-                else
-                {
-                    v40 = 0;
-                }
-            }
-        }
-
-        if (field_4_ped)
-        {
-            if (field_4_ped->field_168_game_object)
-            {
-                v39 = 0;
-            }
-        }
-        if (v41)
-        {
-            if (!v40)
-            {
-                return;
-            }
-            if (field_4_ped)
-            {
-                if (!field_4_ped->field_168_game_object)
-                {
-                    return;
-                }
-
-                // value not used
-                Fix16::MaxAbsDistance_42A6B0(field_4_ped->get_cam_x(),
-                                             field_4_ped->get_cam_y(),
-                                             field_0_car->field_50_car_sprite->field_14_xy.x,
-                                             field_0_car->field_50_car_sprite->field_14_xy.y);
-            }
-        }
-        if (field_0_car)
-        {
-            field_0_car->field_76_last_seen_timer = 0;
-            if (field_0_car->field_7C_uni_num != 2)
-            {
-                field_0_car->field_7C_uni_num = 3;
-            }
-            if (field_0_car->field_60)
-            {
-                gHamburger_500_678E30->FreeEntry_474CC0(field_0_car->field_60);
-                field_0_car->field_60 = 0;
-            }
-            field_0_car = 0;
-        }
-        if (v39)
-        {
-            if (field_4_ped)
-            {
-                field_4_ped->field_240_occupation = ped_ocupation_enum::dummy;
-                field_4_ped->ClearGroupAndGroupIdx_403A30();
-                field_4_ped->Deallocate_45EB60();
-            }
-            u8 v42 = 0;
             if (field_8_group)
             {
-                for (Ped* j = field_8_group->field_4_ped_list[0]; j; j = field_8_group->field_4_ped_list[v42])
+                idx = 0;
+                for (Ped* v7 = field_8_group->field_4_ped_list[0]; v7; v7 = field_8_group->field_4_ped_list[++idx])
                 {
-                    j->field_240_occupation = ped_ocupation_enum::dummy;
-                    j->field_164_ped_group = 0;
-                    j->field_23C = 0;
-                    j->Deallocate_45EB60();
-                    ++v42;
+                    if (v7->field_168_game_object)
+                    {
+                        v39 = 0;
+                    }
+                    else
+                    {
+                        v40 = 0;
+                    }
                 }
-                field_8_group->ClearGroupData_4C8E90();
             }
-            field_8_group = 0;
-            field_4_ped = 0;
-            field_24 = 2;
-            return;
-        }
-        if (v40)
-        {
+
             if (field_4_ped)
             {
                 if (field_4_ped->field_168_game_object)
                 {
-                    field_24 = 0;
-                    if (field_8_group)
-                    {
-                        field_8_group->ResetGroupObjectives_4C8F20();
-                    }
-                    return;
+                    v39 = 0;
                 }
             }
-        }
-
-        if (field_8_group)
-        {
-            if (field_8_group->PurgeMembersInCars_4C9040())
+            if (v41)
             {
-                if (field_8_group->field_2C_ped_leader)
+                if (!v40)
                 {
-                    field_24 = 0;
-                    field_8_group->ResetGroupObjectives_4C8F20();
+                    return;
                 }
-                else if (field_8_group->field_34_count == 1)
+                if (field_4_ped)
                 {
-                    field_4_ped = field_8_group->field_4_ped_list[0];
+                    if (!field_4_ped->field_168_game_object)
+                    {
+                        return;
+                    }
+
+                    if (Fix16::MaxAbsDistanceNegOOL_42A6B0(field_4_ped->get_cam_x(),
+                                                     field_4_ped->get_cam_y(),
+                                                     field_0_car->field_50_car_sprite->field_14_xy.x,
+                                                     field_0_car->field_50_car_sprite->field_14_xy.y) > dword_706148)
+                    {
+                        v36 = 1;
+                    }
+                }
+                else
+                {
+                    v36 = 1;
+                }
+            }
+            if (!v36)
+            {
+                return;
+            }
+            if (field_0_car)
+            {
+                field_0_car->field_76_last_seen_timer = 0;
+                if (field_0_car->field_7C_uni_num != 2)
+                {
+                    field_0_car->field_7C_uni_num = 3;
+                }
+                if (field_0_car->field_60)
+                {
+                    gHamburger_500_678E30->FreeEntry_474CC0(field_0_car->field_60);
+                    field_0_car->field_60 = 0;
+                }
+                field_0_car = 0;
+            }
+            if (v39)
+            {
+                if (field_4_ped)
+                {
+                    field_4_ped->set_occupation_403970(ped_ocupation_enum::dummy);
+                    field_4_ped->ClearGroupAndGroupIdx_403A30();
+                    field_4_ped->Deallocate_45EB60();
+                }
+                idx = 0;
+                if (field_8_group)
+                {
+                    for (Ped* j = field_8_group->field_4_ped_list[0]; j; j = field_8_group->field_4_ped_list[idx])
+                    {
+                        j->set_occupation_403970(ped_ocupation_enum::dummy);
+                        j->field_164_ped_group = 0;
+                        j->field_23C_group_idx = 0;
+                        j->Deallocate_45EB60();
+                        ++idx;
+                    }
                     field_8_group->ClearGroupData_4C8E90();
+                }
+                field_8_group = 0;
+                field_4_ped = 0;
+                field_24 = 2;
+                return;
+            }
+            if (v40)
+            {
+                if (field_4_ped)
+                {
+                    if (field_4_ped->field_168_game_object)
+                    {
+                        field_24 = 0;
+                        if (field_8_group)
+                        {
+                            field_8_group->ResetGroupObjectives_4C8F20();
+                        }
+                        return;
+                    }
+                }
+            }
+
+            if (field_8_group)
+            {
+                if (field_8_group->PurgeMembersInCars_4C9040())
+                {
+                    if (field_8_group->field_2C_ped_leader)
+                    {
+                        field_24 = 0;
+                        field_8_group->ResetGroupObjectives_4C8F20();
+                    }
+                    else if (field_8_group->field_34_count == 1)
+                    {
+                        field_4_ped = field_8_group->field_4_ped_list[0];
+                        field_8_group->ClearGroupData_4C8E90();
+                        field_8_group = 0;
+                        field_4_ped->SetObjective(objectives_enum::no_obj_0, 9999);
+                        field_4_ped->SetObjective2_463830(0, 9999);
+                        field_24 = 0;
+                    }
+                    else
+                    {
+                        field_8_group->field_2C_ped_leader = field_8_group->field_4_ped_list[field_8_group->field_34_count];
+                        field_8_group->field_4_ped_list[field_8_group->field_34_count] = 0;
+                        --field_8_group->field_36_count;
+                        --field_8_group->field_34_count;
+                        field_4_ped = field_8_group->field_2C_ped_leader;
+                        field_8_group->ResetGroupObjectives_4C8F20();
+                        field_24 = 0;
+                    }
+                }
+                else
+                {
+                    field_4_ped = field_8_group->field_2C_ped_leader;
+                    field_8_group->DestroyGroup_4C93A0();
                     field_8_group = 0;
                     field_4_ped->SetObjective(objectives_enum::no_obj_0, 9999);
                     field_4_ped->SetObjective2_463830(0, 9999);
                     field_24 = 0;
                 }
-                else
+            }
+            else if (field_4_ped)
+            {
+                if (field_4_ped->field_168_game_object)
                 {
-                    field_8_group->field_2C_ped_leader = field_8_group->field_4_ped_list[field_8_group->field_34_count];
-                    field_8_group->field_4_ped_list[field_8_group->field_34_count] = 0;
-                    --field_8_group->field_36_count;
-                    --field_8_group->field_34_count;
-                    field_4_ped = field_8_group->field_2C_ped_leader;
-                    field_8_group->ResetGroupObjectives_4C8F20();
+                    field_4_ped->SetObjective(objectives_enum::no_obj_0, 9999);
+                    field_4_ped->SetObjective2_463830(0, 9999);
                     field_24 = 0;
                 }
             }
-            else
+            else if (!field_0_car)
             {
-                field_4_ped = field_8_group->field_2C_ped_leader;
-                field_8_group->DestroyGroup_4C93A0();
-                field_8_group = 0;
-                field_4_ped->SetObjective(objectives_enum::no_obj_0, 9999);
-                field_4_ped->SetObjective2_463830(0, 9999);
-                field_24 = 0;
+                field_24 = 2;
             }
         }
-        else if (field_4_ped)
+        else
         {
-            if (field_4_ped->field_168_game_object)
-            {
-                field_4_ped->SetObjective(objectives_enum::no_obj_0, 9999);
-                field_4_ped->SetObjective2_463830(0, 9999);
-                field_24 = 0;
-            }
-        }
-        else if (!field_0_car)
-        {
-            field_24 = 2;
+                v36 = 1;
+
+                if (field_8_group)
+                {
+                    idx = 0;
+                    for (Ped* v28 = field_8_group->field_4_ped_list[0]; v28; v28 = field_8_group->field_4_ped_list[++idx])
+                    {
+                        if (!v28->isDead_403B60())
+                        {
+                            v36 = 0;
+                        }
+                    }
+                }
+
+                if (v36)
+                {
+                    if (!field_4_ped || field_4_ped->isDead_403B60())
+                    {
+                        field_24 = 2;
+                    }
+                }
+                if (field_24 == 2)
+                {
+                    if (field_0_car)
+                    {
+                        field_0_car->SetUniNum_421560(3);
+                        field_0_car->field_76_last_seen_timer = -200;
+                    }
+                }
         }
     }
     else if (!field_24)
     {
-        char_type v38 = 1;
+        v36 = 1;
         if (field_8_group)
         {
-            u8 v33 = 0;
-            for (Ped* v32 = field_8_group->field_4_ped_list[0]; v32; v32 = field_8_group->field_4_ped_list[++v33])
+            idx = 0;
+            for (Ped* v32 = field_8_group->field_4_ped_list[0]; v32; v32 = field_8_group->field_4_ped_list[++idx])
             {
-                if (v32->field_278_ped_state_1 != ped_state_1::dead_9)
+                if (!v32->isDead_403B60())
                 {
-                    v38 = 0;
+                    v36 = 0;
                 }
             }
         }
 
-        if (v38)
+        if (v36)
         {
-            if (!field_4_ped || field_4_ped->field_278_ped_state_1 == ped_state_1::dead_9)
+            if (!field_4_ped || field_4_ped->isDead_403B60())
             {
                 field_24 = 2;
             }
@@ -371,11 +390,9 @@ void Kfc_30::UpdateStateMachine_5CBD50()
 }
 
 // 9.6f 0x4C5A00
-WIP_FUNC(0x5cc1c0)
+MATCH_FUNC(0x5cc1c0)
 void Kfc_30::CleanupExpiredEntities_5CC1C0()
 {
-    WIP_IMPLEMENTED;
-
     bool bClearRouteAndTryClearOthers = 0;
     bool bClearPedAndGroup = 1;
     bool bClearCharB4F24 = 1;
@@ -395,7 +412,7 @@ void Kfc_30::CleanupExpiredEntities_5CC1C0()
         {
             if (field_0_car->Get_F76_4A9AD0() > this->field_1A)
             {
-                field_0_car->sub_421470();
+                field_0_car->MarkForDespawn_421470();
                 bClearRouteAndTryClearOthers = 1;
             }
         }
@@ -469,15 +486,14 @@ void Kfc_30::CleanupExpiredEntities_5CC1C0()
                     field_4_ped->Deallocate_45EB60();
                 }
 
+                u8 i = 0;
                 if (field_8_group)
                 {
-                    u8 i = 0;
                     for (Ped* pPedListIter = field_8_group->field_4_ped_list[0]; pPedListIter;)
                     {
                         pPedListIter->set_occupation_403970(ped_ocupation_enum::dummy);
                         pPedListIter->ClearGroupAndGroupIdx_403A30();
                         pPedListIter->Deallocate_45EB60();
-                        // TODO: Instruction swap
                         i++;
                         pPedListIter = field_8_group->field_4_ped_list[i];
                     }
@@ -527,15 +543,14 @@ void Kfc_30::CleanupExpiredEntities_5CC1C0()
             field_4_ped->Deallocate_45EB60();
         }
 
+        u8 i = 0;
         if (field_8_group)
         {
-            u8 i = 0;
             Ped* pPedListIter = field_8_group->field_4_ped_list[0];
             while(pPedListIter)
             {
                 pPedListIter->ClearGroupAndGroupIdx_403A30();
                 pPedListIter->Deallocate_45EB60();
-                // TODO: Instruction swap
                 i++;
                 pPedListIter = field_8_group->field_4_ped_list[i];
             }
@@ -559,7 +574,7 @@ bool Kfc_30::Service_5CC480()
         this->field_18--;
     }
 
-    switch (this->field_28)
+    switch (this->field_28_state)
     {
         case 5:
             CleanupExpiredEntities_5CC1C0();
@@ -577,7 +592,7 @@ bool Kfc_30::Service_5CC480()
             return 0;
     }
 
-    switch (field_20_maybe_type)
+    switch (field_20_crew_type)
     {
         case crew_type::paramedic_1:
             if (gCar_6C_677930->CanAllocateOfType_446930(4))
@@ -659,11 +674,11 @@ void Kfc_1E0::init_5CBB70()
 MATCH_FUNC(0x5cbb80)
 Kfc_30* Kfc_1E0::New_5CBB80()
 {
-    for (u8 i = 0; i < GTA2_COUNTOF(field_0); i++)
+    for (u8 i = 0; i < GTA2_COUNTOF(field_0_entries); i++)
     {
-        if (!field_0[i].field_1E_is_used)
+        if (!field_0_entries[i].field_1E_is_used)
         {
-            return &field_0[i];
+            return &field_0_entries[i];
         }
     }
     return 0;
@@ -674,11 +689,11 @@ void Kfc_1E0::Service_5CBBD0()
 {
     for (s32 i = 0; i < 10; i++)
     {
-        if (field_0[i].field_1E_is_used)
+        if (field_0_entries[i].field_1E_is_used)
         {
-            if (field_0[i].Service_5CC480())
+            if (field_0_entries[i].Service_5CC480())
             {
-                field_0[i].field_1E_is_used = 0;
+                field_0_entries[i].field_1E_is_used = 0;
             }
         }
     }

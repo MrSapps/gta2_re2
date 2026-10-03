@@ -82,6 +82,9 @@ under "Still unexplained") for the details behind each point.
    copies of the args) are no better. Applying `inv_z` to the inlined `ProjectVert_46BC70` too gives 1366 in
    total but with the usual inline-budget side effects (4EAF40 -91, 4EBA60 +32, 4F0420 +15), so it isn't
    committed.
+   With `inv_z` the x line no longer needs the `{ u32 tmp = centre; ... }` block (the plain line is byte
+   identical, committed), and x-line rounding forms (`(f32)` product, f32 product or x locals) don't delay
+   the y centre load either (10, or worse).
 9. **Not the front end.** C1XX from RTM, SP3, SP5 and SP6 paired with our C2.DLL (8799) give byte-identical code
    for the cluster and 4EB940. Together with point 1, every VC6 compiler-side cause we can test is ruled out.
 

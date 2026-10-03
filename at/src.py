@@ -1,5 +1,5 @@
 # src.py ADDR: print the source of the marked function (file:line)
-import os as _os; REPO=_os.environ.get('REPO','/home/user/gta2_re2'); TOOLS=_os.environ.get('TOOLS','/tmp/claude-0/at')
+import os as _os; REPO=_os.environ.get('REPO') or __import__('subprocess').run(['git','rev-parse','--show-toplevel'],capture_output=True,text=True).stdout.strip() or '/home/user/gta2_re2'; TOOLS=_os.environ.get('TOOLS','/tmp/claude-0/at')
 import glob,re,sys
 a=int(sys.argv[1],16)
 for f in sorted(glob.glob(REPO+'/Source/*.cpp')):

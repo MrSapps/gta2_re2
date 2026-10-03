@@ -1,5 +1,5 @@
 # iv.py ADDR105 [-b]: 9.6f view of a 10.5 function: annotated 9.6f asm, the inlined callees' bodies,
-import os as _os; REPO=_os.environ.get('REPO','/home/user/gta2_re2'); TOOLS=_os.environ.get('TOOLS','/tmp/claude-0/at')
+import os as _os; REPO=_os.environ.get('REPO') or __import__('subprocess').run(['git','rev-parse','--show-toplevel'],capture_output=True,text=True).stdout.strip() or '/home/user/gta2_re2'; TOOLS=_os.environ.get('TOOLS','/tmp/claude-0/at')
 # and Source/ helpers noted with those 9.6f addresses
 import json,re,sys,glob
 from collections import defaultdict

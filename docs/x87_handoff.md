@@ -52,6 +52,14 @@ under "Still unexplained") for the details behind each point.
    centre loads), right before the lo store, as if the temp could alias pointer memory. Ours hoists it to
    just after the x `fiaddl`. In the x line it comes after `xor %edx,%edx`, which waits on the `fildl (%edx)` of
    x (a register reuse), so the x line doesn't tell either way.
+10. **`set_vert_xyz_relative_to_cam_4EAD90` is an inline function** (committed). Its body is the 9.6f source
+   (VC7 gives `sub_46BBF0` exactly). Defined `inline` at its own position, VC6 inlines it into
+   `ProjectVert_4EB940` and keeps the calls in `ProjectVertTop/Bottom` and their inlined copies, as 10.5 does: the
+   implicit `s32` -> `Fix16` conversion of their z argument blocks the inline (a named `Fix16` or a `Fix16&` z
+   inlines). The code is identical to the old duplicate `set_vert_xyz_relative_to_cam_inlined` copy, so this
+   doesn't change the y line. In the 4EB940 testbed, `inline`, `static inline`, `__forceinline`, cdecl and the
+   definition order relative to an inline Top member all give the same 11 lines; reference parameters are worse
+   (47/63).
 9. **Not the front end.** C1XX from RTM, SP3, SP5 and SP6 paired with our C2.DLL (8799) give byte-identical code
    for the cluster and 4EB940. Together with point 1, every VC6 compiler-side cause we can test is ruled out.
 
@@ -119,9 +127,8 @@ builds fail; cut the TU before the first such function and append only what you 
    The tail (gLidType loaded into `eax`, gtx and gSharp pointer loads after the pushes) is left. Worth doing
    0x470250 (`DrawRightSide`) and 0x46D9A0 (`draw_bottom`) the same way: they also show which calls 9.6f made.
 2. **Work the y line in the 4EB940 testbed** rather than in the cluster: whatever makes its y high-dword store
-   wait for the pointer accesses should carry over to the inlined Top/Bottom. Untested ideas: the original
-   `set_vert_xyz_relative_to_cam` as an inline in the header (4EB940 inlines it, 4EAE00 calls it, which
-   suggests definition order), its parameters by reference, and `Vert` or `Camera_0xBC` field types that VC6
+   wait for the pointer accesses should carry over to the inlined Top/Bottom. The set_vert definition order
+   is settled (point 10) and isn't the cause. Still untested: `Vert` or `Camera_0xBC` field types that VC6
    might treat as overlapping the temp.
 3. Use the same 9.6f route for other inline helpers: any 9.6f callee listed in `docs/inlines_96f.md` can now be
    compiled with VC7 and checked exactly (`/O2 /Ob0 /G5 /GX`, external linkage, the right calling convention;

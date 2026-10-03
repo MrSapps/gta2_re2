@@ -71,6 +71,17 @@ under "Still unexplained") for the details behind each point.
    `y = product; y += centre`. Best is 11 (no change); none moves the high-dword store after `fstps (%ecx)`
    except the compound form, which only does so because it adds a `fsts 4(%ecx)` store and a camera reload
    (16-18 lines).
+13. **The z line moves the y-line store.** `f32 inv_z = 1.0f / (...); pVert->z = inv_z;` (x and y still use
+   `pVert->z`) or an f32 local for `zpos.ToFloat()` puts the 4EB940 y high-dword store exactly where the
+   original has it (after `fstps (%ecx)` and the y loads): 11 -> 10 lines, committed for 4EB940. So the store
+   position comes from rounding nodes *earlier* in the function, not from the y line itself. What's left in
+   4EB940 is the centre load and its lo store (`mov 0x74(%eax),%eax; mov %eax,0x10(%esp)`), which ours now
+   issues right after `fildl 0x60(%eax)` instead of after the y `fildl/fmuls`, and the first two lines (the
+   `mov %ecx,%eax` in the inlined set_vert). Rerunning the 60 y-line shapes on top of either z form doesn't get
+   below 10. Other z forms (order, `(f32)` casts, double `1.0`, `inv_z` used directly in x/y, z before set_vert,
+   copies of the args) are no better. Applying `inv_z` to the inlined `ProjectVert_46BC70` too gives 1366 in
+   total but with the usual inline-budget side effects (4EAF40 -91, 4EBA60 +32, 4F0420 +15), so it isn't
+   committed.
 9. **Not the front end.** C1XX from RTM, SP3, SP5 and SP6 paired with our C2.DLL (8799) give byte-identical code
    for the cluster and 4EB940. Together with point 1, every VC6 compiler-side cause we can test is ruled out.
 
@@ -139,11 +150,12 @@ builds fail; cut the TU before the first such function and append only what you 
    0x470250 (`DrawRightSide`) and 0x46D9A0 (`draw_bottom`) the same way: they also show which calls 9.6f made.
 2. **Work the y line in the 4EB940 testbed** rather than in the cluster: whatever makes its y high-dword store
    wait for the pointer accesses should carry over to the inlined Top/Bottom. The set_vert definition order
-   is settled (point 10); field types (point 11) and y-line statement shapes (point 12) are ruled out.
-   The source-side ideas for this one store are close to exhausted. Two directions are left: the z line
-   and the inlined set_vert ahead of it (they decide what is in flight when the y line starts), and the
-   wider TU context, for example compiling 4EB940 with the full MapRenderer.cpp around it in different
-   orders.
+   is settled (point 10); field types (point 11) and y-line statement shapes (point 12) are ruled out, and the
+   z line is the lever (point 13). Next: the same idea for the cluster. The inlined Top/Bottom have no 1/z, so
+   look for rounding nodes earlier in their statement chain (the x line, the set_vert result, the
+   `gXCoord + k` temporaries at the call site) that move the y high-dword store late at the sites where the
+   original has it late. For 4EB940 itself, look for what delays the centre load (rounding nodes in the x
+   line, combined with the inv_z form).
 3. Use the same 9.6f route for other inline helpers: any 9.6f callee listed in `docs/inlines_96f.md` can now be
    compiled with VC7 and checked exactly (`/O2 /Ob0 /G5 /GX`, external linkage, the right calling convention;
    `static __stdcall` when the 9.6f callee takes register arguments).

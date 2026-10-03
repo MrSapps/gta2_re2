@@ -85,6 +85,18 @@ under "Still unexplained") for the details behind each point.
    With `inv_z` the x line no longer needs the `{ u32 tmp = centre; ... }` block (the plain line is byte
    identical, committed), and x-line rounding forms (`(f32)` product, f32 product or x locals) don't delay
    the y centre load either (10, or worse).
+14. **Rounding nodes in the inlined Top/Bottom trade one part of the cluster against another.** Sweep over the
+   18 cluster functions (321 lines at base): per line of each helper, plain / f32 result local / f32 local for
+   the vertex `ToFloat()` / `(f32)` product / f32 product local / f32 scale local, and plain or f32-local z (72
+   forms per helper, then the best Top with all 72 Bottoms). Best: Top with an f32 local for the y product and
+   for z, Bottom with `(f32)` on both products: cluster 277 (Draw3/4Sided 4EEAF0 20->8, 4EF1C0 24->10, 4F0030
+   22->8, 4EFB20 22->10; draw_lid_4F4D60 -9), but draw_left/right/top/bottom (4F3C00, 4F4250, 4F4600, 4F49B0)
+   +10 each and 4ECE40 +3; the TU total stays at 1493 (other forms that help the cluster raise it to 1538).
+   Nothing reaches 0, so nothing is committed. What's left in the improved functions is the 4EB940 pattern:
+   the y centre load (`mov 0x74(%eax),%edx`) and its lo store issued right after `fildl y` instead of after
+   the y `fmuls`. The Draw3/4Sided-vs-draw_left split suggests the two groups may not inline the same helper
+   bodies in the original (draw_left/right/top/bottom are the later `Fix16&`-parameter functions at
+   0x4F3C00-0x4F49B0); unverified.
 9. **Not the front end.** C1XX from RTM, SP3, SP5 and SP6 paired with our C2.DLL (8799) give byte-identical code
    for the cluster and 4EB940. Together with point 1, every VC6 compiler-side cause we can test is ruled out.
 
@@ -153,12 +165,12 @@ builds fail; cut the TU before the first such function and append only what you 
    0x470250 (`DrawRightSide`) and 0x46D9A0 (`draw_bottom`) the same way: they also show which calls 9.6f made.
 2. **Work the y line in the 4EB940 testbed** rather than in the cluster: whatever makes its y high-dword store
    wait for the pointer accesses should carry over to the inlined Top/Bottom. The set_vert definition order
-   is settled (point 10); field types (point 11) and y-line statement shapes (point 12) are ruled out, and the
-   z line is the lever (point 13). Next: the same idea for the cluster. The inlined Top/Bottom have no 1/z, so
-   look for rounding nodes earlier in their statement chain (the x line, the set_vert result, the
-   `gXCoord + k` temporaries at the call site) that move the y high-dword store late at the sites where the
-   original has it late. For 4EB940 itself, look for what delays the centre load (rounding nodes in the x
-   line, combined with the inv_z form).
+   is settled (point 10); field types (point 11) and y-line statement shapes (point 12) are ruled out, and
+   rounding nodes earlier in the function move the high-dword store (points 13, 14). The common remaining
+   problem, in 4EB940 and the improved cluster functions alike, is the y centre load issued one FP op too
+   early. Find what makes the original's centre load wait for the y `fmuls`; 4EB940 (10 lines) is still the
+   quickest place to look. Separately, check whether draw_left/right/top/bottom use different helper bodies
+   from Draw3/4Sided (point 14).
 3. Use the same 9.6f route for other inline helpers: any 9.6f callee listed in `docs/inlines_96f.md` can now be
    compiled with VC7 and checked exactly (`/O2 /Ob0 /G5 /GX`, external linkage, the right calling convention;
    `static __stdcall` when the 9.6f callee takes register arguments).

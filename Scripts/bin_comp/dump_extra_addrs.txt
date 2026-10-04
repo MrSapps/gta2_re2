@@ -39,3 +39,5 @@
 0x4f5fc1-0x4f6210
 0x4f6211-0x4f6580
 0x4f65db-0x4f6630
+# bytes of every gap between listed functions (see dump_target_asm.py)
+all_gaps

@@ -45,6 +45,15 @@ if os.path.exists("dump_extra_addrs.txt"):
         line = line.split("#")[0].strip()
         if not line:
             continue
+        if line == "all_gaps":
+            # every gap of 64+ bytes between listed functions in game code (below the CRT),
+            # to find code IDA didn't list
+            starts_ = sorted(sizes)
+            for a, b in zip(starts_, starts_[1:]):
+                end = a + sizes[a][2]
+                if b - end >= 0x40 and a < 0x5ED000:
+                    extra_ranges.append((end, b))
+            continue
         if "-" in line:
             # a raw byte range (function chunks the csv doesn't list): dumped later into
             # target_extra.json, keyed by the start address
@@ -131,7 +140,7 @@ for path in glob.glob("../../Source/*.cpp"):
         if b is not None:
             extra[hex(a)] = b.hex()
 for lo, hi in extra_ranges:
-    b = read_va(lo, min(hi - lo, 0x2000))
+    b = read_va(lo, min(hi - lo, 0x8000))
     if b is not None:
         extra[hex(lo)] = b.hex()
 # x87 constants used by those functions too (they aren't in `out`, so the scan above misses them)

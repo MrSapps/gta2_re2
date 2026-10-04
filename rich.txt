@@ -1,0 +1,52 @@
+== 10.5.exe
+PE timestamp 0x3A758153, linker version 6.00
+key 0xA6223807
+prodid product            build   count
+12     AliasObj60         7291    4
+11     Utc12_CPP          8797    11
+14     Masm613            7299    28
+10     Utc12_C            8797    132
+11     Utc12_CPP          8168    7
+0      Unknown            0       1
+10     Utc12_C            8799    1
+4      Linker600          8447    74
+28     Utc13_C            8830    3
+37     Linker620          8755    7
+19     Linker512          9049    17
+1      Import0            0       141
+29     Utc13_CPP          8830    1
+11     Utc12_CPP          8799    102
+6      Cvtres500          1735    1
+
+== 9.6f.exe
+PE timestamp 0x408EC2AC, linker version 7.00
+key 0x96F6F158
+prodid product            build   count
+39     AliasObj70         9162    4
+64     Masm700            9466    26
+28     Utc13_C            9466    140
+4      Linker600          8447    74
+0      Unknown            0       1
+1      Import0            0       146
+25     Implib700          9210    21
+28     Utc13_C            9178    3
+29     Utc13_CPP          8830    1
+29     Utc13_CPP          9466    123
+69     Cvtres700          9466    1
+61     Linker700          9466    1
+
+== ../../build_vc6/decomp_main.exe
+PE timestamp 0x6AC2743D, linker version 6.00
+key 0xD63FCC9C
+prodid product            build   count
+0      Unknown            0       25
+11     Utc12_CPP          8168    8
+14     Masm613            7299    28
+11     Utc12_CPP          8797    11
+10     Utc12_C            8797    134
+19     Linker512          8034    21
+1      Import0            0       230
+11     Utc12_CPP          8799    110
+6      Cvtres500          1735    1
+4      Linker600          8447    7
+

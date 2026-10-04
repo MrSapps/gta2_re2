@@ -1,0 +1,62 @@
+.att_syntax
+"?SavePlySlotDat_56BA60@jolly_poitras_0x2BC0@@QAEXF@Z":
+.global "?SavePlySlotDat_56BA60@jolly_poitras_0x2BC0@@QAEXF@Z"
+sub $0x168,%esp
+push %ebp
+push %esi
+mov 0x174(%esp),%esi
+lea 0xC(%esp),%eax
+push %edi
+push %eax
+mov %ecx,%edi
+push %esi
+call "?GetPlySlotDatName_56B8A0@jolly_poitras_0x2BC0@@QAEXGPAD@Z"
+and $0xFFFF,%esi
+mov $3,%ebp
+movl $0x7E,0xC(%esp)
+lea (%esi,%esi,4),%ecx
+lea (%esi,%ecx,8),%edx
+lea (%edi,%edx,4),%ecx
+mov %edi,%edx
+lea 0x2730(%ecx),%eax
+add $0x26A8,%ecx
+mov (%eax),%esi
+mov %esi,(%edx)
+mov 4(%eax),%esi
+mov %esi,4(%edx)
+mov 8(%eax),%esi
+mov %esi,8(%edx)
+mov 0xC(%eax),%esi
+mov %esi,0xC(%edx)
+mov 0x10(%eax),%ax
+mov %ax,0x10(%edx)
+lea 0x12(%edi),%eax
+.L_0x56ba60_1:
+mov $4,%esi
+.L_0x56ba60_0:
+mov -8(%ecx),%dl
+add $0xC,%ecx
+mov %dl,(%eax)
+mov -0x10(%ecx),%edx
+inc %eax
+mov %edx,(%eax)
+mov -0xC(%ecx),%edx
+add $4,%eax
+mov %edx,(%eax)
+add $4,%eax
+dec %esi
+jne .L_0x56ba60_0
+dec %ebp
+jne .L_0x56ba60_1
+lea 0xC(%esp),%eax
+lea 0x10(%esp),%ecx
+push %eax
+push %edi
+push %ecx
+call "?WriteBufferToFile_4A6E80@File@@SGXPBDPAXPAI@Z"
+pop %edi
+pop %esi
+pop %ebp
+add $0x168,%esp
+ret $4
+

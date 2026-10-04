@@ -110,8 +110,11 @@ under "Still unexplained") for the details behind each point.
    space; the permuter can. The original may also have used macros (which expand to nested parentheses and
    casts) where our source uses plain expressions.
    Left in the 4-line candidate: `mov %ecx,%eax` one slot late in the inlined set_vert, and `pop %ebx`
-   before the last `fmuls 8(%ecx)` instead of after. A second run from that candidate, with set_vert also
-   permuted, was started; candidates from run 1 are not committed (the casts are only acceptable for a match).
+   before the last `fmuls 8(%ecx)` instead of after. A second 2-hour run from that candidate, with set_vert
+   also permuted (`--also set_vert_xyz_relative_to_cam_4EAD90`), found nothing better in 60,501 compiles.
+   Neither run's candidates are committed (the casts are only acceptable for a match). The 4-line candidate:
+   x line `((xpos.ToFloat() * fov) * pVert->z) + (u32)centre_x`, y centre in `u32 tmp1` before the y line,
+   and `f32 tmp = (((f32)(((f32)((f32)(1.0f / (...)))))));` for the inverse depth.
 9. **Not the front end.** C1XX from RTM, SP3, SP5 and SP6 paired with our C2.DLL (8799) give byte-identical code
    for the cluster and 4EB940. Together with point 1, every VC6 compiler-side cause we can test is ruled out.
 

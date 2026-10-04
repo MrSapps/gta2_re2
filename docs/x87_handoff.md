@@ -97,6 +97,21 @@ under "Still unexplained") for the details behind each point.
    the y `fmuls`. The Draw3/4Sided-vs-draw_left split suggests the two groups may not inline the same helper
    bodies in the original (draw_left/right/top/bottom are the later `Fix16&`-parameter functions at
    0x4F3C00-0x4F49B0); unverified.
+15. **Redundant parentheses and casts change the schedule.** A 2-hour cpp_permuter run on 4EB940 (58,713
+   compiles, `Scripts/permute.sh`, random mode, 3 workers) took it from 10 to 4 lines (`diff.py`; permuter
+   score 20 -> 8): the y line now matches. The winning source is semantically the same as ours:
+   `f32 tmp = (((f32)(((f32)((f32)(1.0f / (...)))))));`, `((xpos.ToFloat() * fov) * pVert->z)` in the x line,
+   and the y centre in a `u32` local before the y line. Bisecting: `((x * fov) * z)` alone, which parses the
+   same as `x * fov * z`, gives 10 -> 7; dropping the equally redundant parentheses already in the y line
+   goes back to 10; 0-3 levels of extra parentheses round the inverse depth give 7, 4 levels give 6, two or
+   more `(f32)` casts give 7, the permuter's exact mix gives 4. So VC6's scheduler tie-breaks depend on the
+   expression tree as written (parentheses and no-op casts included), which would explain why the original
+   looks inconsistent from site to site. Practical consequence: hand-written variants can't cover this
+   space; the permuter can. The original may also have used macros (which expand to nested parentheses and
+   casts) where our source uses plain expressions.
+   Left in the 4-line candidate: `mov %ecx,%eax` one slot late in the inlined set_vert, and `pop %ebx`
+   before the last `fmuls 8(%ecx)` instead of after. A second run from that candidate, with set_vert also
+   permuted, was started; candidates from run 1 are not committed (the casts are only acceptable for a match).
 9. **Not the front end.** C1XX from RTM, SP3, SP5 and SP6 paired with our C2.DLL (8799) give byte-identical code
    for the cluster and 4EB940. Together with point 1, every VC6 compiler-side cause we can test is ruled out.
 

@@ -28,13 +28,14 @@ DEFINE_GLOBAL_INIT(Fix16, dword_6FF04C, Fix16(0x333, 0), 0x6FF04C);
 Fix16 kFpHalf_6FEEE8 = Fix16(0.5); //DEFINE_GLOBAL_INIT(Fix16, kFpHalf_6FEEE8, Fix16(0.5), 0x6FEEE8);
 Ang16 kAng0_6FF1BC = Ang16(0); //DEFINE_GLOBAL_INIT(Ang16, kAng0_6FF1BC, Ang16(0), 0x6FF1BC);
 
-// Train spawning: the values aren't known yet
-DEFINE_GLOBAL(Fix16, dword_6FEF88, 0x6FEF88); // offset into the stop block
-DEFINE_GLOBAL(Fix16, dword_6FF088, 0x6FF088); // wagon spacing along x
-DEFINE_GLOBAL(Fix16, dword_6FF080, 0x6FF080); // wagon spacing along y
-DEFINE_GLOBAL(Ang16, word_6FEFFE, 0x6FEFFE);
-DEFINE_GLOBAL(Ang16, word_6FEF04, 0x6FEF04);
-DEFINE_GLOBAL(Ang16, word_6FEFD6, 0x6FEFD6);
+// Train spawning values. 
+// TrainStationList dword_6FEE68 is allocating too much space, so these globals crash standalone. TODO: fix TrainStationList struct
+Fix16 dword_6FEF88 = Fix16(0.5); //DEFINE_GLOBAL_INIT(Fix16, dword_6FEF88, Fix16(0.5), 0x6FEF88); // offset into the stop block
+Fix16 dword_6FF088 = Fix16(4); // DEFINE_GLOBAL_INIT(Fix16, dword_6FF088, Fix16(4), 0x6FF088); // wagon spacing along x
+Fix16 dword_6FF080 = Fix16(2); // DEFINE_GLOBAL_INIT(Fix16, dword_6FF080, Fix16(2), 0x6FF080); // wagon spacing along y
+Ang16 word_6FEFFE = Ang16(1080); // DEFINE_GLOBAL_INIT(Ang16, word_6FEFFE, Ang16(1080), 0x6FEFFE);
+Ang16 word_6FEF04 = Ang16(360); // DEFINE_GLOBAL_INIT(Ang16, word_6FEF04, Ang16(360), 0x6FEF04);
+Ang16 word_6FEFD6 = Ang16(720); // DEFINE_GLOBAL_INIT(Ang16, word_6FEFD6, Ang16(720), 0x6FEFD6);
 
 Fix16 kTrainSpeedState0_6FEEE0 = Fix16(0x1333, 0); //DEFINE_GLOBAL_INIT(Fix16, kTrainSpeedState0_6FEEE0, Fix16(0x1333, 0), 0x6FEEE0);
 Fix16 kTrainSpeedState1And3_6FEED4 = Fix16(0x666, 0); //DEFINE_GLOBAL_INIT(Fix16, kTrainSpeedState1And3_6FEED4, Fix16(0x666, 0), 0x6FEED4);
@@ -877,7 +878,7 @@ void PublicTransport_181C::SetupTrainAndBusStops_5794B0()
     dword_6FF1D0 = 0;
     if (!bSkip_trains_67D550)
     {
-        for (u8 station_zone_kind = 0; station_zone_kind < 5; station_zone_kind++)
+        for (u32 station_zone_kind = 0; station_zone_kind < 5; station_zone_kind++)
         {
             switch (station_zone_kind)
             {
@@ -1219,16 +1220,16 @@ bool PublicTransport_181C::GetTrainSpeed_579B90(Car_BC* pToFind, Fix16* pF16Unk)
 }
 
 // https://decomp.me/scratch/5m4jV
-WIP_FUNC(0x579ca0)
+MATCH_FUNC(0x579ca0)
 void PublicTransport_181C::BusesService_579CA0()
 {
-    WIP_IMPLEMENTED;
     Car_BC* pBusCar;
     Fix16 xpos;
     Fix16 ypos;
 
     if (!bSkip_buses_67D558)
     {
+        u16 i;
         s32 found_z;
         if (dword_6FF1D0 || byte_6FF1CD || !gCar_6C_677930->CanAllocateOfType_446930(1))
         {
@@ -1242,27 +1243,25 @@ void PublicTransport_181C::BusesService_579CA0()
             TrainStation_34* pBusStop = PublicTransport_181C::GetBusStopOnScreen_5799B0();
             if (pBusStop)
             {
-                ypos = Fix16(pBusStop->field_10_pZone->field_2_y);
                 xpos = Fix16(pBusStop->field_10_pZone->field_1_x);
+                ypos = Fix16(pBusStop->field_10_pZone->field_2_y);
                 gMap_0x370_6F6268->FindHighestBlockForCoord_4E4C30(xpos.ToInt(), ypos.ToInt(), &found_z);
-                s16 v7 = 0;
-                u16 v33 = 0;
-                do
+                for (i = 0; i < 4; i++)
                 {
-                    switch (v7)
+                    switch (i)
                     {
                         case 0:
                             if (gMap_0x370_6F6268->IsNorthBlockRoadType_433470(xpos.ToInt(), ypos.ToInt(), found_z))
                             {
                                 ypos -= kFpHalf_6FEEE8;
-                                v33 = 4;
+                                i = 4;
                             }
                             break;
                         case 1:
                             if (gMap_0x370_6F6268->IsEastBlockRoadType_4334A0(xpos.ToInt(), ypos.ToInt(), found_z))
                             {
                                 xpos += kFpOne_6FF07C;
-                                v33 = 4;
+                                i = 4;
                             }
                             break;
                         case 2:
@@ -1270,7 +1269,7 @@ void PublicTransport_181C::BusesService_579CA0()
                             if (gMap_0x370_6F6268->IsSouthBlockRoadType_4334D0(xpos.ToInt(), ypos.ToInt(), found_z))
                             {
                                 ypos += kFpOne_6FF07C;
-                                v33 = 4;
+                                i = 4;
                             }
                             break;
                         case 3:
@@ -1278,15 +1277,13 @@ void PublicTransport_181C::BusesService_579CA0()
                             if (gMap_0x370_6F6268->IsWestBlockRoadType_433500(xpos.ToInt(), ypos.ToInt(), found_z))
                             {
                                 xpos -= kFpHalf_6FEEE8;
-                                v33 = 4;
+                                i = 4;
                             }
                             break;
                         default:
                             break;
                     }
-                    v7 = ++v33;
-
-                } while (v33 < 4);
+                }
 
                 gmp_block_info* HighestBlockForCoord_4E4C30 =
                     gMap_0x370_6F6268->FindHighestBlockForCoord_4E4C30(xpos.ToInt(), ypos.ToInt(), &found_z);
@@ -1338,7 +1335,7 @@ void PublicTransport_181C::BusesService_579CA0()
         {
             if (!field_17C0_bus.field_0)
             {
-                if (pBusCar->is_driven_by_player())
+                if (field_17C0_bus.field_C_carriages[0]->is_driven_by_player())
                 {
                     field_17C0_bus.field_0 = 1;
                     pBusCar->field_54_driver->field_15C_player->field_2D4_scores.sub_593370(pBusCar);

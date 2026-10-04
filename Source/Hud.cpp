@@ -836,11 +836,9 @@ void Garox_1118_sub::UpdateRollingDigits_5D6290()
 
 // ----------------------------------------------------
 
-WIP_FUNC(0x5cf730)
+MATCH_FUNC(0x5cf730)
 void Garox_110C_sub::Update_5CF730()
 {
-    WIP_IMPLEMENTED;
-
     Ped* pPed = gGame_0x40_67E008->field_38_orf1->Get_Field_68_Ped();
 
     if (!pPed || (u8)pPed->IsInTrain_470F00())
@@ -850,13 +848,13 @@ void Garox_110C_sub::Update_5CF730()
     else
     {
         field_284E_ped_under_solid =
-            gMap_0x370_6F6268->CheckColumnHasSolidAbove_4E7FC0(pPed->field_1AC_cam.x, pPed->field_1AC_cam.y, pPed->field_1AC_cam.z);
+            gMap_0x370_6F6268->CheckColumnHasSolidAbove_4E7FC0(pPed->get_cam_x(), pPed->get_cam_y(), pPed->get_cam_z());
         if (field_284E_ped_under_solid)
         {
             this->field_1114_rotation = Ang16(pPed->GetRotation().rValue + kAng180_706412.rValue, 0);
 
-            Fix16 camy = pPed->field_1AC_cam.y;
             Fix16 camz = pPed->field_1AC_cam.z;
+            Fix16 camy = pPed->field_1AC_cam.y;
             Fix16 camx = pPed->field_1AC_cam.x;
 
             Player* pPlayer = gGame_0x40_67E008->field_38_orf1;
@@ -1051,8 +1049,9 @@ void Garox_107C_sub::DrawGangRespectBars_5CFA70()
         DrawFigureScaled_5D7670(6, arrow_colour + 71, 64u, ypos + 1, kAngZero_706610, 2, 0, 0, 0);
 
         // Draw positive respect
+        s32 respect_i = respect;
         s32 curr_bar_respect = 20;
-        for (s32 i = 69; i <= 84 && respect >= curr_bar_respect; i += 5)
+        for (s32 i = 69; i <= 84 && respect_i >= curr_bar_respect; i += 5)
         {
             DrawFigureScaled_5D7670(6, arrow_colour + 71, (u32)i, ypos + 1, kAngZero_706610, 2, 0, 0, 0);
             curr_bar_respect += 20;
@@ -1060,7 +1059,7 @@ void Garox_107C_sub::DrawGangRespectBars_5CFA70()
 
         // Draw negative respect
         curr_bar_respect = -20;
-        for (s32 j = 59; j >= 44 && respect <= curr_bar_respect; j -= 5)
+        for (s32 j = 59; j >= 44 && respect_i <= curr_bar_respect; j -= 5)
         {
             DrawFigureScaled_5D7670(6, arrow_colour + 71, (u32)j, ypos + 1, kAngZero_706610, 2, 0, 0, 0);
             curr_bar_respect -= 20;
@@ -1226,29 +1225,34 @@ void Garox_C4::FormatAndSetupText_5D1B10(const wchar_t* pStr, s16 xpos, s16 ypos
         /*v7 =*/gText_0x14_704DFC->StrToUpper_5B5B80(field_0_str_buf);
     }
 
-    s16 xTmp = xpos;
+    // Remaining diff: the original keeps 0 in ebx for the three zero stores (VC6 only does that from four
+    // uses of 0 here; adding any fourth zero store gives the register)
     this->field_B0_drawKind = 2;
     this->field_B4_palette = 0;
 
     if (xpos == -1)
     {
-        xTmp = ((640 - Frontend::GetMaxTextWidth_5D8990(field_0_str_buf, this->field_AC_fontType)) / 2);
+        this->field_A8_x = (640 - Frontend::GetMaxTextWidth_5D8990(field_0_str_buf, this->field_AC_fontType)) / 2;
     }
-    this->field_A8_x = xTmp;
+    else
+    {
+        this->field_A8_x = xpos;
+    }
 
-    s16 yTmp = ypos;
     if (ypos == -1)
     {
-        yTmp = ((480 - CountLineSpacing_5D8940(field_0_str_buf, field_AC_fontType)) / 2);
+        this->field_AA_y = (480 - CountLineSpacing_5D8940(field_0_str_buf, field_AC_fontType)) / 2;
     }
-    this->field_AA_y = yTmp;
+    else
+    {
+        this->field_AA_y = ypos;
+    }
 
-    s32 calcDisplayTime = displayTime;
     if (displayTime == -2)
     {
-        calcDisplayTime = gHud_2B00_706620->field_13C4_text_speed * wcslen(field_0_str_buf);
+        displayTime = gHud_2B00_706620->field_13C4_text_speed * wcslen(field_0_str_buf);
     }
-    this->field_A4_display_time = calcDisplayTime;
+    this->field_A4_display_time = displayTime;
 
     ClearAlpha_4C70E0();
 }
@@ -1506,59 +1510,49 @@ void Hud_Pager_C::DrawDigits_5D2680(s32 xpos, s32 ypos)
 }
 
 // https://decomp.me/scratch/3IY3c
-WIP_FUNC(0x5d2ab0)
-void Hud_Pager_C::DrawPager_5D2AB0(s32 xpos, s32 ypos)
+MATCH_FUNC(0x5d2ab0)
+void Hud_Pager_C::DrawPager_5D2AB0(u32 xpos, s32 ypos)
 {
-    WIP_IMPLEMENTED;
     const s32 palette_type = palette_types_enum::sprites_2;
-    if (field_0_timer < 0)
+    if (field_0_timer < 0 && !field_4_ptr_counter)
     {
-        if (!field_4_ptr_counter)
-        {
-            return;
-        }
-        if (field_0_timer < 0)
-        {
-            goto LABEL_8;
-        }
+        return;
     }
-    if (field_4_ptr_counter)
+
+    if (field_0_timer >= 0 && field_4_ptr_counter)
     {
         s32 v9 = get_sprite_height_4C7250(117);
         s32 v45 = get_sprite_height_4C7250(118);
         s32 v10 = get_sprite_height_4C7250(119);
 
-        DrawFigureScaled_5D7670(sprite_types_enum::user_6, 117, xpos, ypos - v9 / 2 - (v10 >> 1), kAngZero_706610, palette_type, 0, 0, 0);
+        DrawFigureScaled_5D7670(sprite_types_enum::user_6, 117, xpos, ypos - v9 / 2 - v10 / 2, kAngZero_706610, palette_type, 0, 0, 0);
 
-        DrawFigureScaled_5D7670(sprite_types_enum::user_6, 119, xpos, ypos, kAngZero_706610, palette_type, 0, 0, 0);
+        // The middle sprite's y goes through the Fix16(u32) constructor (out-of-line copy 0x4926F0) like x does
+        DrawFigureScaled_5D7670(sprite_types_enum::user_6, 119, xpos, (u32)ypos, kAngZero_706610, palette_type, 0, 0, 0);
 
-        DrawFigureScaled_5D7670(sprite_types_enum::user_6, 118, xpos, ypos + (v10 >> 1) + v45 / 2, kAngZero_706610, palette_type, 0, 0, 0);
+        DrawFigureScaled_5D7670(sprite_types_enum::user_6, 118, xpos, ypos + v10 / 2 + v45 / 2, kAngZero_706610, palette_type, 0, 0, 0);
         Hud_Pager_C::DrawCounterDigits_5D2380(xpos, ypos - 6);
         Hud_Pager_C::DrawDigits_5D2680(xpos, ypos + 6);
     }
+    else if (field_0_timer >= 0)
+    {
+        s32 v20 = get_sprite_height_4C7250(117);
+        s32 v22 = get_sprite_height_4C7250(118);
+
+        DrawFigureScaled_5D7670(sprite_types_enum::user_6, 117, xpos, ypos - v20 / 2, kAngZero_706610, palette_type, 0, 0, 0);
+
+        DrawFigureScaled_5D7670(sprite_types_enum::user_6, 118, xpos, ypos + v22 / 2, kAngZero_706610, palette_type, 0, 0, 0);
+        Hud_Pager_C::DrawDigits_5D2680(xpos, ypos);
+    }
     else
     {
-        if (field_0_timer < 0)
-        {
-        LABEL_8:
-            s32 v29 = get_sprite_height_4C7250(117);
-            s32 v31 = get_sprite_height_4C7250(118);
+        s32 v29 = get_sprite_height_4C7250(117);
+        s32 v31 = get_sprite_height_4C7250(118);
 
-            DrawFigureScaled_5D7670(sprite_types_enum::user_6, 117, xpos, ypos - v29 / 2, kAngZero_706610, palette_type, 0, 0, 0);
+        DrawFigureScaled_5D7670(sprite_types_enum::user_6, 117, xpos, ypos - v29 / 2, kAngZero_706610, palette_type, 0, 0, 0);
 
-            DrawFigureScaled_5D7670(sprite_types_enum::user_6, 118, xpos, ypos + v31 / 2, kAngZero_706610, palette_type, 0, 0, 0);
-            Hud_Pager_C::DrawCounterDigits_5D2380(xpos, ypos);
-        }
-        else
-        {
-            s32 v20 = get_sprite_height_4C7250(117);
-            s32 v22 = get_sprite_height_4C7250(118);
-
-            DrawFigureScaled_5D7670(sprite_types_enum::user_6, 117, xpos, ypos - v20 / 2, kAngZero_706610, palette_type, 0, 0, 0);
-
-            DrawFigureScaled_5D7670(sprite_types_enum::user_6, 118, xpos, ypos + v22 / 2, kAngZero_706610, palette_type, 0, 0, 0);
-            Hud_Pager_C::DrawDigits_5D2680(xpos, ypos);
-        }
+        DrawFigureScaled_5D7670(sprite_types_enum::user_6, 118, xpos, ypos + v31 / 2, kAngZero_706610, palette_type, 0, 0, 0);
+        Hud_Pager_C::DrawCounterDigits_5D2380(xpos, ypos);
     }
 }
 

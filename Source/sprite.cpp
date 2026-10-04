@@ -27,6 +27,9 @@
 #include "winmain.hpp" // TODO: only because of gLighting_626A09
 
 DEFINE_GLOBAL(Sprite_8*, gSprite_8_703820, 0x703820);
+// Used by map_0x370.cpp and Camera.cpp, which must only see them as extern (see the notes there)
+DEFINE_GLOBAL(s16, gFaceCollisionMask_6F6002, 0x6F6002);
+DEFINE_GLOBAL_INIT(Ang16, kAng180_676772, Ang16(720), 0x676772);
 DEFINE_GLOBAL(Sprite_4C_Pool*, gSprite_4C_Pool_70381C, 0x70381C);
 DEFINE_GLOBAL(Sprite_Pool*, gSprite_Pool_703818, 0x703818);
 DEFINE_GLOBAL(Sprite_3CC*, gSprite_3CC_67AF1C, 0x67AF1C);
@@ -1426,17 +1429,17 @@ char_type Sprite::CheckBBoxScanlineIntersection_5A0970(Fix16 scanXMin, Fix16 sca
 }
 
 // https://decomp.me/scratch/EK1Y2
-WIP_FUNC(0x5A0A70)
+MATCH_FUNC(0x5A0A70)
 bool Sprite::GetNearestHorizontalEdgeToCoordinate_5A0A70(Fix16 a2, Fix16_Point& a3, u8& a4)
 {
-    WIP_IMPLEMENTED;
-
+    // Same as GetNearestVerticalEdgeToCoordinate_5A1030
     UpdateCollisionBoundsIfNeeded_59E9C0();
     Fix16_Point* RenderingRect = field_C_sprite_4c_ptr->field_C_renderingRect;
 
     Fix16 diff = RenderingRect[0].y - a2;
     Fix16 sign = Sign_4B9C20(diff.mValue);
-    Fix16 least_abs = Fix16::Abs(diff);
+    Fix16 least_abs;
+    least_abs = Fix16::Abs_negate_out_of_line(diff);
 
     a3.x = RenderingRect[0].x;
     a3.y = RenderingRect[0].y;
@@ -1448,12 +1451,12 @@ bool Sprite::GetNearestHorizontalEdgeToCoordinate_5A0A70(Fix16 a2, Fix16_Point& 
         return false;
     }
 
-    diff = Fix16::Abs(diff);
+    diff = Fix16::Abs_negate_out_of_line(diff);
     if (diff < least_abs)
     {
+        least_abs = diff;
         a3.x = RenderingRect[1].x;
         a3.y = RenderingRect[1].y;
-        least_abs = diff;
         a4 = 1;
     }
     else if (diff == least_abs)
@@ -1468,12 +1471,12 @@ bool Sprite::GetNearestHorizontalEdgeToCoordinate_5A0A70(Fix16 a2, Fix16_Point& 
         return false;
     }
 
-    diff = Fix16::Abs(diff);
+    diff = Fix16::Abs_negate_out_of_line(diff);
     if (diff < least_abs)
     {
+        least_abs = diff;
         a3.x = RenderingRect[2].x;
         a3.y = RenderingRect[2].y;
-        least_abs = diff;
         a4 = 2;
     }
     else if (diff == least_abs)
@@ -1488,7 +1491,7 @@ bool Sprite::GetNearestHorizontalEdgeToCoordinate_5A0A70(Fix16 a2, Fix16_Point& 
         return false;
     }
 
-    diff = Fix16::Abs(diff);
+    diff = Fix16::Abs_negate_out_of_line(diff);
     if (diff < least_abs)
     {
         a3.x = RenderingRect[3].x;
@@ -1520,17 +1523,17 @@ char_type Sprite::HitTestVerticalLine_5A0EF0(Fix16 a2, Fix16 a3, Fix16 a4)
 }
 
 // https://decomp.me/scratch/ScgaC
-WIP_FUNC(0x5a1030)
+MATCH_FUNC(0x5a1030)
 bool Sprite::GetNearestVerticalEdgeToCoordinate_5A1030(Fix16 a2, Fix16_Point& a3, u8& a4)
 {
-    WIP_IMPLEMENTED;
-
+    // least_abs assigned (not initialised) so it lives in a register, Abs through Negate_4086A0
     Fix16_Point* RenderingRect = field_C_sprite_4c_ptr->field_C_renderingRect;
     UpdateCollisionBoundsIfNeeded_59E9C0();
 
     Fix16 diff = RenderingRect[0].x - a2;
     Fix16 sign = Sign_4B9C20(diff.mValue);
-    Fix16 least_abs = Fix16::Abs(diff);
+    Fix16 least_abs;
+    least_abs = Fix16::Abs_negate_out_of_line(diff);
 
     a3.x = RenderingRect[0].x;
     a3.y = RenderingRect[0].y;
@@ -1542,12 +1545,12 @@ bool Sprite::GetNearestVerticalEdgeToCoordinate_5A1030(Fix16 a2, Fix16_Point& a3
         return false;
     }
 
-    diff = Fix16::Abs(diff);
+    diff = Fix16::Abs_negate_out_of_line(diff);
     if (diff < least_abs)
     {
+        least_abs = diff;
         a3.x = RenderingRect[1].x;
         a3.y = RenderingRect[1].y;
-        least_abs = diff;
         a4 = 1;
     }
     else if (diff == least_abs)
@@ -1562,12 +1565,12 @@ bool Sprite::GetNearestVerticalEdgeToCoordinate_5A1030(Fix16 a2, Fix16_Point& a3
         return false;
     }
 
-    diff = Fix16::Abs(diff);
+    diff = Fix16::Abs_negate_out_of_line(diff);
     if (diff < least_abs)
     {
+        least_abs = diff;
         a3.x = RenderingRect[2].x;
         a3.y = RenderingRect[2].y;
-        least_abs = diff;
         a4 = 2;
     }
     else if (diff == least_abs)
@@ -1582,7 +1585,7 @@ bool Sprite::GetNearestVerticalEdgeToCoordinate_5A1030(Fix16 a2, Fix16_Point& a3
         return false;
     }
 
-    diff = Fix16::Abs(diff);
+    diff = Fix16::Abs_negate_out_of_line(diff);
     if (diff < least_abs)
     {
         a3.x = RenderingRect[3].x;
@@ -1853,39 +1856,33 @@ char_type Sprite::CheckMapZCollision_5A21F0()
     return gMap_0x370_6F6268->CheckZCollisionAtCoord_4E5300(field_14_xy.x, field_14_xy.y, zLow, zHigh);
 }
 
-// Writing the min update through a reference keeps xy_pos_max in a register like the original
-static inline void KeepMin_5A22B0(Fix16& cur, const Fix16& v)
+// 10.5 inlines MaxAbsDistance_42A6B0 here twice: once with only x's negate out of line, then in the
+// loop with both negates out of line
+static inline Fix16 __stdcall MaxAbsDistanceBothOOL_5A22B0(Fix16& x1, Fix16& y1, Fix16& x2, Fix16& y2)
 {
-    if (v < cur)
-    {
-        cur = v;
-    }
+    Fix16 diff_x = x2 - x1;
+    Fix16 diff_y = y2 - y1;
+
+    Fix16 result;
+    result = Fix16::Max_44E540(Fix16::Abs_negate_out_of_line(diff_x), Fix16::Abs_negate_out_of_line(diff_y));
+    return result;
 }
 
-WIP_FUNC(0x5A22B0)
+MATCH_FUNC(0x5A22B0)
 Fix16 Sprite::MinDistanceToAnySpriteBBoxCorner_5A22B0(Sprite* pOther)
 {
-    WIP_IMPLEMENTED;
-
-
-    // Remaining diff: the loop in the original loads both corner coords before subtracting.
-    // The first block's names are block-scoped so their slots are reused (the counter takes xd's).
-    Fix16 xy_pos_max;
-    {
-        Fix16 xd = pOther->field_14_xy.x - field_14_xy.x;
-        Fix16 yd = pOther->field_14_xy.y - field_14_xy.y;
-        xy_pos_max = Fix16::Max_44E540(Fix16::Abs_negate_out_of_line(xd), Fix16::Abs(yd));
-    }
+    Fix16 xy_pos_max = Fix16::MaxAbsDistanceNegOOL_42A6B0(field_14_xy.x, field_14_xy.y, pOther->field_14_xy.x, pOther->field_14_xy.y);
 
     s32 box_idx = 0;
     s32 k4Counter = 4;
     do
     {
         Sprite_4C* p4C = pOther->field_C_sprite_4c_ptr;
-
-        Fix16 xd2 = p4C->field_C_renderingRect[box_idx].x - field_14_xy.x;
-        Fix16 yd2 = p4C->field_C_renderingRect[box_idx].y - field_14_xy.y;
-        KeepMin_5A22B0(xy_pos_max, Fix16::Max_44E540(Fix16::Abs_negate_out_of_line(xd2), Fix16::Abs_negate_out_of_line(yd2)));
+        Fix16 d = MaxAbsDistanceBothOOL_5A22B0(field_14_xy.x, field_14_xy.y, p4C->field_C_renderingRect[box_idx].x, p4C->field_C_renderingRect[box_idx].y);
+        if (d < xy_pos_max)
+        {
+            xy_pos_max = d;
+        }
 
         ++box_idx;
         --k4Counter;
@@ -2563,7 +2560,7 @@ static inline void ProjectToScreen_5A5690(Fix16 x, Fix16 y, Fix16 z, Fix16* pOut
         Fix16(gViewCamera_676978->field_74_screen_px_center_y);
 }
 
-DEFINE_GLOBAL(u16, gDebugColour_626260, 0x626260);
+DEFINE_GLOBAL_INIT(u16, gDebugColour_626260, 0x1111, 0x626260);
 
 WIP_FUNC(0x5A4DA0)
 void Sprite_4C::DrawCollisionBox_5A4DA0(Fix16 zpos)

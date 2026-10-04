@@ -59,6 +59,15 @@ and the build carries on with correct results.
 
 ## Control flow and layout
 
+**`if (flag) call(); return flag;` after an if/else, not a call in each branch.** With one shared
+tail, VC6 keeps the flag in a dead parameter slot and reloads it, and pushes `ebx`/`edi` late, as
+in `Ped::HandlePickupCollision_45DE80`. A call plus `return 1` in each branch lets it propagate
+the constant instead.
+
+**`||` of a range test and an equality follows the grouping.** `(s >= 7 && s <= 8) || s == 11`
+and `s >= 7 && (s <= 8 || s == 11)` are the same logic but branch differently: in the second the
+`jl` on `cmp $7` skips the `== 11` test (`sound_obj::ChooseRadioEmitterForVehicle_57E6C0`).
+
 **Case bodies are laid out in source order.** If the original's `mov $N,%eax; ret` blocks come
 in a different order from yours, reorder the `case` groups to match (`sub_417AC0`,
 `sub_417BA0`, `GetExplosionTypeForWallSide_528E00`).
@@ -249,6 +258,17 @@ which also inlines `IsVelocityAlignedWithHeading_40F840` and, inside it, `Fix16_
 
 ## Types and signedness
 
+**A 2-byte global defined in the same file loads as 32 bits.** With the `DEFINE_GLOBAL` of an
+`Ang16`/`s16`/`u16` global in the function's own .cpp, VC6 can load it with a 32-bit `mov` and
+add it with `lea`, where the original has a 16-bit `mov`/`add`. With only an `EXTERN_GLOBAL` in
+that file it emits the original's code, so move the definition to another .cpp that uses it
+(`kAng180_6FD3EE` moved from `Wolfy_3D4.cpp` to `Particle_4C.cpp`: `Wolfy_30::state_3_12_540D30`
+181 -> 32 lines). It can go the other way too (`gFaceCollisionMask_6F6002` and `kAng180_676772`
+had to move *into* `sprite.cpp`), so compare the load width in the target first.
+
+**A flag returned with no `setne` is `char_type`, not `bool`.** If the original returns a
+`char` local as is, a `bool` return makes VC6 normalise it (`Ped::HandlePickupCollision_45DE80`).
+
 **`jae`/`jb` vs `jge`/`jl` means unsigned vs signed.** Fix the field or parameter type, not the
 comparison (`RouteFinder_10::field_2` is `u16`).
 
@@ -315,6 +335,41 @@ indexed addressing, and hand-written pointers merge into one pointer and a diffe
 (`Fix16 t = *pTarget; ... t + k`). Using `*pTarget` directly each time fixed the operand order
 in `sub_405E80`. The permuter found it.
 
+**Assigning wrapper vs returning wrapper for an out-of-line by-value call.** An inline wrapper
+`a = a.Multiply_408680(b);` reads the result through `%eax` (`mov (%eax),%eax`), while a wrapper
+that returns the product by value copies it from its stack temporary. A direct call also reads
+through eax but saves one inline expansion, which can push another helper over the inline budget.
+And `x *= f` loads the factor into eax, while a product temporary
+(`(__int64)x.mValue * f.mValue`) loads `x` into eax first and does `imull f`. That holds only
+while `x` isn't already in a register (`CalculateRearWheelForce_5620D0` didn't move).
+Both were needed in `CarPhysics_B0::StabilizeVelocityAtSpeed_562910`.
+
+**The destination's signedness can pick the add order.** In `field = (u32 expr) + s32 field`,
+an `s32` destination adds a u32->s32 conversion, and that decides which register holds the sum
+(and so the add operand order and where the store goes). No spelling of the expression moved
+it; making the two destination fields `u32` matched `Map_0x370::OnModifiedMapDataLoaded_4E8C00`.
+When an add's operand order won't move, check the destination field's type.
+
+**Copy the 9.6f store order for a run of field stores.** VC6 doesn't reorder independent
+stores much, so their source order shows in the scheduling. `UpdateCarEngineAudio_57E220`
+matched once the second sample's stores followed 9.6f exactly (rate, volume, `Fix16(0)`
+distance, pan, type). Earlier `operator=` "barrier" workarounds were no longer needed.
+
+**A dead store can change register allocation.** In `HandlePedVoiceEvent_423080`, a repeated
+`field_58_type = 20;` just before the rate store is deleted by VC6, but the sum then stays in
+edi like the original. Any dead store to the sample works. 9.6f has none, so treat it as a
+last-resort workaround and say so in a comment. It did not help the similar 42A500.
+
+**Write out `RotateVector_41FC90` with an `Ang16&`.** Taking the sprite angle as `Ang16&`
+(not a copy) keeps sin in ebp and spills cos, as in `GetDoorWorldPos_43B420`. Also keep the
+`old_xpos` copy and write `x*cos + y*sin`. A static inline version doesn't match.
+
+**A `const T&` local can move its load.** `Mike_A80::DebugDrawProfiling_4FF250` loaded the five
+frame averages in the wrong order whatever the order or grouping of the sum. The fix was in an
+unrelated statement above it: `const s32& polys_drawn = pGlobals[0];` instead of
+`s32 polys_drawn = pGlobals[0];` defers that load, which frees the register the sum needs.
+The permuter's `ref_local` pass found it (exhaustive, depth 1).
+
 **Both calls run, first result kept: `b = f(); b |= g();`.** When the original calls both
 helpers and keeps the first result in a byte register, `f() || g()` short-circuits and a single
 `f() | g()` defers the first compare. Two statements match (`Sprite::ShrinkSprite_59E390`).
@@ -324,6 +379,11 @@ shifts at the use; `Fix16(v << 14, 0)` shifts at once like the original (`Car_BC
 
 **Declaration order of `Fix16` locals picks which product goes first.** In `Trailer::sub_407BD0`
 swapping the operands of `+` didn't change the multiply order, declaring `cos` before `sin` did.
+
+**Call arguments are evaluated right to left, inline expressions included.** Writing the
+offset math inside the call (`set_xyz_lazy_420600(x + sin*v, y + cos*v, z)`) gives the original's
+y-first order and early load of z. A separate `PolarToCartesian` statement into locals computes x
+first (`Char_B4::state_1_5504F0`).
 
 **Ctor EH frame missing when the member ctors come first in the TU.** If the member
 constructors are defined earlier in the same .cpp, VC6 infers they can't throw and drops the
@@ -562,6 +622,30 @@ directly in the first check keeps the original jump target (`Car_BC::CanCarColli
 **Hoisting a rotation angle into a local changes evaluation order.** Storing the spread angle in the Ang16 local 9.6f uses gave the original's left-first `(A + ang) - B` (`EmitBloodBurst_53E450`, `EmitWaterSplash_53F060`).
 
 **`if (c) goto ok; return;` gives an inline epilogue copy, `if (!c) return;` jumps to the shared one.** A return that is the fall-through statement after a conditional goto gets its own epilogue; use it when the original repeats `pop/ret` per check (`Garage_48::GaragesService_5349D0`, corner checks).
+
+**Returns without RVO.** Where the original copies a call's result into the return slot (`mov (%eax),%eax; mov %eax,(%ecx)`) instead of building it in place, `return Fix16(x.mValue, 0);` or `Ang16 r = ...; return r;` reproduces it (`ComputeEngineTorque_561970`, `GetNextRotationToward_550F60`).
+
+**`T x = f();` vs `T x; x = f();`.** Initialising constructs the result in the local's slot, so the value stays in memory; assigning goes through a temporary and lets it live in a register (`Type_1_6_416260` speed, `Weapon_30::sub_5DE4F0` angle and steps).
+
+**Use the labelled per-file asm for control flow.** Branch targets in `target_asm.json` are numeric offsets; `asm/<File>.cpp.asm` on the `claude/target-asm` branch has labels and is much easier for rebuilding loops and gotos (`read_input_device_498DA0`).
+
+**Out-of-line Fix16 operators whose `this` is a copy point to a by-value inline helper.** If the out-of-line `Subtract_436A00`/`Add_408660` are called on a stack copy of the variable rather than the variable itself, the original passed it to an inline helper by value (`Fix16_Rect::ComputeShockPrism` in `sub_5DF270`).
+
+**Constant registers in big functions** (ebp = 0 from a pointer local initialised to 0, ebx = 2, edi = 0xF) are often all that is left; they come from the original holding a local or constant across a region (`Ped::Threat_Reaction_AI_465270`, `Particle_4C::PoolUpdate_53D260`). No source form found yet.
+
+**Out-of-line helpers can be mixed within one family.** `Is{North,East}BlockRoadType` call `get_block_452980` while `Is{South,West}BlockRoadType` inline `get_block_42A850` (`PublicTransport_181C::BusesService_579CA0`). Check each call target separately.
+
+**Reading a pointer through a different expression forces a reload.** `field_C_carriages[0]->field_54_driver` instead of a local `pBusCar->field_54_driver` stops VC6 reusing the loaded field (579CA0).
+
+**Values held in registers going into a shared tail were computed per case.** When each case ends with `add %edi,%edx; jmp tail`, do the computation inside each case (`Ped::sub_4645B0`).
+
+**A dominated repeated test folds to a jmp.** `if (t < 0) { ...; if (t < 0) goto X; }` loses the second test; `if (t < 0 && !c) return; if (t >= 0 && c) A else if (t >= 0) C else B` keeps the original's test on the fall-through edge (`Hud_Pager_C::DrawPager_5D2AB0`).
+
+**Freeing inline budget brings inlines back.** Writing the out-of-line calls the original makes (`DivideAssign_539F90`, `Multiply_408680`) let the `Fix16_Point_POD` ctors inline again (`UpdateObjectBeamLink_state_38_538AC0`, `EmitImpactParticles_53FE40`).
+
+**The EH entry state counts every object with a destructor or EH-tracked ctor, used or not.** When only the initial `mov [ebp-4], N` differs, add the missing object (an unused `Fix16_Point` local in `Weapon_30::car_smg_5E2940`). If that shifts registers, move declarations around: there `Ang16` first, the temporaries at function scope and an `Ang16` copy before the first call fixed them. The permuter found the order.
+
+**Large functions can hit the VC6 inline budget.** When normally inlined ctors (`Ang16`, `Fix16_Point_POD`) or a small multiply show up as calls only in one big function, and moving code pushes *other* inlines out of line, the function is at the budget. Free budget by writing the helper body out by hand (`Ang16(...)` and `Normalize_406C20()` in a block scope, `y*y` written out) in `CarPhysics_B0::CalculateRearWheelForce_5620D0` (0.715 to 0.976). See also 538AC0.
 
 **Store and load order follows the source statement order** and inline getters, so try
 reordering statements and using the existing inline accessors.
@@ -846,7 +930,40 @@ flips which angle range the face tests (`MapRenderer::sub_4EC450` and siblings).
 **`Fix16(f32)` multiplies by `16384.0f`.** The original uses `fmuls` with a float constant; the constructor in
 `fix16.hpp` now does too (no matched function changed).
 
+### x87 code: rounding points and kept values decide the schedule
+
+VC6's x87 scheduler is deterministic: it only reorders what the IL gives it, so flags and compiler builds
+don't change it (see the MapRenderer note under "Still unexplained"). What changes it is the shape of the
+float expression tree:
+
+- **Assigning to an `f32` local adds a rounding node, even if the local is optimised away.** That makes
+  the next x87 op one step deeper, so the scheduler fills the gap with integer work. `Set_UV_4F4190`
+  only matched with `f32 u = uv.x.mValue; ... = u / 16384.0f;`: `Fix16::ToFloat()` (`mValue / 16384.0f`)
+  put `fmuls` before the index load `mov (%eax),%ecx`, the local put it after. An explicit `(f32)` cast
+  of the int does not add the node; `(f32)(a * b)` of a product does. Changing `ToFloat()` itself
+  breaks `ProjectVertTop_4EAE00`/`Bottom_4EAEA0`, so the original used both forms.
+- **`fild x; flds c; fsub %st(1),%st` ... `fstp %st(0)`** (a converted int kept on the x87 stack and
+  popped unused later) means the same float value appears twice in the tree and one use was folded by
+  CSE. `Mike_A80::sub_4FFD90` matched with `left = 630.0f - fx; right = 630.0f - fx + 1.0f;`: the second
+  `630 - fx` becomes the stored `left`, the kept `fx` is popped. `right = left + 1.0f` gives `fsubrs`.
+- Operand order of commutative `*` and `+` makes no difference (the compiler canonicalises it), and
+  neither do (u32)/(unsigned)/`*(u32*)&` variants of the u32 -> float conversion.
+
+A quick way to test such variants: `Scripts/tu_harness/tu.sh` compiles a preprocessed copy of the TU
+(about 3 seconds) and diffs single functions, `score.py` scores a whole TU. Status and next steps for the
+MapRenderer cluster, and how to check helpers against 9.6f with VC7: `docs/x87_handoff.md`.
+
 ## Functions, thunks and calling conventions
+
+**An EH frame for a member in only one owner's ctor.** If one class's ctor has an EH frame for
+a member and the other owners of that member type have none, the member's type has a
+destructor only there: give that member a derived type with an empty destructor
+(`struct_4_dtor` in `char.hpp`, `Char_B4::ctor_544FF0`). An empty destructor on `struct_4`
+itself adds frames to the `Car_BC`, `Object_5C` and `Weapon_8` ctors and dtors.
+
+**A store through a reference keeps a later load after it.** Clearing a bitfield through an
+inline helper that takes the bitfield by reference stops VC6 from hoisting the next field load
+above the store (`Ped::Deallocate_45EB60`).
 
 **`mov $1,%eax` in the callee but `test %al,%al` in the caller.** That's an `s32` (BOOL-style)
 return, cast to `u8` at the call: `if ((u8)sub_405E20(...) || (u8)sub_405E20(...))`. With a
@@ -1053,6 +1170,43 @@ kept the rest inlined (0.476 -> 0.843). It matched `Crane_15C::ComputeHookPos_47
 `_47E730`. `GetDoorWorldPos_43B420` has the same shape, and it may help `fire_truck_gun_5E0E70`
 and the `EmitBloodBurst`/`EmitWaterSplash` siblings.
 
+**Use one out-of-line callee per operator throughout the function.** Past the budget VC6 calls a
+COMDAT copy of `operator*`, which is a different target from the original's `Multiply_408680`.
+Mixing the two fails, so every site in the function must go through the named helper: a local
+inline `PolarToCartesian` that calls `Multiply_408680`, and `Normalize_406C20`, `Subtract_436A00`,
+`Add_408660`, `Negate_4086A0`, `Divide_436A20` instead of the operators
+(`Char_B4::ApplyMovement_54CC40`, `HandleGenericCollision_54A530`).
+
+**No jump table and compares in source order mean an if-chain, not a switch.** If the original
+tests the value in one else-if chain (14, 9, 3, 6, 2||11, ...) and builds no jump table, write the
+chain; a switch reorders the compares (`Frontend::ChangeMenuPage_4B3170`).
+
+**`case 1:` sharing a label with `default:` loses its test.** VC6 drops the compare for a case that
+falls into `default`. Give it its own body, even an identical one, to keep it in the compare chain
+(`Char_B4::UpdateAnimState_546360`).
+
+**One shared loop counter and flag across separate loops.** Separate variables get separate stack
+slots; reusing one `u8 idx` for four loops and one flag for several checks gave the original's frame
+(`Kfc_30::UpdateStateMachine_5CBD50`).
+
+**Write switch cases in jump-table order and let VC6 merge the tails.** It merges shared tails
+itself, even across different call arguments (`push 1; jmp` into a shared call). Gotos into another
+case's block wreck register allocation (`Frontend::UpdatePageFromUserInput_4AE2D0`).
+
+**Test the in-range case first.** `if (v >= lo && v <= hi) mid; else if (v < lo) A; else B;` gives
+`cmp lo; jl A; cmp hi; jg B` with `mid` as the fallthrough (`CarAI_78::sub_44AF00`).
+
+**A `dec; jne` countdown loop needs an int counter.** A u8 counter gives a compare instead
+(`TrafficLight_20::Init_5C1D00`).
+
+**A u8 min against a constant, written inline.** Two arms that each zero-extend and double with a
+byte compare come from `x < 63 ? x : 63` written out; an s32 or u8 `Min` helper gives another shape
+(`sound_obj::ProcessActiveQueues_41AB80`).
+
+**`f() ? false : true` gives `test/sete`; `!f()` gives `neg/sbb/inc`.** A flat if chain lets VC6
+thread repeated register tests, which can move a case to the end of the function as in the original
+(`Orca_2FD4::Internel_CanMoveDiagonally_554110`).
+
 ## Inline asm
 
 **16-bit `pushaw`/`popaw`.** The inline assembler can't spell them. Put `_emit 0x66` before
@@ -1110,13 +1264,32 @@ both copies. Only a meaningless cast changed it.
       params) and the member `ProjectVertTop_4EAE00`/`Bottom_4EAEA0`, `__forceinline`, const refs: none better.
     - Alias: gTileVerts extern, volatile global pointers, template-index stores: no effect. Dropping the
       `GLOBAL()` registrations (which take the address of every global in the TU) changes only other functions.
+  - Third attempt (fast single-TU harness, about 400 compiles):
+    - **Not the compiler build.** decomp.me's VC6 packages were compiled against the same TU: RTM (8168),
+      SP3 (c1xx 8472, c2 8447), SP4 (c1xx 8867, c2 8799: byte-identical to ours), SP5 (8964/8966) and SP6
+      (9782) give the same code for the cluster; the Processor Pack c2 is worse. The scheduler is
+      deterministic on its input and doesn't depend on TU-global counters (dummy functions before it).
+    - The y-line difference: the original issues `mov 0x74(%eax),%edx; mov %esi,0x1C(%esp)` (centre load
+      and the dead zero high dword of the u32 -> float temp) only after `fstps x; fildl y; fmuls; fmul`,
+      ours right after the x `fiaddl`. In the original the high-dword store waits for the load, as if it
+      depended on it; in ours it is independent. Even the out-of-line `ProjectVertTop_4EAE00` stores it
+      before `fstps (%esi)`, so it isn't pointer aliasing.
+    - Helper forms that help other functions (scored over all 30 MapRenderer WIPs):
+      `pVert->y = (f32)(y * scale) + c` or an `f32` local for the y product: -79 to -88 lines in total, but
+      7 functions get worse (`DrawTopSide_4EBA60` +32); a local `Camera_0xBC*`: -94 (4EAF40 -67, 4ED290
+      -60, 4EBA60 +32). None fixes the 0.93 cluster, so none is committed.
   - Lead: probably the compiler build rather than the source. The original isn't self-consistent the way a source
     cause would be: the same inlined Top stores the zero hi dword early at one site and late at another with the
     same stack layout (draw_lid_4F4D60), and late in sub_4EC450 but early in draw_left. That looks like a scheduler
     tie-break. In `Set_UV_4F4190` (one `fmuls`/`mov (%eax),%ecx` swap, the smallest case) /G6 flips exactly that
     pair but breaks push order elsewhere. Our toolchain mixes C2.DLL 12.00.8799, C1XX 12.00.8867 and CL 12.00.8804.
-    Next step: read the 10.5.exe Rich header build numbers and try other VC6 service pack c2.dll builds on cut-down
-    repros of draw_left (8 normalised lines) and Set_UV (2 lines).
+    Rich headers (`Scripts/bin_comp/rich_header.py`, dumped by the target-asm CI as `rich.txt`): 10.5.exe's game
+    objects are Utc12_CPP build 8799 (102) and 8797 (11), Utc12_C 8797, Linker600 8447, the same builds as
+    our build (Utc12_CPP 8799 x110, 8797 x11, Utc12_C 8797, Linker600 8447). So the back end (C2.DLL 8799,
+    which stamps @comp.id) and the linker match, and a different c2.dll is ruled out. The Rich header does
+    not record the C1XX front-end build (ours is 12.00.8867), so a different front end, which could hand c2
+    the IL in a different order, is the remaining compiler-side possibility. Otherwise the cause is in the
+    source or TU context (declaration order, what else is in MapRenderer.cpp).
 - A compare scheduled before a volatile load instead of after it (`cmp $0xF,%al` in
   `sound_obj::ProcessPoliceRadioWordsPlayback_427220`).
 - A store scheduled before the `lea` of an out pointer rather than after it

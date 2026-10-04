@@ -61,7 +61,9 @@ DEFINE_GLOBAL_INIT(Ang16, kAng45_6766DC, Ang16(0x00B4, 0), 0x6766DC);
 DEFINE_GLOBAL_INIT(Ang16, kAng135_676790, Ang16(0x021C, 0), 0x676790);
 DEFINE_GLOBAL_INIT(Ang16, kAng225_676764, Ang16(0x0384, 0), 0x676764);
 DEFINE_GLOBAL_INIT(Ang16, kAng315_67679C, Ang16(0x04EC, 0), 0x67679C);
-DEFINE_GLOBAL_INIT(Ang16, kAng180_676772, Ang16(720), 0x676772);
+// Defined in sprite.cpp: when this TU sees the definition, VC6 reads the s16 with a 32-bit mov and adds with
+// lea; the original's 16-bit `mov 0x676772,%cx; add %dx,%cx` needs an extern (ComputeTargetFacingAngle_4358D0)
+EXTERN_GLOBAL(Ang16, kAng180_676772);
 DEFINE_GLOBAL_INIT(Ang16, kAngZero_676964, Ang16(0), 0x676964);
 
 
@@ -204,7 +206,7 @@ void Camera_0xBC::ApplyMovementDeltaFrom_435860(Camera_0xBC* a2)
 }
 
 // matches on decompme: https://decomp.me/scratch/NpBvl
-WIP_FUNC(0x4358D0)
+MATCH_FUNC(0x4358D0)
 Ang16 Camera_0xBC::ComputeTargetFacingAngle_4358D0()
 {
     Ang16 CarRotation;
@@ -287,79 +289,60 @@ s32 Camera_0xBC::IsCoordsPosVisible_435A70(Fix16 x, Fix16 y, Fix16 z)
 }
 
 // https://decomp.me/scratch/YoPmg Is field_60 really a Fix16_Point ?
-WIP_FUNC(0x435B90)
+MATCH_FUNC(0x435B90)
 void Camera_0xBC::UpdateBoundaries_435B90()
 {
-    WIP_IMPLEMENTED;
-
     field_60.x = Fix16(field_68_screen_px_width) * field_98_cam_pos2.field_C_zoom;
     field_60.y = Fix16(640) * field_98_cam_pos2.field_C_zoom;
 
-    Fix16 v3 = dword_67671C * ((dword_676838 + field_98_cam_pos2.field_8_z) * (kOne_67681C / field_98_cam_pos2.field_C_zoom));
-    Fix16 v5 = dword_67671C * ((dword_676838 + field_98_cam_pos2.field_8_z) * (kOne_67681C / field_98_cam_pos2.field_C_zoom));
+    Fix16 v = (dword_676838 + field_98_cam_pos2.field_8_z) * (kOne_67681C / field_98_cam_pos2.field_C_zoom) * dword_67671C;
 
-    Fix16 x_pos = field_98_cam_pos2.field_0_x;
-
-    field_78_boundaries_non_neg.field_0_left = x_pos - v3;
-
+    field_78_boundaries_non_neg.field_0_left = field_98_cam_pos2.field_0_x - v;
     if (field_78_boundaries_non_neg.field_0_left < kZero_676818)
     {
-        field_78_boundaries_non_neg.field_0_left = 0;
+        field_78_boundaries_non_neg.field_0_left = Fix16(0);
     }
-    else
+    else if (field_78_boundaries_non_neg.field_0_left > kMaxMapCoord_67668C)
     {
-        if (field_78_boundaries_non_neg.field_0_left > kMaxMapCoord_67668C)
-        {
-            field_78_boundaries_non_neg.field_0_left = kMaxMapCoord_67668C;
-        }
+        field_78_boundaries_non_neg.field_0_left = kMaxMapCoord_67668C;
     }
 
-    field_78_boundaries_non_neg.field_4_right = x_pos + v5;
-    if (x_pos + v5 < kZero_676818)
+    field_78_boundaries_non_neg.field_4_right = field_98_cam_pos2.field_0_x + v;
+    if (field_78_boundaries_non_neg.field_4_right < kZero_676818)
     {
-        field_78_boundaries_non_neg.field_4_right = 0;
+        field_78_boundaries_non_neg.field_4_right = Fix16(0);
     }
-    else
+    else if (field_78_boundaries_non_neg.field_4_right > kMaxMapCoord_67668C)
     {
-        if (x_pos + v5 > kMaxMapCoord_67668C)
-        {
-            field_78_boundaries_non_neg.field_4_right = kMaxMapCoord_67668C;
-        }
+        field_78_boundaries_non_neg.field_4_right = kMaxMapCoord_67668C;
     }
 
-    Fix16 v7 = v5 * dword_6768E0;
-    Fix16 v7_high = field_98_cam_pos2.field_4_y;
-    field_78_boundaries_non_neg.field_8_top = v7_high - v7;
+    v *= dword_6768E0;
 
+    field_78_boundaries_non_neg.field_8_top = field_98_cam_pos2.field_4_y - v;
     if (field_78_boundaries_non_neg.field_8_top < kZero_676818)
     {
-        field_78_boundaries_non_neg.field_8_top = 0;
+        field_78_boundaries_non_neg.field_8_top = Fix16(0);
     }
-    else
+    else if (field_78_boundaries_non_neg.field_8_top > kMaxMapCoord_67668C)
     {
-        if (field_78_boundaries_non_neg.field_8_top > kMaxMapCoord_67668C)
-        {
-            field_78_boundaries_non_neg.field_8_top = kMaxMapCoord_67668C;
-        }
+        field_78_boundaries_non_neg.field_8_top = kMaxMapCoord_67668C;
     }
 
-    field_78_boundaries_non_neg.field_C_bottom = v7_high + v7;
+    field_78_boundaries_non_neg.field_C_bottom = field_98_cam_pos2.field_4_y + v;
     if (field_78_boundaries_non_neg.field_C_bottom < kZero_676818)
     {
-        field_78_boundaries_non_neg.field_C_bottom = 0;
+        field_78_boundaries_non_neg.field_C_bottom = Fix16(0);
     }
-    else
+    else if (field_78_boundaries_non_neg.field_C_bottom > kMaxMapCoord_67668C)
     {
-        if (field_78_boundaries_non_neg.field_C_bottom > kMaxMapCoord_67668C)
-        {
-            field_78_boundaries_non_neg.field_C_bottom = kMaxMapCoord_67668C;
-        }
+        field_78_boundaries_non_neg.field_C_bottom = kMaxMapCoord_67668C;
     }
 
     field_20_boundaries.field_0_left = field_78_boundaries_non_neg.field_0_left - dword_67691C;
-    field_20_boundaries.field_4_right = dword_67691C + field_78_boundaries_non_neg.field_4_right;
+    field_20_boundaries.field_4_right = field_78_boundaries_non_neg.field_4_right + dword_67691C;
     field_20_boundaries.field_8_top = field_78_boundaries_non_neg.field_8_top - dword_67691C;
-    field_20_boundaries.field_C_bottom = dword_67691C + field_78_boundaries_non_neg.field_C_bottom;
+    field_20_boundaries.field_C_bottom = field_78_boundaries_non_neg.field_C_bottom + dword_67691C;
 }
 
 MATCH_FUNC(0x435D20)
@@ -436,13 +419,10 @@ void Camera_0xBC::AccumulateSuspicionOnDriver_435F90(Car_BC* a2)
 
 // TODO: move
 // https://decomp.me/scratch/qYIak
-WIP_FUNC(0x4F7540)
+MATCH_FUNC(0x4F7540)
 EXPORT void __stdcall SmoothApproach_4F7540(Fix16& Coord_1, Fix16& Velocity_1, Fix16& Coord_2, Fix16& Velocity_2, Fix16& Velocity_3)
 {
-    WIP_IMPLEMENTED;
-
-    // 9.6f order (V1 += V2, C2 += V1 everywhere). Left: the original keeps the clamp and delta
-    // stores separate (copy propagated, delta tail-merged with the -V3 clamp).
+    // One shared `Coord_2 += Velocity_1` at the end: VC6 copies it into the clamp paths
     Fix16 DeltaCoord = Coord_1 - Coord_2;
     if (DeltaCoord > kZero_6F6C50)
     {
@@ -460,29 +440,38 @@ EXPORT void __stdcall SmoothApproach_4F7540(Fix16& Coord_1, Fix16& Velocity_1, F
             {
                 Velocity_1 = DeltaCoord;
             }
-            Coord_2 += Velocity_1;
-            return;
+        }
+        else
+        {
+            Velocity_1 = kZero_6F6C50;
         }
     }
-    else if (DeltaCoord < kZero_6F6C50 && Velocity_1 <= kZero_6F6C50)
+    else if (DeltaCoord < kZero_6F6C50)
     {
-        if (Velocity_1 - Velocity_2 >= DeltaCoord)
+        if (Velocity_1 <= kZero_6F6C50)
         {
-            Velocity_1 -= Velocity_2;
-            if (Velocity_1 < -Velocity_3)
+            if (Velocity_1 - Velocity_2 >= DeltaCoord)
             {
-                Velocity_1 = -Velocity_3;
+                Velocity_1 -= Velocity_2;
+                if (Velocity_1 < -Velocity_3)
+                {
+                    Velocity_1 = -Velocity_3;
+                }
+            }
+            else
+            {
+                Velocity_1 = DeltaCoord;
             }
         }
         else
         {
-            Velocity_1 = DeltaCoord;
+            Velocity_1 = kZero_6F6C50;
         }
-        Coord_2 += Velocity_1;
-        return;
     }
-
-    Velocity_1 = kZero_6F6C50;
+    else
+    {
+        Velocity_1 = kZero_6F6C50;
+    }
     Coord_2 += Velocity_1;
 }
 

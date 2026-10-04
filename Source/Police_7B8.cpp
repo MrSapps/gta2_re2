@@ -418,7 +418,7 @@ char_type Police_7B8::DispatchNewCrewToService_56FAA0(Police_7C* p7C)
     return 0;
 }
 
-DEFINE_GLOBAL(Fix16, dword_6FECFC, 0x6FECFC);
+DEFINE_GLOBAL_INIT(Fix16, dword_6FECFC, Fix16(5), 0x6FECFC);
 
 // Updates every call for service: its wanted level from the criminal's stars, then its state
 // (send crews, escalate, give up, clean up when the criminal is gone).
@@ -1133,10 +1133,6 @@ void Police_7B8::TryCreateRoadblockAt_577370(u8 x, u8 y, s32 roadblock_type)
             field_664_roadblock_1.CreateRoadblock_575FF0(x, y, z, 3);
             return;
         }
-        else if (field_708_roadblock_2.field_0_bActive)
-        {
-            return;
-        }
     }
     else
     {
@@ -1145,10 +1141,9 @@ void Police_7B8::TryCreateRoadblockAt_577370(u8 x, u8 y, s32 roadblock_type)
             field_664_roadblock_1.CreateRoadblock_575FF0(x, y, z, 2);
             return;
         }
-        else if (field_708_roadblock_2.field_0_bActive)
-        {
-            return;
-        }
     }
-    field_708_roadblock_2.CreateRoadblock_575FF0(x, y, z, 3);
+    if (!field_708_roadblock_2.field_0_bActive)
+    {
+        field_708_roadblock_2.CreateRoadblock_575FF0(x, y, z, 3);
+    }
 }

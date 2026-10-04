@@ -831,9 +831,9 @@ void PoliceCrew_38::State3_AlertedSearch_572340()
 }
 
 EXTERN_GLOBAL(Fix16, kFpFour_6FECF8);
-DEFINE_GLOBAL(Fix16, dword_6FEB44, 0x6FEB44);
-DEFINE_GLOBAL(Fix16, dword_6FED08, 0x6FED08);
-DEFINE_GLOBAL(Fix16, dword_6FECB8, 0x6FECB8);
+DEFINE_GLOBAL_INIT(Fix16, dword_6FEB44, Fix16(0x666, 0), 0x6FEB44);
+DEFINE_GLOBAL_INIT(Fix16, dword_6FED08, Fix16(4), 0x6FED08);
+DEFINE_GLOBAL_INIT(Fix16, dword_6FECB8, Fix16(0x147, 0), 0x6FECB8);
 
 // The crew chasing the criminal: like State3_AlertedSearch_572340, then each member follows the criminal on foot
 // or in the car depending on how far away and how fast the criminal is
@@ -1594,25 +1594,26 @@ void PoliceCrew_38::sub_5752C0()
     byte_6FEB48 = 1;
 }
 
-DEFINE_GLOBAL(Fix16, dword_6FECF0, 0x6FECF0);
-DEFINE_GLOBAL(Fix16, dword_6FEBF4, 0x6FEBF4);
-DEFINE_GLOBAL(Fix16, dword_6FECF4, 0x6FECF4);
-DEFINE_GLOBAL(Fix16, dword_6FEDE0, 0x6FEDE0);
+DEFINE_GLOBAL_INIT(Fix16, dword_6FECF0, Fix16(2), 0x6FECF0);
+DEFINE_GLOBAL_INIT(Fix16, dword_6FEBF4, Fix16(0.5), 0x6FEBF4);
+DEFINE_GLOBAL_INIT(Fix16, dword_6FECF4, Fix16(3), 0x6FECF4);
+DEFINE_GLOBAL_INIT(Fix16, dword_6FEDE0, Fix16(0x1EB, 0), 0x6FEDE0);
 
-WIP_FUNC(0x575310)
+MATCH_FUNC(0x575310)
 void PoliceCrew_38::sub_575310()
 {
     byte_6FEB48 = 1;
     gCurrentCrewPed_6FEDDC->set_objective_target_ped_403AC0(field_14_pService->field_0_criminal_ped);
 
-    Fix16 player_y = gCurrentCrewPed_6FEDDC->field_1AC_cam.y;
-    Fix16 player_x = gCurrentCrewPed_6FEDDC->get_cam_x();
     Ped* pCriminal = field_14_pService->field_0_criminal_ped;
-    Fix16 criminal_x = pCriminal->get_cam_x();
-    Fix16 criminal_y = pCriminal->field_1AC_cam.y;
-
+    // Each branch reads the positions itself (in 9.6f's MaxAbsDistance_42A6B0 argument order);
+    // VC6 hoists the common loads above the branch.
     if (pCriminal->field_168_game_object)
     {
+        Fix16 criminal_y = pCriminal->get_cam_y();
+        Fix16 criminal_x = pCriminal->get_cam_x();
+        Fix16 player_y = gCurrentCrewPed_6FEDDC->get_cam_y();
+        Fix16 player_x = gCurrentCrewPed_6FEDDC->get_cam_x();
         Fix16 dx = criminal_x - player_x;
         Fix16 dy = criminal_y - player_y;
         Fix16 dist;
@@ -1633,6 +1634,10 @@ void PoliceCrew_38::sub_575310()
     }
     else
     {
+        Fix16 criminal_y = pCriminal->get_cam_y();
+        Fix16 criminal_x = pCriminal->get_cam_x();
+        Fix16 player_y = gCurrentCrewPed_6FEDDC->get_cam_y();
+        Fix16 player_x = gCurrentCrewPed_6FEDDC->get_cam_x();
         Fix16 dx = criminal_x - player_x;
         Fix16 dy = criminal_y - player_y;
         Fix16 dist;
@@ -1741,11 +1746,9 @@ void PoliceCrew_38::Service_575590()
 }
 
 // TODO: logic matches, but the original keeps field_75_count in bl and i in cl
-WIP_FUNC(0x575650)
+MATCH_FUNC(0x575650)
 void PoliceCrew_38::sub_575650()
 {
-    WIP_IMPLEMENTED;
-
     Police_7C* pService = field_14_pService;
     if (pService)
     {
@@ -1756,13 +1759,14 @@ void PoliceCrew_38::sub_575650()
                 if (i == pService->field_75_count - 1)
                 {
                     pService->field_20_crews[i] = NULL;
+                    pService->field_75_count--;
                 }
                 else
                 {
                     pService->field_20_crews[i] = pService->field_20_crews[pService->field_75_count - 1];
+                    pService->field_20_crews[pService->field_75_count - 1] = NULL;
+                    pService->field_75_count--;
                 }
-                pService->field_20_crews[pService->field_75_count - 1] = NULL;
-                pService->field_75_count--;
 
                 switch (field_10_subObj->field_20_crew_type)
                 {
@@ -2433,17 +2437,17 @@ void PoliceRoadblock_A4::RemoveRoadblock_575CA0()
 }
 
 // Roadblock building: the values aren't known yet
-DEFINE_GLOBAL(Fix16, dword_6FECEC, 0x6FECEC);
-DEFINE_GLOBAL(Fix16, dword_6FEDA0, 0x6FEDA0);
-DEFINE_GLOBAL(Fix16, dword_6FED80, 0x6FED80);
-DEFINE_GLOBAL(Fix16, dword_6FED0C, 0x6FED0C);
-DEFINE_GLOBAL(Fix16, dword_6FEBD0, 0x6FEBD0);
-DEFINE_GLOBAL(Fix16, dword_6FEB50, 0x6FEB50);
-DEFINE_GLOBAL(Fix16, dword_6FEB5C, 0x6FEB5C);
+DEFINE_GLOBAL_INIT(Fix16, dword_6FECEC, Fix16(1), 0x6FECEC);
+DEFINE_GLOBAL_INIT(Fix16, dword_6FEDA0, Fix16(0x100, 0), 0x6FEDA0);
+DEFINE_GLOBAL_INIT(Fix16, dword_6FED80, Fix16(16), 0x6FED80);
+DEFINE_GLOBAL_INIT(Fix16, dword_6FED0C, Fix16(8), 0x6FED0C);
+DEFINE_GLOBAL_INIT(Fix16, dword_6FEBD0, Fix16(0.75), 0x6FEBD0);
+DEFINE_GLOBAL_INIT(Fix16, dword_6FEB50, Fix16(0xCCC, 0), 0x6FEB50);
+DEFINE_GLOBAL_INIT(Fix16, dword_6FEB5C, Fix16(0.5), 0x6FEB5C);
 DEFINE_GLOBAL(Ang16, word_6FEE30, 0x6FEE30);
-DEFINE_GLOBAL(Ang16, word_6FEB74, 0x6FEB74);
-DEFINE_GLOBAL(u8, byte_624FBC, 0x624FBC); // the next roadblock lane gets barriers
-DEFINE_GLOBAL(u8, byte_624FBD, 0x624FBD); // the next roadblock lane gets a guard
+DEFINE_GLOBAL_INIT(Ang16, word_6FEB74, Ang16(360), 0x6FEB74);
+DEFINE_GLOBAL_INIT(u8, byte_624FBC, 1, 0x624FBC); // the next roadblock lane gets barriers
+DEFINE_GLOBAL_INIT(u8, byte_624FBD, 1, 0x624FBD); // the next roadblock lane gets a guard
 
 // Into the first free car slot
 inline void PoliceRoadblock_A4::AddCar(Car_BC* pCar)

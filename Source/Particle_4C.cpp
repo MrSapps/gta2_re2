@@ -22,7 +22,7 @@ EXTERN_GLOBAL(Fix16, dword_6FD540);
 EXTERN_GLOBAL(Fix16, dword_6FD464);
 EXTERN_GLOBAL(Fix16, dword_6FD2F4);
 EXTERN_GLOBAL(Ang16, word_6FD5CC);
-EXTERN_GLOBAL(Ang16, kAng180_6FD3EE);
+DEFINE_GLOBAL_INIT(Ang16, kAng180_6FD3EE, Ang16(720), 0x6FD3EE);
 EXTERN_GLOBAL(Fix16, dword_6FD2D4);
 EXTERN_GLOBAL(Fix16, kFP16Eighth_6FD2D0);
 EXTERN_GLOBAL(Fix16, dword_6FD48C);
@@ -40,8 +40,8 @@ DEFINE_GLOBAL_INIT(Fix16, dword_6FD2E8, Fix16(0x666, 0), 0x6FD2E8);
 DEFINE_GLOBAL_INIT(Fix16, kFP16One_6FD4A0, Fix16(1), 0x6FD4A0);
 DEFINE_GLOBAL_INIT(Fix16, kFP16Half_6FD39C, Fix16(0.5f), 0x6FD39C);
 DEFINE_GLOBAL_INIT(Fix16, kFP16Two_6FD4A4, Fix16(2), 0x6FD4A4);
-DEFINE_GLOBAL(Fix16, dword_6FD4A8, 0x6FD4A8);
-DEFINE_GLOBAL(Fix16, dword_6FD470, 0x6FD470);
+DEFINE_GLOBAL_INIT(Fix16, dword_6FD4A8, Fix16(3), 0x6FD4A8);
+DEFINE_GLOBAL_INIT(Fix16, dword_6FD470, Fix16(0x28F, 0), 0x6FD470);
 
 DEFINE_GLOBAL_INIT(Fix16, dword_6FD45C, Fix16(0xA3, 0), 0x6FD45C);
 DEFINE_GLOBAL_INIT(Fix16, dword_6FD564, Fix16(0x51, 0), 0x6FD564);
@@ -50,14 +50,14 @@ DEFINE_GLOBAL_INIT(Fix16, dword_6FD538, Fix16(0x31, 0), 0x6FD538);
 DEFINE_GLOBAL_INIT(Fix16, dword_6FD55C, Fix16(0x3000, 0), 0x6FD55C);
 DEFINE_GLOBAL_INIT(Fix16, dword_6FD30C, Fix16(0x3999, 0), 0x6FD30C);
 DEFINE_GLOBAL_INIT(Fix16, dword_6FD280, Fix16(255), 0x6FD280);
-DEFINE_GLOBAL(Fix16, dword_6FD300, 0x6FD300);
-DEFINE_GLOBAL(Fix16, dword_6FD304, 0x6FD304);
-DEFINE_GLOBAL(Fix16, dword_6FD308, 0x6FD308);
-DEFINE_GLOBAL(Fix16, dword_6FD364, 0x6FD364);
-DEFINE_GLOBAL(Fix16, dword_6FD3C0, 0x6FD3C0);
-DEFINE_GLOBAL(Fix16, dword_6FD5A8, 0x6FD5A8);
-DEFINE_GLOBAL(Fix16, dword_6FD2F8, 0x6FD2F8);
-DEFINE_GLOBAL(Fix16, dword_6FD4AC, 0x6FD4AC);
+DEFINE_GLOBAL_INIT(Fix16, dword_6FD300, Fix16(0x2666, 0), 0x6FD300);
+DEFINE_GLOBAL_INIT(Fix16, dword_6FD304, Fix16(0x2CCC, 0), 0x6FD304);
+DEFINE_GLOBAL_INIT(Fix16, dword_6FD308, Fix16(0x3333, 0), 0x6FD308);
+DEFINE_GLOBAL_INIT(Fix16, dword_6FD364, Fix16(0xAAA, 0), 0x6FD364);
+DEFINE_GLOBAL_INIT(Fix16, dword_6FD3C0, Fix16(0xFFFFFE00, 0), 0x6FD3C0);
+DEFINE_GLOBAL_INIT(Fix16, dword_6FD5A8, Fix16(0xDCC, 0), 0x6FD5A8);
+DEFINE_GLOBAL_INIT(Fix16, dword_6FD2F8, Fix16(0x1999, 0), 0x6FD2F8);
+DEFINE_GLOBAL_INIT(Fix16, dword_6FD4AC, Fix16(4), 0x6FD4AC);
 
 // https://decomp.me/scratch/nKSYL
 WIP_FUNC(0x538060)
@@ -376,6 +376,7 @@ char_type Particle_4C::UpdateObjectBeamLink_state_38_538AC0()
     Fix16_Point delta;
     Fix16_Point cur;
     Fix16_Point prev;
+    Fix16_Point mid;
 
     ++field_46_sub_state;
     gPurpleDoom_3_679210->Remove_477B00(field_30_pNext);
@@ -386,24 +387,24 @@ char_type Particle_4C::UpdateObjectBeamLink_state_38_538AC0()
         dst.x = field_28_pSprite->field_14_xy.x;
         dst.y = field_28_pSprite->field_14_xy.y;
         delta = dst - src;
-        Ang16 beam_angle = Fix16::atan2_fixed_405320(delta.y, delta.x);
+        Fix16::atan2_fixed_405320(delta.y, delta.x);
         Fix16 abs_x = Fix16::Abs_436A50(delta.x);
         Fix16 abs_y = Fix16::Abs_436A50(delta.y);
-        Fix16 segments = (abs_x > abs_y ? abs_x : abs_y) / dword_6FD364;
+        Fix16 segments = Fix16(abs_x.mValue > abs_y.mValue ? abs_x.mValue : abs_y.mValue, 0) / dword_6FD364;
 
         if (segments != kFP16Zero_6FD49C)
         {
-            delta.x /= segments;
-            delta.y /= segments;
+            delta.x.DivideAssign_539F90(segments);
+            delta.y.DivideAssign_539F90(segments);
             prev = src;
             cur = src;
             for (s32 i = 1; i <= segments.ToInt(); i++)
             {
                 cur.x = prev.x + delta.x;
                 cur.y = prev.y + delta.y;
-                Fix16_Point mid = cur - prev;
-                mid.x /= kFP16Two_6FD4A4;
-                mid.y /= kFP16Two_6FD4A4;
+                mid = cur - prev;
+                mid.x.DivideAssign_539F90(kFP16Two_6FD4A4);
+                mid.y.DivideAssign_539F90(kFP16Two_6FD4A4);
                 mid.x += prev.x;
                 mid.y += prev.y;
 
@@ -428,7 +429,7 @@ char_type Particle_4C::UpdateObjectBeamLink_state_38_538AC0()
 
         Fix16 target_x = field_28_pSprite->field_14_xy.x;
         Fix16 target_y = field_28_pSprite->field_14_xy.y;
-        Ang16 jitter(&(Fix16(word_6FD5CC.rValue) * Fix16(gRng_6F6784.get_int_4F7AE0(16) - 8)), 0);
+        Ang16 jitter(&(Fix16(word_6FD5CC.rValue).Multiply_408680(Fix16(gRng_6F6784.get_int_4F7AE0(16) - 8))), 0);
 
         switch (field_46_sub_state)
         {
@@ -436,20 +437,20 @@ char_type Particle_4C::UpdateObjectBeamLink_state_38_538AC0()
             case 2:
             case 3:
             {
-                Ang16 ang(field_28_pSprite->field_0 + kAng180_6FD3EE, 0);
+                Ang16 ang(Ang16(field_28_pSprite->field_0.rValue + kAng180_6FD3EE.rValue), 0);
                 Fix16 radius = Fix16(field_46_sub_state) * dword_6FD46C;
-                src.x = radius * Ang16::sine_40F500(ang);
-                src.y = radius * Ang16::cosine_40F520(ang);
+                src.x = radius.Multiply_408680(Ang16::sine_40F500(ang));
+                src.y = radius.Multiply_408680(Ang16::cosine_40F520(ang));
                 break;
             }
             case 4:
             case 5:
             {
-                Ang16 base(field_28_pSprite->field_0 + kAng180_6FD3EE, 0);
-                Ang16 ang(base + jitter, 0);
+                Ang16 base(Ang16(field_28_pSprite->field_0.rValue + kAng180_6FD3EE.rValue), 0);
+                Ang16 ang(Ang16(base.rValue + jitter.rValue), 0);
                 Fix16 radius = Fix16(field_46_sub_state) * dword_6FD46C + dword_6FD45C;
-                src.x = radius * Ang16::sine_40F500(ang);
-                src.y = radius * Ang16::cosine_40F520(ang);
+                src.x = radius.Multiply_408680(Ang16::sine_40F500(ang));
+                src.y = radius.Multiply_408680(Ang16::cosine_40F520(ang));
                 break;
             }
         }

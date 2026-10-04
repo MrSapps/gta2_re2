@@ -115,6 +115,12 @@ under "Still unexplained") for the details behind each point.
    Neither run's candidates are committed (the casts are only acceptable for a match). The 4-line candidate:
    x line `((xpos.ToFloat() * fov) * pVert->z) + (u32)centre_x`, y centre in `u32 tmp1` before the y line,
    and `f32 tmp = (((f32)(((f32)((f32)(1.0f / (...)))))));` for the inverse depth.
+16. **Permuter on the cluster: nothing.** A 2-hour run on `DrawDiagonalDownRightFace_4ECE40` (13 lines) with
+   the inlined `ProjectVertTop_46BD40` and `ProjectVertBottom_46BDF0` also permuted (`--also`), random mode,
+   found no improvement in 55,090 compiles (45% failed to compile; base permuter score 30). Unlike 4EB940,
+   the cluster's remaining differences are spread over two inlined helpers and the call sites, and the
+   random passes didn't hit any combination that helps. Not tried: `-m exhaustive` with only the
+   parenthesis/cast passes over the helpers, or seeding the helpers with the 4EB940 winners' shapes first.
 9. **Not the front end.** C1XX from RTM, SP3, SP5 and SP6 paired with our C2.DLL (8799) give byte-identical code
    for the cluster and 4EB940. Together with point 1, every VC6 compiler-side cause we can test is ruled out.
 

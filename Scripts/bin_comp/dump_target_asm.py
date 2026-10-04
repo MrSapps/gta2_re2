@@ -39,10 +39,17 @@ for rec in new_data["functions"]:
 
 # extra functions the build doesn't mark (callees of WIPs/STUBs), one hex address per line
 import os
+extra_ranges = []
 if os.path.exists("dump_extra_addrs.txt"):
     for line in open("dump_extra_addrs.txt"):
         line = line.split("#")[0].strip()
         if not line:
+            continue
+        if "-" in line:
+            # a raw byte range (function chunks the csv doesn't list): dumped later into
+            # target_extra.json, keyed by the start address
+            lo, hi = (int(v, 16) for v in line.split("-"))
+            extra_ranges.append((lo, hi))
             continue
         addr = int(line, 16)
         if addr not in sizes or hex(addr) in out:
@@ -123,6 +130,10 @@ for path in glob.glob("../../Source/*.cpp"):
         b = read_va(a, min(starts[i] - a, 0x2000))
         if b is not None:
             extra[hex(a)] = b.hex()
+for lo, hi in extra_ranges:
+    b = read_va(lo, min(hi - lo, 0x2000))
+    if b is not None:
+        extra[hex(lo)] = b.hex()
 # x87 constants used by those functions too (they aren't in `out`, so the scan above misses them)
 for blob in extra.values():
     asm = compare_function.dism_func(bytes.fromhex(blob))

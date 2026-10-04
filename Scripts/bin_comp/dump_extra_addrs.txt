@@ -31,3 +31,11 @@
 0x562430
 # WinMain (commented out in winmain.cpp, so it has no marker)
 0x5e53f0
+# MapRenderer::DrawPartialBlocks_4F6580 (matched, for its jump table) and the code between
+# draw_lid_4F4D60 and DrawGradientSlope_4F6630 that the csv doesn't list: the
+# DrawPartialBlock* function chunks its switch jumps to
+0x4f6580
+0x4f514d-0x4f5fc0
+0x4f5fc1-0x4f6210
+0x4f6211-0x4f6580
+0x4f65db-0x4f6630
